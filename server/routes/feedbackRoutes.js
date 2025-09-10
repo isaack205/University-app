@@ -6,7 +6,7 @@ const { protect, authorize } = require('../middlewares/auth');
 const router = express.Router();
 
 router.post('/', protect, authorize(['student']), submitFeedback);
-router.get('/', protect, authorize(['admin']), getAllFeedback);
+router.get('/feedbacks', protect, authorize(['admin']), getAllFeedback);
 
 // Export
 module.exports = router;

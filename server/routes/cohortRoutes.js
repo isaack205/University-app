@@ -12,7 +12,7 @@ const { protect, authorize } = require('../middlewares/auth');
 const router = express.Router();
 
 router.post('/', protect, authorize(['classRep']), createCohort);
-router.get('/', protect, getAllCohorts);
+router.get('/cohorts', protect, getAllCohorts);
 router.get('/course/:courseId', protect, getCohortsByCourse);
 router.get('/:id', protect, getCohortById);
 router.put('/:id', protect, authorize(['classRep']), updateCohort);
