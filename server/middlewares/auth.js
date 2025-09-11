@@ -1,11 +1,12 @@
 // Imports
 const JWT = require('jsonwebtoken');
+const User = require('../models/user');
 
 // Load env variables
 const JWT_SECRET = process.env.JWT_SECRET
 
 // Verify if token is valid and is there
-exports.protect = (req, res, next) => {
+exports.protect = async (req, res, next) => {
 
     // Get the authheader
     const authHeader = req.headers.authorization;
@@ -17,7 +18,13 @@ exports.protect = (req, res, next) => {
     const token = authHeader.split(' ')[1];
     try {
         const decoded = JWT.verify(token, JWT_SECRET)
-        req.user = decoded;
+
+        const user = await User.findById(decoded.id);
+        if (!user) {
+            return res.status(401).json({ message: 'User not found' });
+        }
+
+        req.user = user;
         next();
     } catch (error) {
         res.status(403).json({message: "Invalid token", error: error.message})

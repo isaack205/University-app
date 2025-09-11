@@ -14,7 +14,7 @@ exports.createCohort = async (req, res) => {
 // Get all cohorts
 exports.getAllCohorts = async (req, res) => {
     try {
-        const cohorts = await Cohort.find().populate('course').populate('classRep');
+        const cohorts = await Cohort.find().populate('course');
         res.status(200).json(cohorts);
     } catch (error) {
         res.status(500).json({ message: 'Error fetching cohorts', error: error.message });
@@ -24,7 +24,7 @@ exports.getAllCohorts = async (req, res) => {
 // Get cohorts by course ID
 exports.getCohortsByCourse = async (req, res) => {
     try {
-        const cohorts = await Cohort.find({ course: req.params.courseId }).populate('classRep');
+        const cohorts = await Cohort.find({ course: req.params.courseId }).populate('course');
         res.status(200).json(cohorts);
     } catch (error) {
         res.status(500).json({ message: 'Error fetching cohort by course', error: error.message });
@@ -34,7 +34,7 @@ exports.getCohortsByCourse = async (req, res) => {
 // Get a single cohort by ID
 exports.getCohortById = async (req, res) => {
     try {
-        const cohort = await Cohort.findById(req.params.id).populate('course').populate('classRep');
+        const cohort = await Cohort.findById(req.params.id).populate('course');
         if (!cohort) return res.status(404).json({ message: 'Cohort not found' });
         res.status(200).json(cohort);
     } catch (error) {

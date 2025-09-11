@@ -16,9 +16,9 @@ export default cohortService = {
     },
 
     // Get schedules by cohortId
-    getSchedulesByCohort: async (cohortId) => {
+    getMyShedule: async () => {
         try {
-            const res = await API.get(`/schedule/cohort/${cohortId}`);
+            const res = await API.get(`/schedule/cohort/`);
             return res.data;
         } catch (error) {
             console.error('Error fetching schedules by cohort:', error.response?.data || error.message);

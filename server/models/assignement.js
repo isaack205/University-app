@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
 const assignmentSchema = new mongoose.Schema({
     title: { type: String, required: true },
     description: String,
-    unitCode: { type: String, required: true },
+    unit: { type: mongoose.Schema.Types.ObjectId, ref: 'UnitSchedule', required: true },
     cohort: { type: mongoose.Schema.Types.ObjectId, ref: 'Cohort', required: true },
     dueDate: { type: Date, required: true },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // class rep

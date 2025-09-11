@@ -14,7 +14,7 @@ exports.registerUser = async (req, res) => {
     const { name, studentId, email, phoneNumber, password, role, course, cohort } = req.body;
 
     try {
-        // Check if username exists
+        // Check if studentId exists
         const studentIdExist =  await User.findOne({ studentId });
 
         if(studentIdExist) {

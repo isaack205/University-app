@@ -11,12 +11,12 @@ const { protect, authorize } = require('../middlewares/auth');
 
 const router = express.Router();
 
-router.post('/', protect, authorize(['classRep']), createCohort);
+router.post('/', protect, authorize(['admin']), createCohort);
 router.get('/cohorts', protect, getAllCohorts);
 router.get('/course/:courseId', protect, getCohortsByCourse);
 router.get('/:id', protect, getCohortById);
-router.put('/:id', protect, authorize(['classRep']), updateCohort);
-router.delete('/:id', protect, authorize(['classRep']), deleteCohort);
+router.put('/:id', protect, authorize(['admin']), updateCohort);
+router.delete('/:id', protect, authorize(['admin']), deleteCohort);
 
 // Export
 module.exports = router;

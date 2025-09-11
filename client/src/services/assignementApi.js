@@ -7,7 +7,7 @@ export default assignmentService = {
     // Create assignement
         createAssignment: async (assignementData) => {
         try {
-            const res = await API.post('/assignements', assignementData)
+            const res = await API.post('/assignment', assignementData)
             return res.data;
         } catch (error) {
             console.error('Error creating assignment', error.response?.data || error.message);
@@ -16,9 +16,9 @@ export default assignmentService = {
     },
 
     // Fetch assignments by cohort
-    getAssignmentsByCohort: async (cohortId) => {
+    getMyCohortsAssignements: async () => {
         try {
-            const res = await API.get(`/assignements/cohort/${cohortId}`);
+            const res = await API.get(`/assignment/assignements`);
             return res.data;
         } catch (error) {
             console.error('Error fetching assignment by cohort', error.response?.data || error.message);
@@ -29,7 +29,7 @@ export default assignmentService = {
     // Fetch assignments by id
     getAssignmentById: async (assignmentId) => {
         try {
-            const res = await API.get(`/assignements/${assignmentId}`);
+            const res = await API.get(`/assignment/${assignmentId}`);
             return res.data;
         } catch (error) {
             console.error('Error fetching assignment by id', error.response?.data || error.message);
@@ -40,7 +40,7 @@ export default assignmentService = {
     // Update assignments by id
     updateAssignment: async (assignementId, updatedData) => {
         try {
-            const res = await API.put(`/assignements/${assignementId}`, updatedData);
+            const res = await API.put(`/assignment/${assignementId}`, updatedData);
             return res.data;
         } catch (error) {
             console.error('Error updating assignement by id', error.response?.data || error.message);
@@ -51,7 +51,7 @@ export default assignmentService = {
     // Delete assignments by id
     deleteAssignment: async (assignementId) => {
         try {
-            const res = await API.delete(`/assignements/${assignementId}`);
+            const res = await API.delete(`/assignment/${assignementId}`);
             return res.data;
         } catch (error) {
             console.error('Error deleting assignement', error.response?.data || error.message);
@@ -62,7 +62,7 @@ export default assignmentService = {
     // Mark assignments as completed
     markAsCompleted: async (assignementId) => {
         try {
-            const res = await API.put(`/assignements/${assignementId}/complete`);
+            const res = await API.put(`/assignment/${assignementId}/complete`);
             return res.data;
         } catch (error) {
             console.error('Error marking assignement as completed', error.response?.data || error.message);

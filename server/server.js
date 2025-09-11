@@ -37,11 +37,11 @@ app.use(cors({
 app.use(helmet()); // Security policy
 app.use(logger); // Logger
 
-app.use('/api/auth', userRoutes);
 app.use('/api/course', courseRoutes);
 app.use('/api/cohort', cohortRoutes);
+app.use('/api/auth', userRoutes);
 app.use('/api/schedule', unitScheduleRoutes);
-app.use('/api/assignments', assignementRoutes);
+app.use('/api/assignment', assignementRoutes);
 app.use('/api/feedback', feedbackRoutes);
 app.use('/api/upcoming', upcomingRoutes);
 

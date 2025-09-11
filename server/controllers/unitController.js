@@ -8,6 +8,16 @@ const User = require('../models/user');
 // Create a new schedule
 exports.createSchedule = async (req, res) => {
     try {
+        const classRep = req.user;
+
+        // Check if class rep's cohort matches the one in request
+        if (classRep.role !== 'classRep') {
+            return res.status(403).json({ message: 'Only class reps can create schedules' });
+        }
+
+        if (classRep.cohort.toString() !== req.body.cohort) {
+            return res.status(403).json({ message: 'You can only create schedules for your own cohort' });
+        }
         const schedule = await UnitSchedule.create(req.body);
         res.status(201).json({ message: 'Schedule created', schedule });
     } catch (err) {
@@ -16,9 +26,15 @@ exports.createSchedule = async (req, res) => {
 };
 
 // Get all schedules for a cohort
-exports.getSchedulesByCohort = async (req, res) => {
+exports.getMyShedule = async (req, res) => {
     try {
-        const schedules = await UnitSchedule.find({ cohort: req.params.cohortId });
+        const user = req.user;
+
+        // if (user.role !== 'student') {
+        // return res.status(403).json({ message: 'Only students can access this route' });
+        // }
+
+        const schedules = await UnitSchedule.find({ cohort: user.cohort });
         res.status(200).json(schedules);
     } catch (err) {
         res.status(500).json({ message: 'Failed to fetch schedules', error: err.message });
@@ -39,33 +55,41 @@ exports.getScheduleById = async (req, res) => {
 // Update a schedule
 exports.updateSchedule = async (req, res) => {
     try {
+        const classRep = req.user;
+
         const existingSchedule = await UnitSchedule.findById(req.params.id);
         if (!existingSchedule) return res.status(404).json({ message: 'Schedule not found' });
+
+        // Check cohort match
+        if (classRep.role !== 'classRep') {
+            return res.status(403).json({ message: 'Only class reps can update schedules' });
+        }
+
+        if (classRep.cohort.toString() !== existingSchedule.cohort.toString()) {
+            return res.status(403).json({ message: 'You can only update schedules for your own cohort' });
+        }
 
         // Check for changes before updating
         const venueChanged = req.body.venue && req.body.venue !== existingSchedule.venue;
         const timeChanged = req.body.startTime && req.body.startTime !== existingSchedule.startTime;
 
-        // Proceed with update
         const updatedSchedule = await UnitSchedule.findByIdAndUpdate(
             req.params.id,
             req.body,
             { new: true, runValidators: true }
         );
 
-        // Manual trigger: if venue or time changed, notify students
+        // Notify students if schedule changed
         if (venueChanged || timeChanged) {
             const students = await User.find({ cohort: updatedSchedule.cohort });
 
             for (const student of students) {
-                // App notification
                 await sendAppNotification(
                     student._id,
                     `⚠️ ${updatedSchedule.unitName} schedule updated: ${updatedSchedule.startTime} at ${updatedSchedule.venue}`,
                     'schedule'
                 );
 
-                // SMS alert if opted in
                 if (student.preferences.smsNotifications) {
                     await sendSMS(
                         student.phoneNumber,
@@ -84,8 +108,22 @@ exports.updateSchedule = async (req, res) => {
 // Delete a schedule
 exports.deleteSchedule = async (req, res) => {
     try {
-        const schedule = await UnitSchedule.findByIdAndDelete(req.params.id);
-        if (!schedule) return res.status(404).json({ message: 'Schedule not found' });
+        const classRep = req.user;
+
+        if (classRep.role !== 'classRep') {
+            return res.status(403).json({ message: 'Only class reps can delete schedules' });
+        }
+
+        const schedule = await UnitSchedule.findById(req.params.id);
+        if (!schedule) {
+            return res.status(404).json({ message: 'Schedule not found' });
+        }
+
+        if (classRep.cohort.toString() !== schedule.cohort.toString()) {
+            return res.status(403).json({ message: 'You can only delete schedules for your own cohort' });
+        }
+
+        await UnitSchedule.findByIdAndDelete(req.params.id);
         res.status(200).json({ message: 'Schedule deleted' });
     } catch (err) {
         res.status(500).json({ message: 'Failed to delete schedule', error: err.message });

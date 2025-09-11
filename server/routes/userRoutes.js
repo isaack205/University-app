@@ -13,10 +13,10 @@ router.post('/reset-password', resetPassword);
 router.delete('/me', protect, deleteUser);
 
 // Admin get all users
-router.get('/users', protect, authorize(['admin']), getAllUsers);
+router.get('/users', protect, authorize(['classRep']), getAllUsers);
 
 // Admin delete user
-router.delete('/users/:id', protect, authorize(['admin']), deleteUser);
+router.delete('/users/:id', protect, authorize(['classRep']), deleteUser);
 
 // Export
 module.exports = router;

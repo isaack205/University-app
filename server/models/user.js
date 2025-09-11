@@ -9,8 +9,8 @@ const userSchema = new mongoose.Schema({
   phoneNumber: { type: String, required: true },
   password: { type: String, required: true },
   role: { type: String, enum: ['student', 'classRep', 'admin'], default: 'student' },
-  course: { type: String },
-  cohort: { type: String },
+  course: { type: mongoose.Schema.Types.ObjectId, ref: 'Course', required: true },
+  cohort: { type: mongoose.Schema.Types.ObjectId, ref: 'Cohort', required: true },
   preferences: {
     smsNotifications: { type: Boolean, default: true },
     offlineMode: { type: Boolean, default: false }
