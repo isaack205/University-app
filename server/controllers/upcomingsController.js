@@ -10,8 +10,8 @@ exports.getUpcomingItems = async (req, res) => {
 
         // 📚 Upcoming Assignments
         const assignments = await Assignment.find({
-        cohort: user.cohort,
-        dueDate: { $gte: now, $lte: in7Days }
+            cohort: user.cohort,
+            dueDate: { $gte: now, $lte: in7Days }
         });
 
         // 🕒 Upcoming Classes (today or tomorrow)
