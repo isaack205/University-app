@@ -1,5 +1,8 @@
 // Imports
 const Assignment = require('../models/assignement');
+const User = require('../models/user');
+const { sendAppNotification } = require('../services/notificationService');
+const { sendSMS } = require('../services/smsService');
 
 // Create a new assignment (Class Rep only)
 exports.createAssignment = async (req, res) => {
@@ -11,6 +14,27 @@ exports.createAssignment = async (req, res) => {
     }
 
     const assignment = await Assignment.create({ ...req.body, createdBy: req.user.id });
+
+    // Notify students via app notification
+    const students = await User.find({ cohort: assignment.cohort });
+    for (const student of students) {
+      await sendAppNotification(
+        student._id,
+        `📚 New assignment: ${assignment.title} due ${new Date(assignment.dueDate).toDateString()}`,
+        'assignment'
+      );
+    }
+
+    // Notify students via sms
+    // for (const student of students) {
+    //   await sendSMS(
+    //     student._id,
+    //     student.phoneNumber,
+    //     `📚 New assignment: ${assignment.title} due ${new Date(assignment.dueDate).toDateString()}`,
+    //     'assignment'
+    //   );
+    // }
+
     res.status(201).json({ message: 'Assignment created', assignment });
   } catch (err) {
     res.status(500).json({ message: 'Failed to create assignment', error: err.message });
@@ -62,7 +86,7 @@ exports.updateAssignment = async (req, res) => {
       { new: true, runValidators: true }
     );
 
-    res.status(200).json({ message: 'Assignment updated', assignment });
+    res.status(200).json({ message: 'Assignment updated', updatedAssignment });
   } catch (err) {
     res.status(500).json({ message: 'Failed to update assignment', error: err.message });
   }

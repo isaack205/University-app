@@ -90,12 +90,13 @@ exports.updateSchedule = async (req, res) => {
                     'schedule'
                 );
 
-                if (student.preferences.smsNotifications) {
-                    await sendSMS(
-                        student.phoneNumber,
-                        `⚠️ Change: ${updatedSchedule.unitName} now at ${updatedSchedule.venue} (${updatedSchedule.startTime})`
-                    );
-                }
+                // if (student.preferences.smsNotifications && student.phoneNumber) {
+                //     await sendSMS(
+                //         student._id,
+                //         student.phoneNumber,
+                //         `⚠️ Change: ${updatedSchedule.unitName} now at ${updatedSchedule.venue} (${updatedSchedule.startTime})`
+                //     );
+                // }
             }
         }
 
