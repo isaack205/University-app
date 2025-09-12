@@ -2,7 +2,7 @@
 import API from "./api";
 
 // CohortService
-export default cohortService = {
+export const unitScheduleService = {
 
     // Create schedule
     createSchedule: async (scheduleData) => {

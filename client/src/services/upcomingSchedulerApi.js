@@ -2,7 +2,7 @@
 import API from "./api";
 
 // CohortService
-export default cohortService = {
+export const upcomingsService = {
 
     // Get upcoming items
     getUpcomingItems: async (upcomingData) => {

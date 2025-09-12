@@ -2,7 +2,7 @@
 import API from "./api";
 
 // CohortService
-export default courseService = {
+export const courseService = {
 
     // Create course
     createCourse: async (coureData) => {

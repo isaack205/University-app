@@ -2,7 +2,7 @@
 import API from "./api";
 
 // Assignement service
-export default assignmentService = {
+export const assignmentService = {
 
     // Create assignement
         createAssignment: async (assignementData) => {
