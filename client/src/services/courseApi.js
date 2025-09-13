@@ -18,7 +18,7 @@ export const courseService = {
     // Fetch all courses
     getAllCourses: async () => {
         try {
-            const res = await API.get('/coure/courses');
+            const res = await API.get('/course/courses');
             return res.data;
         } catch (error) {
             console.error('Error fetching all courses:', error.response?.data || error.message);

@@ -29,7 +29,7 @@ export const cohortService = {
     // Get cohorts by courseId
     getCohortsByCourse: async (courseId) => {
         try {
-            const res = await API.get(`/cohort/course/${courseId}`, );
+            const res = await API.get(`/cohort/course/${courseId}`);
             return res.data;
         } catch (error) {
             console.error('Error fetching cohort by course:', error.response?.data || error.message);

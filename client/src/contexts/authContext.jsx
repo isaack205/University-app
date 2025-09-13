@@ -3,17 +3,18 @@ import React, { useContext, useEffect, useState, createContext} from "react";
 import { useNavigate } from 'react-router-dom';
 import { authService } from "@/services/authApi";
 import { LoaderCircle } from "lucide-react";
+import { toast } from "sonner";
 
 // Create the authContext
-const authContext = createContext(null);
+const AuthContext = createContext(null);
 
 // Hook to use the context created above
 export const useAuth = () => {
-    return useContext(authContext)
+    return useContext(AuthContext)
 };
 
 // Authprovider that wrpas up the app
-export const authProvider = ({ children }) => {
+export const AuthProvider = ({ children }) => {
 
     const [user, setUser] = useState(null);
     const [loading, setLOading] = useState(true);
@@ -51,7 +52,8 @@ export const authProvider = ({ children }) => {
         try {
             const response = await authService.registerUser(userData);
             localStorage.setItem('userToken', response.token);
-            toast.success('User registered successfully!')
+            toast.success('User registered successfully!');
+            navigate('/dashboard');
             setUser(response.user);
             return { success: true }
         } catch (error) {
@@ -73,6 +75,7 @@ export const authProvider = ({ children }) => {
             localStorage.setItem('userToken', response.token);
             setUser(response.user);
             toast.success('Welcome back!')
+            navigate('/dashboard');
             return { success: true };
         } catch (error) {
             const message = error.response?.data?.message || error.message || 'Login failed';
@@ -109,9 +112,9 @@ export const authProvider = ({ children }) => {
     }
 
     return (
-        <authContext.Provider value={value}>
+        <AuthContext.Provider value={value}>
             {children}
-        </authContext.Provider>
+        </AuthContext.Provider>
     )
 
 }

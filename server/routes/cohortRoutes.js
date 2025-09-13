@@ -13,7 +13,7 @@ const router = express.Router();
 
 router.post('/', protect, authorize(['admin']), createCohort);
 router.get('/cohorts', protect, getAllCohorts);
-router.get('/course/:courseId', protect, getCohortsByCourse);
+router.get('/course/:courseId', getCohortsByCourse);
 router.get('/:id', protect, getCohortById);
 router.put('/:id', protect, authorize(['admin']), updateCohort);
 router.delete('/:id', protect, authorize(['admin']), deleteCohort);
