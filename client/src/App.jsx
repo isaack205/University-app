@@ -1,11 +1,13 @@
 import React from "react";
-import Home from "./components/home";
+import Home from "./components/dashboard/home";
 import Layout from '@/components/common/layout';
 import { Toaster } from "sonner";
 import { Route, Routes, Navigate} from 'react-router-dom'
 import LoginPage from "./pages/loginPage";
 import RegisterPage from "./pages/registerPage";
 import ProfilePage from "./pages/profilePage";
+import NotificationPage from "./pages/notificationPage";
+import SchedulePage from "./components/dashboard/schedulePage";
 
 export default function App () {
   return (
@@ -18,7 +20,8 @@ export default function App () {
             <Route path="/dashboard" element={<Home />} />
             <Route path='/register' element={<RegisterPage />} />
             <Route path='/profile' element={<ProfilePage />} />
-            <Route />
+            <Route path="/notifications" element={<NotificationPage /> }/>
+            <Route path="/schedule" element={<SchedulePage />} />
           </Routes>
       </Layout>
     </>

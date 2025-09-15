@@ -12,7 +12,7 @@ exports.getUpcomingItems = async (req, res) => {
         const assignments = await Assignment.find({
             cohort: user.cohort,
             dueDate: { $gte: now, $lte: in7Days }
-        });
+        }).populate('cohort').populate('unit');
 
         // 🕒 Upcoming Classes (today or tomorrow)
         const today = now.toLocaleDateString('en-US', { weekday: 'long' });

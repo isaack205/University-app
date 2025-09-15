@@ -34,7 +34,10 @@ exports.getMyShedule = async (req, res) => {
         // return res.status(403).json({ message: 'Only students can access this route' });
         // }
 
-        const schedules = await UnitSchedule.find({ cohort: user.cohort });
+        const schedules = await UnitSchedule.find({ cohort: user.cohort })
+                                            .populate([
+                                                { path: 'cohort', select: 'name year'},
+                                            ]);
         res.status(200).json(schedules);
     } catch (err) {
         res.status(500).json({ message: 'Failed to fetch schedules', error: err.message });

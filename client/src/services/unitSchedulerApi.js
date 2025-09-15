@@ -18,7 +18,7 @@ export const unitScheduleService = {
     // Get schedules by cohortId
     getMyShedule: async () => {
         try {
-            const res = await API.get(`/schedule/cohort/`);
+            const res = await API.get('/schedule/my');
             return res.data;
         } catch (error) {
             console.error('Error fetching schedules by cohort:', error.response?.data || error.message);

@@ -11,8 +11,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { use } from "react";
+} from "@/components/ui/dropdown-menu";
+import { toast } from "sonner";
 
 export default function Header () {
 
@@ -23,6 +23,10 @@ export default function Header () {
     const handleLogout = () => {
         logout();
         navigate('/login')
+    };
+
+    const handleClick = () => {
+        toast.info('Feature coming soon');
     }
 
     const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
@@ -39,7 +43,7 @@ export default function Header () {
                         <p>Dashboard</p>
                     </div>
                     <div className="flex items-center gap-3">
-                        <SunIcon />
+                        <SunIcon onClick={handleClick}/>
                         <BellIcon onClick={() => navigate('/notifications')}/>
                         <DropdownMenu>
                             <DropdownMenuTrigger>
