@@ -8,6 +8,7 @@ import RegisterPage from "./pages/registerPage";
 import ProfilePage from "./pages/profilePage";
 import NotificationPage from "./pages/notificationPage";
 import SchedulePage from "./components/dashboard/schedulePage";
+import ProtectedRoute from "./components/common/protectedRoute";
 
 export default function App () {
   return (
@@ -17,11 +18,13 @@ export default function App () {
           <Routes>
             <Route path="/" element={<Navigate to= "/login" replace/>} />
             <Route path="/login" element={<LoginPage />} />
-            <Route path="/dashboard" element={<Home />} />
             <Route path='/register' element={<RegisterPage />} />
-            <Route path='/profile' element={<ProfilePage />} />
-            <Route path="/notifications" element={<NotificationPage /> }/>
-            <Route path="/schedule" element={<SchedulePage />} />
+            <Route element={<ProtectedRoute allowedRoles={['student', 'admin', 'classRep']} />}>
+              <Route path="/dashboard" element={<Home />} />
+              <Route path='/profile' element={<ProfilePage />} />
+              <Route path="/notifications" element={<NotificationPage /> }/>
+              <Route path="/schedule" element={<SchedulePage />} />
+            </Route>
           </Routes>
       </Layout>
     </>

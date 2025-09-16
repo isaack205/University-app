@@ -15,7 +15,11 @@ exports.registerUser = async (req, res) => {
 
     try {
         // Check if studentId exists
-        const studentIdExist =  await User.findOne({ studentId });
+        const studentIdExist =  await User.findOne({ studentId })
+                                        .populate([
+                                            { path: 'course', select: 'name code' }, 
+                                            { path: 'cohort', select: 'name year' }
+                                        ]);
 
         if(studentIdExist) {
             return res.status(400).json({message: "User with Id already exists"})
@@ -50,7 +54,11 @@ exports.loginUser = async (req, res) => {
     const { studentId, password } = req.body;
 
     try {
-        const user = await User.findOne({ studentId });
+        const user = await User.findOne({ studentId })
+                                .populate([
+                                    { path: 'course', select: 'name code' }, 
+                                    { path: 'cohort', select: 'name year' }
+                                ]);
         if (!user) {
             return res.status(400).json({message: "User not found!"})
         };

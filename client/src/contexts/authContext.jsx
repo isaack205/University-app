@@ -29,7 +29,9 @@ export const AuthProvider = ({ children }) => {
             // If token exists fetch the user profile
             if (token) {
                 const userProfile = await authService.getOwnProfile();
-                setUser(userProfile);
+                setUser(userProfile.user);
+            } else {
+                navigate('/login')
             }
         } catch (error) {
             localStorage.removeItem('userToken');
@@ -98,6 +100,7 @@ export const AuthProvider = ({ children }) => {
         loading,
         error,
         isAuthenticated: !!user,
+        refreshUser: checkAuthStatus,
         register,
         login,
         logout,

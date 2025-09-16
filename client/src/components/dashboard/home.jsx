@@ -9,6 +9,7 @@ import ColourfulText from "../ui/colourful-text";
 import { TextGenerateEffect } from "../ui/text-generate-effect";
 import { unitScheduleService } from "@/services/unitSchedulerApi";
 import { UserIcon } from "lucide-react";
+import { InfoIcon } from "lucide-react";
 
 export default function Home () {
 
@@ -54,7 +55,7 @@ export default function Home () {
                     <span className="flex gap-2 text-xl md:text-2xl lg:text-2xl mb-3 items-end">
                         <h3 className="font-bold ">Welcome back, </h3>
                         <p className="font-bold text-2xl md:text-3xl lg:text-3xl">
-                            <ColourfulText text={user.name || user.user.name || 'User'} />
+                            <ColourfulText text={user ? (user.name || user.user.name) : ('User')} />
                         </p>
                     </span>
                     <span className="">
@@ -83,7 +84,7 @@ export default function Home () {
                                 <BookOpenIcon className="text-red-500 h-10 w-10 p-1 rounded-lg bg-blue-300 mb-1"/>
                                 <p className="font-bold text-2xl">{upcomings && upcomings.upcomingAssignments ? upcomings.upcomingAssignments.length : 0}</p>
                                 <h1 className="font-bold text-xl">Assignements</h1>
-                                <p className="text-sm italic">⚠️ Due in 7 days?</p>
+                                <p className="text-sm italic">⚠️ Due in next 7 days?</p>
                             </div>
                         </div>
                     </div>
@@ -97,7 +98,7 @@ export default function Home () {
                                 upcomings.upcomingAssignments.map((upcoming) => (
                                 <div key={upcoming._id} className="border shadow-lg rounded-xl p-2 max-w-sm w-full lg:max-w-[100%] bg-blue-100 hover:shadow-xl hover:-translate-y-1 transform easeinout duration-500">
                                     <h3 className="font-bold text-center">{upcoming.title || 'Assignement name'}</h3>
-                                    <hr />
+                                    <hr className="border-green-500 mt-1 mb-1"/>
                                     <span className="flex gap-3">
                                         <p className="font-bold">Unit Name: </p>
                                         {upcoming.unit.unitName}
@@ -169,6 +170,19 @@ export default function Home () {
                             </div>
                         )}
                     </div>
+                </div>
+            </div>
+            <div className="bg-gray-200 rounded-xl p-5 flex flex-col items-center mt-10">
+                <div className="flex flex-row gap-3 items-center p-3">
+                    <CalendarDaysIcon className="md:w-10 lg:w-10 md:h-10 lg:h-10"/>
+                    <h3 className="font-bold text-2xl text-blue-600 md:text-4xl lg:text-4xl">Events</h3>
+                </div>
+                <div className="shadow-xl rounded-xl w-full flex flex-col items-center bg-green-100 p-3">
+                    <div className="flex gap-3">
+                        <InfoIcon className="text-red-500"/>
+                        <p>Coming soon !</p>
+                    </div>
+                    <CalendarDaysIcon className="h-40 w-40"/>
                 </div>
             </div>
         </div>

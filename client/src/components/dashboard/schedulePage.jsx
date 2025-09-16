@@ -49,8 +49,8 @@ export default function SchedulePage() {
                     <h1 className="font-bold text-3xl underline text-white text-shadow-lg text-shadow-yellow-800 text-center mb-5 lg:text-4xl">Time Table</h1>
                     <div className="border bg-green-100 w-full flex flex-col justify-center p-[10px] shadow-2xl rounded-xl">
                         <div className="flex flex-col items-center underline font-bold italic lg:text-2xl lg:mb-5">
-                            <p> Course: {user.user.course.name || user.course.name}</p>
-                            <p className="mb-3">{user.user.cohort.name}</p>
+                            <p> Course: {user.course.name || user.user.course.name  || 'N/A'}</p>
+                            <p className="mb-3">{user.cohort.name || user.user.cohort.name  || 'N/A'}</p>
                         </div>
 
                         <div className="overflow-x-auto pb-4">

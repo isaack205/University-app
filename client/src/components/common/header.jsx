@@ -13,6 +13,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
+import { UserRoundCogIcon } from "lucide-react";
+import { LogOutIcon } from "lucide-react";
 
 export default function Header () {
 
@@ -34,27 +36,25 @@ export default function Header () {
     return(
         <div>
             {isAuthenticated && 
-                <div className="border flex justify-between px-4 py-3">
+                <div className="flex justify-between px-4 py-3 bg-blue-400 rounded-b-sm">
                     <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
                     <div className="flex gap-3 items-center">
-                        <Button onClick={toggleSidebar}>
-                            <MenuIcon/>
-                        </Button>
-                        <p>Dashboard</p>
+                        <MenuIcon onClick={toggleSidebar} className="h-7 w-7 text-white hover:text-blue-700"/>
+                        <p className="font-bold text-2xl" onClick={() => navigate('/dashboard')}>Dashboard</p>
                     </div>
                     <div className="flex items-center gap-3">
-                        <SunIcon onClick={handleClick}/>
-                        <BellIcon onClick={() => navigate('/notifications')}/>
+                        <SunIcon className="text-white hover:text-blue-700" onClick={handleClick}/>
+                        <BellIcon className="text-white hover:text-blue-700" onClick={() => navigate('/notifications')}/>
                         <DropdownMenu>
                             <DropdownMenuTrigger>
-                                <CircleUserRoundIcon />
+                                <CircleUserRoundIcon className="text-white hover:text-blue-700"/>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent>
                                 <DropdownMenuLabel>Hi, {user.name || 'user'}</DropdownMenuLabel>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={() => navigate('/profile')}>Profile</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => navigate('/settings')}>Settings</DropdownMenuItem>
-                                <DropdownMenuItem onClick={handleLogout}>Log Out</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => navigate('/profile')}><UserRoundCogIcon /> Profile</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => navigate('/settings')}><SettingsIcon /> Settings</DropdownMenuItem>
+                                <DropdownMenuItem onClick={handleLogout} className="flex justify-betwe">Log Out <LogOutIcon /> </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </div>
