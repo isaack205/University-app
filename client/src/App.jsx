@@ -9,6 +9,7 @@ import ProfilePage from "./pages/profilePage";
 import NotificationPage from "./pages/notificationPage";
 import SchedulePage from "./components/dashboard/schedulePage";
 import ProtectedRoute from "./components/common/protectedRoute";
+import AssignmentPage from "./pages/assignmentPage";
 
 export default function App () {
   return (
@@ -24,6 +25,7 @@ export default function App () {
               <Route path='/profile' element={<ProfilePage />} />
               <Route path="/notifications" element={<NotificationPage /> }/>
               <Route path="/schedule" element={<SchedulePage />} />
+              <Route path="/assignment/assignments" element={<AssignmentPage /> } />
             </Route>
           </Routes>
       </Layout>

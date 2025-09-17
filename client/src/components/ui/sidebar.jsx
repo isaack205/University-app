@@ -30,7 +30,7 @@ export const Sidebar =  ({ isOpen, toggleSidebar }) => {
                             <CalendarDaysIcon /> 
                             TimeTable
                         </Button>
-                        <Button className="bg-no text-blue-500 font-bold md:text-xl lg:text-2xl cursor-pointer shadow-lg hover:shadow-xl hover:underline hover:bg-no hover:-translate-y-2 transform easeinout duration-500" onClick={() => { navigate('/assignments'); if (window.innerWidth < 1024) toggleSidebar(); }}>
+                        <Button className="bg-no text-blue-500 font-bold md:text-xl lg:text-2xl cursor-pointer shadow-lg hover:shadow-xl hover:underline hover:bg-no hover:-translate-y-2 transform easeinout duration-500" onClick={() => { navigate('/assignment/assignments'); if (window.innerWidth < 1024) toggleSidebar(); }}>
                             <NotebookPenIcon /> 
                             Assignments
                         </Button>

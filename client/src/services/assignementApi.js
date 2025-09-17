@@ -5,7 +5,7 @@ import API from "./api";
 export const assignmentService = {
 
     // Create assignement
-        createAssignment: async (assignementData) => {
+    createAssignment: async (assignementData) => {
         try {
             const res = await API.post('/assignment', assignementData)
             return res.data;
@@ -18,7 +18,7 @@ export const assignmentService = {
     // Fetch assignments by cohort
     getMyCohortsAssignements: async () => {
         try {
-            const res = await API.get(`/assignment/assignements`);
+            const res = await API.get(`/assignment/assignments`);
             return res.data;
         } catch (error) {
             console.error('Error fetching assignment by cohort', error.response?.data || error.message);
