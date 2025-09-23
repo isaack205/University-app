@@ -5,6 +5,6 @@ const { protect, authorize } = require('../middlewares/auth');
 
 const router = express.Router();
 
-router.get('/', protect, authorize('student'), getUpcomingItems);
+router.get('/', protect, authorize(['student', 'classRep']), getUpcomingItems);
 
 module.exports = router;

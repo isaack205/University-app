@@ -55,7 +55,7 @@ export const AuthProvider = ({ children }) => {
             const response = await authService.registerUser(userData);
             localStorage.setItem('userToken', response.token);
             toast.success('User registered successfully!');
-            navigate('/dashboard');
+            navigate('/home');
             setUser(response.user);
             return { success: true }
         } catch (error) {
@@ -77,7 +77,7 @@ export const AuthProvider = ({ children }) => {
             localStorage.setItem('userToken', response.token);
             setUser(response.user);
             toast.success('Welcome back!')
-            navigate('/dashboard');
+            navigate('/home');
             return { success: true };
         } catch (error) {
             const message = error.response?.data?.message || error.message || 'Login failed';
@@ -101,6 +101,13 @@ export const AuthProvider = ({ children }) => {
         error,
         isAuthenticated: !!user,
         refreshUser: checkAuthStatus,
+        hasRole: (roles) => {
+            if (!user || !user.role) return false;
+            if (Array.isArray(roles)) {
+                return roles.includes(user.role);
+            }
+            return user.role === roles;
+        },
         register,
         login,
         logout,

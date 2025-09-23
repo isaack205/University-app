@@ -28,6 +28,7 @@ export default function UpdateDetails() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setGeneralError(null);
         setFormError(null);
         setLoading(true);
 

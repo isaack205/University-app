@@ -50,6 +50,7 @@ export default function Home () {
 
     return(
         <div className="">
+            <h3 className="text-3xl font-bold text-green-500 ">Dashboard</h3>
             <div className="flex flex-col gap-3 bg-purple-100 shadow-xl rounded justify-between border rounded-xl items-center p-5 md:flex-row lg:flex-row">
                 <div className="flex flex-col sm:max-w-lg">
                     <span className="flex gap-2 text-xl md:text-2xl lg:text-2xl mb-3 items-end">
