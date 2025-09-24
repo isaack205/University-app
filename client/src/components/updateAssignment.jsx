@@ -1,57 +1,48 @@
 // Imports
-import React, {useState, useEffect} from "react";
+import React, {useEffect, useState} from "react";
+import { SquarePenIcon, LoaderIcon, SendHorizonalIcon } from "lucide-react";
+import { Button } from "./ui/button";
+import { Label } from "./ui/label";
+import { Input } from "./ui/input";
 import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table2";
-import { SendHorizonalIcon, LoaderIcon } from "lucide-react";
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogDescription,
+  DialogClose,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Label } from "@radix-ui/react-dropdown-menu";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+} from "@/components/ui/dialog";
 import { useAuth } from "@/contexts/authContext";
-import { unitScheduleService } from "@/services/unitSchedulerApi";
 import { toast } from "sonner";
+import { unitScheduleService } from "@/services/unitSchedulerApi";
 import { assignmentService } from "@/services/assignementApi";
-import UpdateAssignment from "@/components/updateAssignment";
 
-export default function ManageAssignment() {
+export default function UpdateAssignment({ assignment, refreshAssignment }) {
 
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [selectedUnit, setSelectedUnit] = useState('');
-    const [units, setUnits] = useState([]);
     const [cohort, setCohort] = useState('');
     const [dueDate, setDueDate] = useState('');
+    const [units, setUnits] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [assignmentLoading, setAssignmentLoading] = useState(false);
-    const [assignments, setAssignments] = useState([])
     const [formDataError, setFormDataError] = useState({});
     const [errors, setErrors] = useState(null);
 
     const { user } = useAuth();
 
     const fetchUnitSchedules = async () => {
-
+    
         try {
             const data = await unitScheduleService.getMyShedule();
             setUnits(data);
@@ -61,42 +52,35 @@ export default function ManageAssignment() {
             toast.error(errorMessage)
             return false;
         }
-    }
+    };
 
-    const fetchAssignments = async () => {
 
-        setAssignmentLoading(true);
+    function formatDateForInput(isoString) {
+        const date = new Date(isoString);
 
-        try {
-            const data = await assignmentService.getMyCohortsAssignements();
-            setAssignments(data);
-            return true;
-        } catch (error) {
-            const errorMessage = error.response?.data?.message || error.message || 'An unexpected error occured.'
-            setErrors(errorMessage);
-            return false;
-        } finally {
-            setAssignmentLoading(false);
-        }
+        const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
+            .toISOString()
+            .slice(0, 16);
 
+        return local;
     }
 
     useEffect(() => {
 
-        fetchUnitSchedules();
-        fetchAssignments();
-    }, []);
+        if (assignment) {
+            setTitle(assignment?.title || '');
+            setDescription(assignment?.description || '');
+            setSelectedUnit(assignment?.unit?._id || assignment?.unit || '');
+            setCohort(assignment?.cohort?._id || assignment?.cohort || '');
+            setDueDate(formatDateForInput(assignment?.dueDate) || '')
+        }
 
-    const resetForm = () => {
-        setTitle('');
-        setDescription('');
-        setSelectedUnit('');
-        setDueDate('');
-    }
+        fetchUnitSchedules();
+    }, [assignment]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
+        
         setLoading(true);
         setFormDataError(null);
         setErrors(null);
@@ -131,17 +115,14 @@ export default function ManageAssignment() {
             return;
         }
 
-        const localDate = new Date(dueDate)
-        const isoDate = localDate.toISOString();
-
         const payload = {
-            title, description, unit: selectedUnit, cohort, dueDate: isoDate
+            _id: assignment?._id, title, description, unit: selectedUnit, cohort, dueDate: new Date(dueDate).toISOString()
         }
 
         try {
-            await assignmentService.createAssignment(payload);
-            resetForm();
-            toast.success('Assignment posted successfully!')
+            await assignmentService.updateAssignment(payload._id, payload);
+            refreshAssignment();
+            toast.success('Assignment updated successfully!')
         } catch (error) {
             const errorMessage = error.response?.data?.message || error.message || 'An unexpected error occured!'
             toast.error(errorMessage)
@@ -155,10 +136,12 @@ export default function ManageAssignment() {
     return(
         <div>
             <Dialog>
-                <DialogTrigger className="rounded-xl shadow-xl p-1 mt-10 bg-blue-300 cursor-pointer hover:shadow-blue-200 transition-all duration-400 text-black">Create assignment</DialogTrigger>
+                <DialogTrigger>
+                    <SquarePenIcon className="text-green-500 cursor-pointer hover:-translate-y-1 transition-all duration-500 "/>
+                </DialogTrigger>
                 <DialogContent className="bg-gray-300">
                     <DialogHeader>
-                        <DialogTitle className="text-2xl font-bold text-green-500 text-center ">Register an assignment</DialogTitle>
+                        <DialogTitle className="text-2xl font-bold text-green-500 text-center ">Update assignment</DialogTitle>
                         <DialogDescription className="text-red-500">
                             * All fields are required.
                         </DialogDescription>
@@ -260,12 +243,12 @@ export default function ManageAssignment() {
                         <Button className="bg-white text-black font-bold shadow-md hover:shadow-green-500 hover:shadow-xl hover:bg-white border md:text-lg lg:text-xl hover:-translate-y-1 transform easeinout duration-500 mt-5 w-full" disabled={loading} type="submit">
                             { loading ? (
                                 <div className="flex gap-3 items-center">
-                                    Creating
+                                    Saving
                                     <LoaderIcon className="animate-spin"/>
                                 </div> 
                                 ) : (
                                 <div className="flex gap-3 items-center">
-                                    Post assignment
+                                    Save Changes
                                     <SendHorizonalIcon />
                                 </div> 
                                 ) 
@@ -275,46 +258,6 @@ export default function ManageAssignment() {
 
                 </DialogContent>
             </Dialog>
-            
-            <div className="border rounded-xl p-5 mt-10 bg-blue-100">
-                <Table>
-                    <TableCaption>Assignments manager.</TableCaption>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead className="w-[100px]">Title</TableHead>
-                            <TableHead>UnitCode</TableHead>
-                            <TableHead>DueDate</TableHead>
-                            <TableHead className="text-right">Action</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    {assignmentLoading ? (
-                        <TableBody>
-                            <TableRow>
-                                <TableCell colSpan={4} className="text-center">
-                                    <div className="flex flex-row items-center justify-center gap-2">
-                                        <LoaderIcon className="animate-spin h-6 w-6 text-green-500" />
-                                        <p className="text-green-500 font-bold text-md lg:text-xl">Loading assignments data.</p>
-                                    </div>
-                                </TableCell>
-                            </TableRow>
-                        </TableBody>
-                        ) : (
-                        <TableBody>
-                            {assignments.map(assignment => (
-                                <TableRow key={assignment._id}>
-                                    <TableCell className="font-medium">{assignment.title}</TableCell>
-                                    <TableCell>{assignment.unit.unitCode}</TableCell>
-                                    <TableCell>{new Date (assignment.dueDate).toLocaleString()}</TableCell>
-                                    <TableCell className="text-right">
-                                        <UpdateAssignment assignment={assignment} refreshAssignment={fetchAssignments}/>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    )}
-                </Table>
-            </div>
-            
         </div>
     )
-};
+}

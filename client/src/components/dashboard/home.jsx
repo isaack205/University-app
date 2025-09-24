@@ -97,7 +97,7 @@ export default function Home () {
                         <div>
                             {upcomings && upcomings?.upcomingAssignments?.length > 0 ? (
                                 upcomings.upcomingAssignments.map((upcoming) => (
-                                <div key={upcoming._id} className="border shadow-lg rounded-xl p-2 max-w-sm w-full lg:max-w-[100%] bg-blue-100 hover:shadow-xl hover:-translate-y-1 transform easeinout duration-500">
+                                <div key={upcoming._id} className="border shadow-lg rounded-xl p-2 max-w-sm w-full lg:max-w-[100%] bg-blue-100 hover:shadow-xl hover:-translate-y-1 transform easeinout duration-500 mb-5">
                                     <h3 className="font-bold text-center">{upcoming.title || 'Assignement name'}</h3>
                                     <hr className="border-green-500 mt-1 mb-1"/>
                                     <span className="flex gap-3">
@@ -110,7 +110,7 @@ export default function Home () {
                                     </span>
                                     <span className="flex gap-3">
                                         <p className="font-bold">Due date: </p>
-                                        {new Date(upcoming.dueDate).toLocaleString() || 'N/A'}
+                                        <p className="text-red-500">{new Date(upcoming.dueDate).toLocaleString() || 'N/A'}</p>
                                     </span>
                                     <span className="flex gap-3 text-gray-500 text-sm justify-end mt-3">
                                         {new Date(upcoming.createdAt).toLocaleString() || 'N/A'}

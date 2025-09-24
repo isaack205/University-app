@@ -5,7 +5,6 @@ export default function ManageEmergencies() {
 
     return(
         <div>
-            hfjdckdncjehfjdckdncjehfjdckdncje
         </div>
     )
 };
