@@ -14,7 +14,9 @@ const userSchema = new mongoose.Schema({
   preferences: {
     smsNotifications: { type: Boolean, default: true },
     offlineMode: { type: Boolean, default: false }
-  }
+  },
+  resetPasswordToken: String,
+  resetPasswordExpire: Date,
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', userSchema);

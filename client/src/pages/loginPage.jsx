@@ -39,7 +39,7 @@ export default function LoginPage() {
         let isValid = true;
 
         if (!studentId.trim()) {
-            setStudentIdError = 'StudentId is required';
+            setStudentIdError('StudentId is required');
             isValid = false;
         }
 

@@ -146,14 +146,14 @@ exports.forgotPassword = async (req, res) => {
 
         // Send unhashed token to user's email
         const resetURL = `${FRONTEND_URL}/reset-password?token=${resetToken}`;
-        const message = `You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\nPlease go to the following link to reset your password: ${resetURL}\n\nIf you did not request this, please ignore this email and your password will remain unchanged.`;
+        const message = `👋 Hello ${user.name},\n\nWe received a request to reset your password for your University App account.\n\n🔗 Please click the link below to securely reset your password:\n ${resetURL} \n\n⚠️ If you did not request this, please ignore this email and your password will remain unchanged.\n\nBest regards,\nCHUXEN App Team`;
 
 
         // Send email with reset link (pseudo code)
         await sendEmail({
             to: user.email,
             subject: "Password Reset Request",
-            text: `Reset your password using this link: ${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`
+            text: `${message}`
         });
 
         res.status(200).json({message: "Password reset email sent to your email"});
@@ -201,8 +201,8 @@ exports.resetPassword = async (req, res) => {
 
         await sendEmail({
             to: user.email,
-            subject: "Password changed successfully",
-            text: 'Your password has been changed successfully.'
+            subject: "🔒 Password Changed Successfully! 🎉",
+            text: `Hi ${user.name},\n\n✅ Your password for your University App account has been changed successfully!\n\nIf you made this change, you can safely ignore this message. If you did NOT request this change, please contact our support team immediately for assistance.\n\nFor your security, always keep your password confidential and avoid sharing it with anyone.\n\nIf you have any questions or need help, feel free to reach out to us.\n\nBest regards,\nCHUXEN Team\n\n🔔 Stay safe and secure!`
         });
 
         res.status(200).json({message: "Password reset successfully"});

@@ -14,35 +14,40 @@ import ManageUnitSchedule from "./components/dashboard/classRepDashboard/manageU
 import Dashboard from "./components/dashboard/classRepDashboard/dasboard";
 import ManageAssignment from "./components/dashboard/classRepDashboard/manageAssignments";
 import ManageEmergencies from "./components/dashboard/classRepDashboard/manageEmergencies";
+import ForgotPasswordPage from "./pages/forgotPassword";
+import ResetPasswordPage from "./pages/resetPassword";
 
 export default function App () {
   return (
     <>
       <Toaster richColors position="top-right"/>
-      <Layout>
-          <Routes>
-            <Route path="/" element={<Navigate to= "/login" replace/>} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path='/register' element={<RegisterPage />} />
 
-            <Route element={<ProtectedRoute allowedRoles={['student', 'admin', 'classRep']} />}>
-              <Route path="/home" element={<Home />} />
-              <Route path='/profile' element={<ProfilePage />} />
-              <Route path="/notifications" element={<NotificationPage /> }/>
-              <Route path="/schedule" element={<SchedulePage />} />
-              <Route path="/assignment/assignments" element={<AssignmentPage /> } />
+      <Routes>
+        <Route path="/" element={<Navigate to= "/login" replace/>} />
+
+        <Route path="/login" element={<LoginPage />} />
+        <Route path='/register' element={<RegisterPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
+
+        <Route element={<Layout />}>
+          <Route element={<ProtectedRoute allowedRoles={['student', 'admin', 'classRep']} />}>
+            <Route path="/home" element={<Home />} />
+            <Route path='/profile' element={<ProfilePage />} />
+            <Route path="/notifications" element={<NotificationPage /> }/>
+            <Route path="/schedule" element={<SchedulePage />} />
+            <Route path="/assignment/assignments" element={<AssignmentPage /> } />
+          </Route>
+
+          <Route element={<ProtectedRoute allowedRoles={['classRep']} />}>
+            <Route path="/dashboard" element={<Dashboard />} >
+              <Route path='schedule' element={<ManageUnitSchedule />} />
+              <Route path="assignment" element={<ManageAssignment /> }/>
+              <Route path="emergency" element={<ManageEmergencies />} />
             </Route>
-
-            <Route element={<ProtectedRoute allowedRoles={['classRep']} />}>
-              <Route path="/dashboard" element={<Dashboard />} >
-                <Route path='schedule' element={<ManageUnitSchedule />} />
-                <Route path="assignment" element={<ManageAssignment /> }/>
-                <Route path="emergency" element={<ManageEmergencies />} />
-              </Route>
-            </Route>
-
-          </Routes>
-      </Layout>
+          </Route>
+        </Route>
+      </Routes>
     </>
   )
 }

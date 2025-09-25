@@ -30,8 +30,6 @@ export const AuthProvider = ({ children }) => {
             if (token) {
                 const userProfile = await authService.getOwnProfile();
                 setUser(userProfile.user);
-            } else {
-                navigate('/login')
             }
         } catch (error) {
             localStorage.removeItem('userToken');

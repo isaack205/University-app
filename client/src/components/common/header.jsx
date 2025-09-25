@@ -36,6 +36,8 @@ export default function Header () {
 
     useEffect(() => {
     
+        if (!isAuthenticated) return;
+
         const fetchNotifications = async () => {
             try {
                 const notificationsData = await notificationService.getMyNotifications();
@@ -54,7 +56,7 @@ export default function Header () {
 
         // CleanUp
         return () => clearInterval(interval);
-    }, []);
+    }, [isAuthenticated]);
 
     const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
