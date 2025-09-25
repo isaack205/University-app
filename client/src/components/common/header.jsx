@@ -85,7 +85,7 @@ export default function Header () {
                                 <DropdownMenuLabel>Hi, {user.name || 'user'}</DropdownMenuLabel>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem onClick={() => navigate('/profile')}><UserRoundCogIcon /> Profile</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => navigate('/settings')}><SettingsIcon /> Settings</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => toast.info('Feature coming soon!')}><SettingsIcon /> Settings</DropdownMenuItem>
                                 <DropdownMenuItem onClick={handleLogout} className="flex justify-betwe">Log Out <LogOutIcon /> </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>

@@ -86,9 +86,10 @@ export default function NotificationPage() {
                                     </div>
                                 </div>
                                 <div>
-                                    <p className="font-bold underline">{notification.type.toUpperCase()}</p>
-                                    <span className="flex gap-4">
-                                        Message: <p>{notification.message}</p>
+                                    <p className="font-bold underline text-blue-500">{notification.type.toUpperCase()}</p>
+                                    <span className="flex md:gap-4 lg:gap-4 flex-col md:flex-row lg:flex-row">
+                                        <p className="italic">Message:</p> 
+                                        <p>{notification.message}</p>
                                     </span>
                                     <p className="text-gray-400 text-sm">{notification.createdAt ? new Date(notification.createdAt).toLocaleString() : 'N/A'}</p>
                                 </div>

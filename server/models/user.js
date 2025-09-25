@@ -12,7 +12,7 @@ const userSchema = new mongoose.Schema({
   course: { type: mongoose.Schema.Types.ObjectId, ref: 'Course', required: true },
   cohort: { type: mongoose.Schema.Types.ObjectId, ref: 'Cohort', required: true },
   preferences: {
-    smsNotifications: { type: Boolean, default: true },
+    smsNotifications: { type: Boolean, default: false },
     offlineMode: { type: Boolean, default: false }
   },
   resetPasswordToken: String,

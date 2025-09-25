@@ -1,6 +1,7 @@
 // Imports
 const Assignment = require('../models/assignement');
 const User = require('../models/user');
+const Notification = require('../models/notification')
 const { sendAppNotification } = require('../services/notificationService');
 const { sendSMS } = require('../services/smsService');
 
@@ -18,22 +19,19 @@ exports.createAssignment = async (req, res) => {
     // Notify students via app notification
     const students = await User.find({ cohort: assignment.cohort });
     for (const student of students) {
-      await sendAppNotification(
-        student._id,
-        `📚 New assignment: ${assignment.title} due ${new Date(assignment.dueDate).toDateString()}`,
-        'assignment'
-      );
-    }
+      await Notification.create({
+        user: student._id,
+        message: `📚 New assignment posted: ${assignment.title}, due ${new Date(assignment.dueDate).toDateString()}`,
+        type: 'assignment',
+        referenceId: assignment._id,
+        expiresAt: assignment.dueDate
+      });
 
-    // Notify students via sms
-    // for (const student of students) {
-    //   await sendSMS(
-    //     student._id,
-    //     student.phoneNumber,
-    //     `📚 New assignment: ${assignment.title} due ${new Date(assignment.dueDate).toDateString()}`,
-    //     'assignment'
-    //   );
-    // }
+      if (student.preferences.smsNotifications && student.phoneNumber) {
+        await sendSMS(student._id, student.phoneNumber, `📚 New assignment posted: ${assignment.title}, due ${new Date(assignment.dueDate).toDateString()}`, 'class');
+      }
+
+    };
 
     res.status(201).json({ message: 'Assignment created', assignment });
   } catch (err) {

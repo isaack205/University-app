@@ -3,7 +3,7 @@ const UnitSchedule = require('../models/unit');
 const { sendAppNotification } = require('../services/notificationService');
 const { sendSMS } = require('../services/smsService');
 const User = require('../models/user');
-
+const Notification = require('../models/notification')
 
 // Create a new schedule
 exports.createSchedule = async (req, res) => {
@@ -87,19 +87,23 @@ exports.updateSchedule = async (req, res) => {
             const students = await User.find({ cohort: updatedSchedule.cohort });
 
             for (const student of students) {
-                await sendAppNotification(
-                    student._id,
-                    `⚠️ ${updatedSchedule.unitName} schedule updated: ${updatedSchedule.startTime} at ${updatedSchedule.venue}`,
-                    'schedule'
-                );
 
-                // if (student.preferences.smsNotifications && student.phoneNumber) {
-                //     await sendSMS(
-                //         student._id,
-                //         student.phoneNumber,
-                //         `⚠️ Change: ${updatedSchedule.unitName} now at ${updatedSchedule.venue} (${updatedSchedule.startTime})`
-                //     );
-                // }
+                await Notification.create({
+                    user: student._id,
+                    message: `⚠️ ${updatedSchedule.unitName} schedule updated: ${updatedSchedule.startTime} at ${updatedSchedule.venue}`,
+                    type: 'schedule',
+                    referenceId: updatedSchedule._id,
+                    expiresAt: null
+                });
+
+                if (student.preferences.smsNotifications && student.phoneNumber) {
+                    await sendSMS(
+                        student._id, 
+                        student.phoneNumber, 
+                        `⚠️ ${updatedSchedule.unitName} schedule updated: ${updatedSchedule.startTime} at ${updatedSchedule.venue}`, 
+                        'schedule'
+                    );
+                }
             }
         }
 

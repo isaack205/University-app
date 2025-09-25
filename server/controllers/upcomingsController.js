@@ -12,7 +12,7 @@ exports.getUpcomingItems = async (req, res) => {
         const assignments = await Assignment.find({
             cohort: user.cohort,
             dueDate: { $gte: now, $lte: in7Days }
-        }).populate('cohort').populate('unit');
+        }).sort({ dueDate: 1 }).populate('cohort').populate('unit');
 
         // 🕒 Upcoming Classes (today or tomorrow)
         const today = now.toLocaleDateString('en-US', { weekday: 'long' });
@@ -22,6 +22,10 @@ exports.getUpcomingItems = async (req, res) => {
             cohort: user.cohort,
             dayOfWeek: { $in: [today, tomorrow] }
         });
+
+        const dayOrder = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+
+        schedules.sort((a, b) => dayOrder.indexOf(a.dayOfWeek) - dayOrder.indexOf(b.dayOfWeek));
 
         res.status(200).json({
         upcomingAssignments: assignments,
