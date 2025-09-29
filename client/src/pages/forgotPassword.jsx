@@ -86,7 +86,7 @@ export default function ForgotPasswordPage() {
                             />
                             {emailError && <p className="text-red-500 text-xs mt-1">{emailError}</p>}
                             <div className="mt-5">
-                                <Button disabled={loading} className="mt-8 cursor-pointer w-full bg-green-500 hover:bg-green-600 text-lg font-bold border text-black border-black" type="submit">
+                                <Button disabled className="mt-8 cursor-pointer w-full bg-green-500 hover:bg-green-600 text-lg font-bold border text-black border-black" type="submit">
                                     {loading ? 'Requesting ...' : 'Request password Reset Link'}
                                 </Button>
                             </div>
