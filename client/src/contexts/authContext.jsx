@@ -1,5 +1,6 @@
 // Imports
-import React, { useContext, useEffect, useState, createContext} from "react";
+import React from "react";
+import { useContext, useEffect, useState, createContext} from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authService } from "@/services/authApi";
 import { LoaderCircle } from "lucide-react";
