@@ -21,10 +21,11 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
-      // Force all React imports to resolve to same single copy
+      // Force all React / React DOM imports to same copy
       react: path.resolve(__dirname, "node_modules/react"),
       "react-dom": path.resolve(__dirname, "node_modules/react-dom"),
     },
+    dedupe: ["react", "react-dom"],
   },
   build: {
     chunkSizeWarningLimit: 1000,
@@ -32,7 +33,6 @@ export default defineConfig({
       output: {
         manualChunks(id) {
           if (id.includes("node_modules")) {
-            // React + React DOM + scheduler, react-refresh internals
             if (
               id.includes("node_modules/react/") ||
               id.includes("node_modules/react-dom/") ||
@@ -41,7 +41,6 @@ export default defineConfig({
             ) {
               return "vendor-react";
             }
-            // animation / motion libraries
             if (
               id.includes("node_modules/framer-motion") ||
               id.includes("node_modules/motion-dom") ||
@@ -53,11 +52,9 @@ export default defineConfig({
             ) {
               return "vendor-animation";
             }
-            // axios
             if (id.includes("node_modules/axios")) {
               return "vendor-axios";
             }
-            // utilities
             if (
               id.includes("node_modules/lodash/") ||
               id.includes("node_modules/date-fns/") ||
@@ -66,7 +63,6 @@ export default defineConfig({
             ) {
               return "vendor-utils";
             }
-            // fallback
             return "vendor";
           }
         },
