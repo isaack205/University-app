@@ -15,5 +15,8 @@ const unitScheduleSchema = new mongoose.Schema({
     timestamps: true 
 });
 
+// Ensure uniqueness per cohort+unitCode
+unitScheduleSchema.index({ cohort: 1, unitCode: 1 }, { unique: true });
+
 // Export
 module.exports = mongoose.model('UnitSchedule', unitScheduleSchema);
