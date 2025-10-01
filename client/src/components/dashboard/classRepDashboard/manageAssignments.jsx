@@ -140,6 +140,7 @@ export default function ManageAssignment() {
 
         try {
             await assignmentService.createAssignment(payload);
+            fetchAssignments();
             resetForm();
             toast.success('Assignment posted successfully!')
         } catch (error) {

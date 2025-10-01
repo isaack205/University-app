@@ -60,6 +60,16 @@ export default function Header () {
 
     const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
+    const handleCampusHubClick = () => {
+
+        if (user.role === 'admin') {
+            navigate('/admin/dashboard')
+        } else {
+            navigate('/home')
+        };
+
+    };
+
     const unreadCount = notifications.filter(n => !n.read).length
 
     return(
@@ -69,7 +79,7 @@ export default function Header () {
                     <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
                     <div className="flex gap-3 items-center">
                         <MenuIcon onClick={toggleSidebar} className="h-7 w-7 text-white hover:text-blue-700"/>
-                        <p className="font-bold text-2xl" onClick={() => navigate('/home')}>CampusHub</p>
+                        <p className="font-bold text-2xl" onClick={handleCampusHubClick}>CampusHub</p>
                     </div>
                     <div className="flex items-center gap-6">
                         <SunIcon className="text-white hover:text-blue-700 cursor-pointer" onClick={handleClick}/>

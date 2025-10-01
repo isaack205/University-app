@@ -54,7 +54,14 @@ export const AuthProvider = ({ children }) => {
             const response = await authService.registerUser(userData);
             localStorage.setItem('userToken', response.token);
             toast.success('User registered successfully!');
-            navigate('/home');
+
+            // Navigate based on role
+            if (response.user.role === "admin") {
+                navigate('/admin/dashboard');
+            } else {
+                navigate('/home');
+            }
+
             setUser(response.user);
             return { success: true }
         } catch (error) {
@@ -75,8 +82,15 @@ export const AuthProvider = ({ children }) => {
             const response = await authService.loginUser(credentials);
             localStorage.setItem('userToken', response.token);
             setUser(response.user);
-            toast.success('Welcome back!')
-            navigate('/home');
+            toast.success('Welcome back!');
+
+            // Navigate based on role
+            if (response.user.role === "admin") {
+                navigate('/admin/dashboard');
+            } else {
+                navigate('/home');
+            }
+            
             return { success: true };
         } catch (error) {
             const message = error.response?.data?.message || error.message || 'Login failed';

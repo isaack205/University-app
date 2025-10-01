@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/authContext";
 import React, { useEffect, useState } from "react";
 import { authService } from "@/services/authApi";
 import { UserIcon } from "lucide-react";
-import UpdateDetails from "@/components/common/updateDetails";
+import UpdateDetails from "@/components/updateDetails";
 import avator from '@/assets/avator1.webp'
 
 export default function ProfilePage() {

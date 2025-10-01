@@ -1,8 +1,8 @@
 import React, {useEffect, useState} from "react";
 import { useAuth } from "@/contexts/authContext";
-import { Input } from "../ui/input";
-import { Button } from "../ui/button";
-import { Label } from "../ui/label";
+import { Input } from "./ui/input";
+import { Button } from "./ui/button";
+import { Label } from "./ui/label";
 import { authService } from "@/services/authApi";
 import { LoaderIcon } from "lucide-react";
 import { SendHorizonalIcon } from "lucide-react";

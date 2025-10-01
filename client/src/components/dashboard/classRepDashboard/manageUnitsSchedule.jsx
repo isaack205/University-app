@@ -66,6 +66,23 @@ export default function ManageUnitSchedule() {
         setFormDataError('');
     };
 
+    const fetchUnitSchedules = async () => {
+        setLoadingUnits(true);
+
+        try {
+            const data = await unitScheduleService.getMyShedule();
+            setUnits(data);
+            return true;
+        } catch (error) {
+            const errorMessage = error.response?.data?.message || error.message || 'An unexpected error occured!'
+            setError(errorMessage);
+            toast.error(errorMessage)
+            return { success: false };
+        } finally {
+            setLoadingUnits(false);
+        }
+    }
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -130,6 +147,7 @@ export default function ManageUnitSchedule() {
         try {
             await unitScheduleService.createSchedule(payload);
             toast.success(`Unit registered successfully`);
+            fetchUnitSchedules();
             resetForm();
             return { success: true };
         } catch (error) {
@@ -139,23 +157,6 @@ export default function ManageUnitSchedule() {
             return { success: false };
         } finally {
             setLoading(false);
-        }
-    }
-
-    const fetchUnitSchedules = async () => {
-        setLoadingUnits(true);
-
-        try {
-            const data = await unitScheduleService.getMyShedule();
-            setUnits(data);
-            return true;
-        } catch (error) {
-            const errorMessage = error.response?.data?.message || error.message || 'An unexpected error occured!'
-            setError(errorMessage);
-            toast.error(errorMessage)
-            return { success: false };
-        } finally {
-            setLoadingUnits(false);
         }
     }
 

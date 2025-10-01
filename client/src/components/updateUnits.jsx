@@ -107,7 +107,6 @@ export default function UpdateUnit({ unit, refreshUnits }) { // Unit as props
         try {
             await unitScheduleService.updateSchedule(payload._id, payload);
             toast.success(`Unit updated successfully`);
-
             refreshUnits();
             return { success: true };
         } catch (error) {
