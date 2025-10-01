@@ -2,11 +2,9 @@
 import React, {useEffect, useState} from "react";
 import { toast } from "sonner";
 import { courseService } from "@/services/courseApi";
-import { useAuth } from "@/contexts/authContext";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { LoaderIcon, SendHorizonalIcon } from "lucide-react";
 import {
   Table,
@@ -17,28 +15,50 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table2";
-import UpdateCourse from "@/components/updateCourse";
+import UpdateCohort from "@/components/updateCohort";
+import { cohortService } from "@/services/cohortApi";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
-export default function CoursePage() {
+export default function CohortPage() {
 
+    const [course, setCourse] = useState('');
     const [name, setName] = useState('');
-    const [code, setCode] = useState('');
-    const [description, setDescription] = useState('');
+    const [year, setYear] = useState('');
     const [formDataError, setFormDataError] = useState({});
     const [errors, setErrors] = useState(null);
     const [loading, setLoading] = useState(false);
     const [courses, setCourses] = useState([]);
-    const [coursesLoading, setCoursesLoading] = useState(false);
+    const [cohorts, setCohorts] = useState([]);
+    const [cohortsLoading, setCohortsLoading] = useState(false);
 
     const reset = () => {
         setName('');
-        setCode('');
-        setDescription('')
+        setYear('');
+        setCourse('');
+    }
+
+    const fetchCohorts = async () => {
+        setCohortsLoading(true);
+        setErrors('');
+
+        try {
+            const data = await cohortService.getAllCohorts();
+            setCohorts(data);
+        } catch (error) {
+            const message = error.response?.data?.message || error.message || 'An unexpected error occured!';
+            setErrors(message);
+        } finally {
+            setCohortsLoading(false)
+        }
     }
 
     const fetchCourses = async () => {
-        setCoursesLoading(true);
-        setErrors('');
 
         try {
             const data = await courseService.getAllCourses();
@@ -46,14 +66,13 @@ export default function CoursePage() {
         } catch (error) {
             const message = error.response?.data?.message || error.message || 'An unexpected error occured!';
             setErrors(message);
-        } finally {
-            setCoursesLoading(false)
         }
     }
 
     useEffect(() => {
 
-        refreshCourses: fetchCourses();
+        refreshCohorts: fetchCohorts();
+        fetchCourses();
     }, []);
 
     const handleSubmit = async (e) => {
@@ -67,12 +86,17 @@ export default function CoursePage() {
 
         // Validation
         if (!name.trim()) {
-            errors.name = 'Course name is required.';
+            errors.name = 'Cohort name is required.';
             isValid = false;
         }
 
-        if (!code.trim()) {
-            errors.code = 'Course code is required.';
+        if (!year.trim()) {
+            errors.year = 'Cohort year is required.';
+            isValid = false;
+        }
+
+        if (!course.trim()) {
+            errors.course = 'Cohort course is required.';
             isValid = false;
         }
 
@@ -85,9 +109,9 @@ export default function CoursePage() {
         }
 
         try {
-            await courseService.createCourse({ name, code, description});
+            await cohortService.createCohort({ name, year, course});
             toast.success('Course registered successfully');
-            fetchCourses();
+            fetchCohorts();
             reset();
             return true;
         } catch (error) {
@@ -104,55 +128,68 @@ export default function CoursePage() {
     return (
         <div>
             <div>
-                <h3 className="text-2xl text-center mb-10 underline font-bold">Course Management Page</h3>
+                <h3 className="text-2xl text-center mb-10 underline font-bold">Cohort Management Page</h3>
                 <form onSubmit={handleSubmit} className="p-5 border border-gray-300 rounded-xl shadow-xl bg-green-100">
                     {errors && <p className="text-red-500 mt-1 font-bold text-end">! {errors}</p> }
                     <p>Fill in below:</p>
                     <span className="flex flex-col gap-2 mt-3">
-                        <Label htmlFor="courseName" className="font-bold text-lg ">Course Name:</Label>
+                        <Label htmlFor="cohortName" className="font-bold text-lg ">Cohort Name:</Label>
                         <Input
-                            id="courseName"
+                            id="cohortName"
                             name="name"
                             type="text"
                             value={name}
                             className={`${formDataError.name ? 'border-red-700 shadow-md shadow-red-400' : 'border-black shadow-xl '}`}
-                            onChange={(e) => setName(e.target.value)}
+                            onChange={(e) => setName((e.target.value).toUpperCase())}
                             required
                             disabled={loading}
-                            placeholder="Computer Science"
+                            placeholder="EB1/24"
                         />
                     </span>
                     {formDataError.name && <p className="text-red-500 font-bold mt-1">{formDataError.name}</p>}
 
                     <span className="flex flex-col gap-2 mt-3">
-                        <Label htmlFor="courseCode" className="font-bold text-lg ">Course code:</Label>
+                        <Label htmlFor="cohortYear" className="font-bold text-lg ">Cohort year:</Label>
                         <Input
-                            id="courseCode"
-                            name="code"
-                            type="text"
-                            value={code}
-                            className={`${formDataError.code ? 'border-red-700 shadow-md shadow-red-400' : 'border-black shadow-xl '}`}
-                            onChange={(e) => setCode((e.target.value).toUpperCase())}
+                            id="cohortYear"
+                            name="year"
+                            type="number"
+                            value={year}
+                            className={`${formDataError.year ? 'border-red-700 shadow-md shadow-red-400' : 'border-black shadow-xl '}`}
+                            onChange={(e) => setYear(e.target.value)}
                             required
                             disabled={loading}
-                            placeholder="EB1"
+                            placeholder="2024"
+                            min='2000'
+                            max='2050'
                         />
                     </span>
-                    {formDataError.code && <p className="text-red-500 font-bold mt-1">{formDataError.code}</p>}
+                    {formDataError.year && <p className="text-red-500 font-bold mt-1">{formDataError.year}</p>}
 
                     <span className="flex flex-col gap-2 mt-3">
-                        <Label htmlFor="courseDescription" className="font-bold text-lg ">Description:</Label>
-                        <Textarea
-                            id="courseDescription"
-                            name="description"
-                            type="text"
-                            value={description}
-                            className='border-black shadow-xl'
-                            onChange={(e) => setDescription(e.target.value)}
-                            disabled={loading} 
-                            placeholder="Course description (Optional)"
-                        />
+                        <Label htmlFor="cohortCourse" className="font-bold text-lg ">Course:</Label>
+                        <Select
+                            id="cohortCourse"
+                            name="course"
+                            value={course}
+                            required
+                            disabled={loading}
+                            onValueChange={(value) => setCourse(value)}
+                        >
+                            <SelectTrigger className="w-[180px] w-full">
+                                <SelectValue placeholder="Select Course" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {courses.map(course => (
+                                    <SelectItem key={course._id} value={course._id}>
+                                        {course.name} - 
+                                        ({course.code}) 
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     </span>
+                    {formDataError.course && <p className="text-red-500 font-bold mt-1">{formDataError.course}</p>}
 
                     <Button className="mt-10 w-full bg-white text-black font-bold text-lg hover:bg-gray-200 hover:translate-y-1 transition-all duration-500" disabled={loading} type="submit">
                         {loading ? (
@@ -162,45 +199,46 @@ export default function CoursePage() {
                             </div>
                         ) : (
                             <div className="flex items-center gap-3">
-                                <p>Register course</p>
+                                <p>Register cohort</p>
                                 <SendHorizonalIcon />
                             </div>
                         )}
                     </Button>
                 </form>
             </div>
+
             <div className="mt-10 border rounded-xl p-3 shadow-xl bg-white">
-                <Table>
-                    <TableCaption>A list of courses registered.</TableCaption>
+               <Table>
+                    <TableCaption>A list of cohorts registered.</TableCaption>
                     <TableHeader>
                         <TableRow>
                             <TableHead className="w-[100px]">Name</TableHead>
-                            <TableHead>Course Code</TableHead>
-                            <TableHead>Description</TableHead>
+                            <TableHead>Year</TableHead>
+                            <TableHead>Course</TableHead>
                             <TableHead className="text-right">Action</TableHead>
                         </TableRow>
                     </TableHeader>
 
-                    {coursesLoading ? (
+                    {cohortsLoading ? (
                         <TableBody>
                             <TableRow>
                                 <TableCell colSpan={4} className="text-center">
                                     <div className="flex flex-row items-center justify-center gap-2">
                                         <LoaderIcon className="animate-spin h-6 w-6 text-green-500" />
-                                        <p className="text-green-500 font-bold text-md lg:text-xl">Loading courses</p>
+                                        <p className="text-green-500 font-bold text-md lg:text-xl">Loading cohorts</p>
                                     </div>
                                 </TableCell>
                             </TableRow>
                         </TableBody>
-                    ) : courses.length > 0 ? (
+                    ) : cohorts.length > 0 ? (
                         <TableBody>
-                            {courses.map(course => (
-                                <TableRow key={course._id}>
-                                    <TableCell className="font-medium">{course.name}</TableCell>
-                                    <TableCell>{course.code}</TableCell>
-                                    <TableCell>{course.description || 'n/a'}</TableCell>
+                            {cohorts.map(cohort => (
+                                <TableRow key={cohort._id}>
+                                    <TableCell className="font-medium">{cohort.name}</TableCell>
+                                    <TableCell>{cohort.year}</TableCell>
+                                    <TableCell>{cohort.course.name}</TableCell>
                                     <TableCell className="text-right">
-                                        <UpdateCourse course={course} refreshCourses={fetchCourses}/>
+                                        <UpdateCohort courses={courses} cohort={cohort} refreshCohorts={fetchCohorts}/>
                                     </TableCell>
                                 </TableRow>
                             ))}
@@ -209,12 +247,12 @@ export default function CoursePage() {
                         <TableBody>
                             <TableRow>
                                 <TableCell colSpan={4} className="text-center">
-                                    <p className="text-red-500 font-bold text-md lg:text-xl">No courses found!</p>
+                                    <p className="text-red-500 font-bold text-md lg:text-xl">No cohorts found!</p>
                                 </TableCell>
                             </TableRow>
                         </TableBody>
                     )}
-                </Table>
+                </Table> 
             </div>
         </div>
     )

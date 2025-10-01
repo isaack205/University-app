@@ -2,7 +2,7 @@ import React from "react";
 import { Button } from "./button";
 import { CircleXIcon } from "lucide-react";
 import { useNavigate } from 'react-router-dom'
-import { LayoutDashboardIcon } from "lucide-react";
+import { LayoutDashboardIcon, CalendarDaysIcon, NotebookPenIcon } from "lucide-react";
 import { User2Icon } from "lucide-react";
 import { GraduationCapIcon } from "lucide-react";
 import { useAuth } from "@/contexts/authContext";
@@ -78,10 +78,10 @@ export const Sidebar =  ({ isOpen, toggleSidebar }) => {
                                 <GraduationCapIcon /> 
                                 Manage Courses
                             </Button>
-                            {/* <Button className="bg-no mb-5 text-blue-500 font-bold md:text-xl lg:text-2xl cursor-pointer shadow-lg hover:shadow-xl hover:underline hover:bg-no hover:-translate-y-2 transform easeinout duration-500" onClick={() => { navigate('/cohort'); if (window.innerWidth < 1024) toggleSidebar(); }}>
+                            <Button className="bg-no mb-5 text-blue-500 font-bold md:text-xl lg:text-2xl cursor-pointer shadow-lg hover:shadow-xl hover:underline hover:bg-no hover:-translate-y-2 transform easeinout duration-500" onClick={() => { navigate('/cohort'); if (window.innerWidth < 1024) toggleSidebar(); }}>
                                 <SchoolIcon /> 
                                 Manage Cohorts
-                            </Button> */}
+                            </Button>
                             <hr className="border-black mb-2 w-full rounded-xl"/>
                         </div>
                     </div>

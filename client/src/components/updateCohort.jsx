@@ -1,11 +1,11 @@
 // Imports
-import React, {useState, useEffect} from "react";
+import React, {useEffect, useState} from "react";
+import { cohortService } from "@/services/cohortApi";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { LoaderIcon, SendHorizonalIcon, SquarePenIcon } from "lucide-react";
-import { courseService } from "@/services/courseApi";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -17,30 +17,38 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
-export default function UpdateCourse({ course, refreshCourses}) {
+export default function UpdateCohort({ courses, cohort, refreshCohorts }) {
 
+    const [course, setCourse] = useState('');
     const [name, setName] = useState('');
-    const [code, setCode] = useState('');
-    const [description, setDescription] = useState('');
+    const [year, setYear] = useState('');
     const [formDataError, setFormDataError] = useState({});
     const [errors, setErrors] = useState(null);
     const [loading, setLoading] = useState(false);
 
     const reset = () => {
         setName('');
-        setCode('');
-        setDescription('')
+        setYear('');
+        setCourse('')
     }
 
     useEffect(() => {
         
-        if (course) {
-            setName(course?.name || '');
-            setCode(course?.code || '');
-            setDescription(course?.description || '');
+        if (cohort) {
+            setName(cohort?.name || '');
+            setYear(cohort?.year || '');
+            setCourse(cohort?.course?._id || cohort?.course || '');
         }
-    }, [course])
+        
+    }, [cohort])
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -53,12 +61,17 @@ export default function UpdateCourse({ course, refreshCourses}) {
 
         // Validation
         if (!name.trim()) {
-            errors.name = 'Course name is required.';
+            errors.name = 'Cohort name is required.';
             isValid = false;
         }
 
-        if (!code.trim()) {
-            errors.code = 'Course code is required.';
+        if (!year.trim()) {
+            errors.year = 'Cohort year is required.';
+            isValid = false;
+        }
+
+        if (!course.trim()) {
+            errors.course = 'Cohort course is required.';
             isValid = false;
         }
 
@@ -71,13 +84,13 @@ export default function UpdateCourse({ course, refreshCourses}) {
         }
 
         const payload = {
-            _id:course?._id, name, code, description
+            _id:cohort?._id, name, year, course
         }
 
         try {
-            await courseService.updateCourse(payload._id, payload);
+            await cohortService.updateCohort(payload._id, payload);
             toast.success('Course updated successfully');
-            refreshCourses();
+            refreshCohorts();
             reset();
             return true;
         } catch (error) {
@@ -91,7 +104,7 @@ export default function UpdateCourse({ course, refreshCourses}) {
 
     }
 
-    return (
+    return(
         <div>
             <Dialog>
                 <DialogTrigger className="">
@@ -99,56 +112,66 @@ export default function UpdateCourse({ course, refreshCourses}) {
                 </DialogTrigger>
                 <DialogContent className="bg-gray-300">
                     <DialogHeader>
-                        <DialogTitle className="text-2xl font-bold text-black text-center ">Update Course</DialogTitle>
+                        <DialogTitle className="text-2xl font-bold text-black text-center ">Update Cohort</DialogTitle>
                         <DialogDescription></DialogDescription>
                     </DialogHeader>
 
                     <form onSubmit={handleSubmit}>
-                        <span className="flex flex-col gap-2">
-                            <Label htmlFor="courseName" className="font-bold text-lg">Course Name:</Label>
+                        <span className="flex flex-col gap-2 mt-3">
+                            <Label htmlFor="cohortName" className="font-bold text-lg ">Cohort Name:</Label>
                             <Input
-                                id="courseName"
+                                id="cohortName"
                                 name="name"
                                 type="text"
                                 value={name}
-                                className={`${formDataError.name ? 'border-red-700 shadow-md shadow-red-400' : 'border-green-500 shadow-xl '}`}
-                                onChange={(e) => setName(e.target.value)}
+                                className={`${formDataError.name ? 'border-red-700 shadow-md shadow-red-400' : 'border-black shadow-xl '}`}
+                                onChange={(e) => setName((e.target.value).toUpperCase())}
                                 required
                                 disabled={loading}
-                                placeholder="Computer Science"
+                                placeholder="EB1/24"
                             />
                         </span>
                         {formDataError.name && <p className="text-red-500 font-bold mt-1">{formDataError.name}</p>}
-    
+
                         <span className="flex flex-col gap-2 mt-3">
-                            <Label htmlFor="courseCode" className="font-bold text-lg ">Course code:</Label>
+                            <Label htmlFor="cohortYear" className="font-bold text-lg ">Cohort year:</Label>
                             <Input
-                                id="courseCode"
-                                name="code"
-                                type="text"
-                                value={code}
-                                className={`${formDataError.name ? 'border-red-700 shadow-md shadow-red-400' : 'border-green-500 shadow-xl '}`}
-                                onChange={(e) => setCode((e.target.value).toUpperCase())}
+                                id="cohortYear"
+                                name="year"
+                                type="number"
+                                value={year}
+                                className={`${formDataError.year ? 'border-red-700 shadow-md shadow-red-400' : 'border-black shadow-xl '}`}
+                                onChange={(e) => setYear(e.target.value)}
                                 required
                                 disabled={loading}
-                                placeholder="EB1"
+                                placeholder="2024"
+                                min='2000'
+                                max='2050'
                             />
                         </span>
-                        {formDataError.code && <p className="text-red-500 font-bold mt-1">{formDataError.code}</p>}
-    
+                        {formDataError.year && <p className="text-red-500 font-bold mt-1">{formDataError.year}</p>}
+
                         <span className="flex flex-col gap-2 mt-3">
-                            <Label htmlFor="courseDescription" className="font-bold text-lg ">Description:</Label>
-                            <Textarea
-                                id="courseDescription"
-                                name="description"
-                                type="text"
-                                value={description}
-                                className={`${formDataError.name ? 'border-red-700 shadow-md shadow-red-400' : 'border-green-500 shadow-xl '}`}
-                                onChange={(e) => setDescription(e.target.value)}
-                                disabled={loading} 
-                                placeholder="Course description (Optional)"
-                            />
+                            <Label htmlFor="cohortCourse" className="font-bold text-lg ">Course:</Label>
+                            <Select
+                                id="cohortCourse"
+                                name="course"
+                                value={course}
+                                required
+                                disabled={loading}
+                                onValueChange={(value) => setCourse(value)}
+                            >
+                                <SelectTrigger className="w-[180px] w-full">
+                                    <SelectValue placeholder="Select Course" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {courses.map(course => (
+                                        <SelectItem key={course._id} value={course._id}>{course.name}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </span>
+                        {formDataError.course && <p className="text-red-500 font-bold mt-1">{formDataError.course}</p>}
 
                         <Button className="bg-white text-black font-bold shadow-md hover:shadow-green-500 hover:shadow-xl hover:bg-white border md:text-lg lg:text-xl hover:-translate-y-1 transform easeinout duration-500 mt-5 w-full" disabled={loading} type="submit">
                             { loading ? (

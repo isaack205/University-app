@@ -18,6 +18,7 @@ import ForgotPasswordPage from "./pages/forgotPassword";
 import ResetPasswordPage from "./pages/resetPassword";
 import AdminDashboard from "./components/dashboard/adminDashboard/adminDashboard";
 import CoursePage from "./components/dashboard/adminDashboard/coursePage";
+import CohortPage from "./components/dashboard/adminDashboard/cohortPage";
 
 export default function App () {
   return (
@@ -52,6 +53,7 @@ export default function App () {
           <Route element={<ProtectedRoute allowedRoles={['admin']} />}  >
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="/course" element={<CoursePage />} />
+            <Route path="/cohort" element={<CohortPage />} />
           </Route>
 
         </Route>
