@@ -19,14 +19,16 @@ import ResetPasswordPage from "./pages/resetPassword";
 import AdminDashboard from "./components/dashboard/adminDashboard/adminDashboard";
 import CoursePage from "./components/dashboard/adminDashboard/coursePage";
 import CohortPage from "./components/dashboard/adminDashboard/cohortPage";
+import { PathTracker, StartupRedirect } from "./components/common/routerTracker";
 
 export default function App () {
   return (
     <>
       <Toaster richColors position="top-right"/>
-
+      <PathTracker />
+      
       <Routes>
-        <Route path="/" element={<Navigate to= "/login" replace/>} />
+        <Route path="/" element={<StartupRedirect />} />
 
         <Route path="/login" element={<LoginPage />} />
         <Route path='/register' element={<RegisterPage />} />
