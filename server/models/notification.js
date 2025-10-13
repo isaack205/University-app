@@ -13,7 +13,8 @@ const notificationSchema = new mongoose.Schema({
     read: { type: Boolean, default: false },
     createdAt: { type: Date, default: Date.now },
     referenceId: { type: mongoose.Schema.Types.ObjectId, required: false },
-    expiresAt: { type: Date } // optional cleanup TTL
+    expiresAt: { type: Date },
+    reminderType: { type: String }
 }, {
     timestamps: true
 });

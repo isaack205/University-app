@@ -88,13 +88,12 @@ exports.updateSchedule = async (req, res) => {
 
             for (const student of students) {
 
-                await Notification.create({
-                    user: student._id,
-                    message: `⚠️ ${updatedSchedule.unitName} schedule updated: ${updatedSchedule.startTime} at ${updatedSchedule.venue}`,
-                    type: 'schedule',
-                    referenceId: updatedSchedule._id,
-                    expiresAt: null
-                });
+                await sendAppNotification(
+                    student._id, 
+                    `⚠️ ${updatedSchedule.unitName} schedule updated: ${updatedSchedule.startTime} at ${updatedSchedule.venue}`,
+                    'schedule', 
+                    updatedSchedule._id, 
+                );
 
                 if (student.preferences.smsNotifications && student.phoneNumber) {
                     await sendSMS(

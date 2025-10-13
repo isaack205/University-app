@@ -15,8 +15,14 @@ exports.runReminders = async () => {
   for (const assignment of assignments) {
     const students = await User.find({ cohort: assignment.cohort });
     for (const student of students) {
-      const message = `📚 Assignment "${assignment.title}" is due soon`;
-      await sendAppNotification(student._id, message, 'assignment');
+      const message = `📚 Assignment "${assignment.title}" is due soon.\n\nProcrastinators, assemble 😎🔥`;
+      await sendAppNotification(
+        student._id, 
+        message, 
+        'assignment', 
+        assignment._id, 
+        assignment.dueDate ,
+      );
       if (student.preferences?.smsNotifications && student.phoneNumber) {
         await sendSMS(student._id, student.phoneNumber, message, 'assignment');
       }

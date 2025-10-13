@@ -19,13 +19,14 @@ exports.createAssignment = async (req, res) => {
     // Notify students via app notification
     const students = await User.find({ cohort: assignment.cohort });
     for (const student of students) {
-      await Notification.create({
-        user: student._id,
-        message: `📚 New assignment posted: ${assignment.title}, due ${new Date(assignment.dueDate).toDateString()}`,
-        type: 'assignment',
-        referenceId: assignment._id,
-        expiresAt: assignment.dueDate
-      });
+
+      await sendAppNotification(
+        student._id, 
+        `📚 New assignment posted: ${assignment.title}, due ${new Date(assignment.dueDate).toDateString()}`, 
+        'assignment', 
+        assignment._id, 
+        assignment.dueDate
+      );
 
       if (student.preferences.smsNotifications && student.phoneNumber) {
         await sendSMS(student._id, student.phoneNumber, `📚 New assignment posted: ${assignment.title}, due ${new Date(assignment.dueDate).toDateString()}`, 'class');

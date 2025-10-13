@@ -31,7 +31,7 @@ exports.getMyNotifications = async (req, res) => {
   try {
     const user = req.user;
 
-    const notifications = await Notification.find({ user: user._id }).sort({ timestamp: -1 });
+    const notifications = await Notification.find({ user: user._id }).sort({ read: 1, createdAt: -1 });
 
     res.status(200).json(notifications);
   } catch (err) {
