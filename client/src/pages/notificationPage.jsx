@@ -44,21 +44,23 @@ export default function NotificationPage() {
 
     return(
         <div>
-            <div className="flex justify-between">
-                <div className="flex flex-row items-center ">
+            <div className="flex flex-col pb-3">
+                <div>
                     <h3 className="px-5 font-bold text-3xl underline text-blue-500">Notifications</h3>
                 </div>
-                <div className="flex flex-row items-center border rounded-xl shadow-xl pr-5 bg-gray-200">
-                    <span className="flex items-center">
-                        <DotIcon className="text-green-500 h-10 w-10"/>
-                        <p className="italic text-sm">Read</p>
-                        ({readCount && <p className="text-green-500 rounded-full text-sm">{readCount}</p> })
-                    </span>
-                    <span className="flex items-center">
-                        <DotIcon className="text-red-500 h-10 w-10"/>
-                        <p className="italic text-sm">Unread</p>
-                        ({unreadCount && <p className="text-red-500 rounded-full text-sm">{unreadCount}</p> })
-                    </span>
+                <div className="flex justify-end pt-3">
+                    <div className="flex flex-row border rounded-xl shadow-xl pr-3 bg-gray-200 max-w-55 md:max-w-[30%] lg:max-w-[30%]">
+                        <span className="flex items-center">
+                            <DotIcon className="text-green-500 h-7 w-auto md:h-10 md:w-10 lg:h-10 lg:w-10"/>
+                            <p className="italic text-[13px] md:text-sm lg:text-sm">Read</p>
+                            ({readCount && <p className="text-green-500 rounded-full text-sm">{readCount}</p> })
+                        </span>
+                        <span className="flex items-center">
+                            <DotIcon className="text-red-500 h-7 w-auto md:h-10 md:w-10 lg:h-10 lg:w-10"/>
+                            <p className="italic text-[13px] md:text-sm lg:text-sm">Unread</p>
+                            ({unreadCount && <p className="text-red-500 rounded-full text-sm">{unreadCount}</p> })
+                        </span>
+                    </div>
                 </div>
             </div>
             {loading ? (
@@ -71,7 +73,7 @@ export default function NotificationPage() {
             ) : notifications.length > 0 ? (
                 <div>
                     {notifications.map(notification => (
-                        <div className="border m-5 bg-green-100 rounded-xl flex flex-row justify-between items-center p-1" key={notification._id}>
+                        <div className="border py-2 m-5 bg-green-100 rounded-xl flex flex-col md:flex-row lg:flex-row md:justify-between lg:justify-between md:items-center lg:items-center p-1" key={notification._id}>
                             <div className="flex flex-row">
                                 <div className="flex items-center">
                                     <div>{notification.read === true ? (
@@ -86,18 +88,17 @@ export default function NotificationPage() {
                                     </div>
                                 </div>
                                 <div>
-                                    <p className="font-bold underline text-blue-500">{notification.type.toUpperCase()}</p>
+                                    <p className="font-bold underline text-gray-500 italic ">{notification.type.toUpperCase()}</p>
                                     <span className="flex md:gap-4 lg:gap-4 flex-col md:flex-row lg:flex-row">
-                                        <p className="italic">Message:</p> 
                                         <p>{notification.message}</p>
                                     </span>
                                     <p className="text-gray-400 text-sm">{notification.createdAt ? new Date(notification.createdAt).toLocaleString() : 'N/A'}</p>
                                 </div>
                             </div>
-                            <div>
+                            <div className="flex justify-end">
                                 {!notification.read &&
-                                    <Button type='button' onClick={() => markAsRead(notification._id)} className="right-0 bg-blue-300 hover:bg-blue-500 text-black cursor-pointer shadow-md hover:shadow-blue-400 hover:-translate-y-1 transition easeinout duration-500 mr-2" disabled>
-                                        Mark as Read
+                                    <Button type='button' onClick={() => markAsRead(notification._id)} className="right-0 bg-blue-300 hover:bg-blue-500 text-black cursor-pointer shadow-md hover:shadow-blue-400 hover:-translate-y-1 transition easeinout duration-500 mr-2 h-5 w-auto md:h-auto lg:h-auto " disabled>
+                                        Mark as Read<CheckCheckIcon />
                                     </Button>
                                 }
                             </div>

@@ -14,7 +14,7 @@ export const Sidebar =  ({ isOpen, toggleSidebar }) => {
     const {hasRole} = useAuth();
 
     return (
-        <div className={`min-h-screen border-to-r border-purple-400 flex flex-col p-5 fixed top-15 left-0 h-full w-[60%] md:w-[30%] lg:w-90 z-50 rounded-r-2xl backdrop-blur-md border ${ isOpen ? 'translate-x-0' : '-translate-x-full'} lg:transform-none lg:translate-x-0 transition-transform easeinout duration-700`}>
+        <div className={`min-h-screen border-to-r border-purple-400 flex flex-col bg-white/60 p-5 fixed top-15 left-0 h-full w-[60%] md:w-[30%] lg:w-90 z-[999] rounded-r-2xl backdrop-blur-md border ${ isOpen ? 'translate-x-0' : '-translate-x-full'} lg:transform-none lg:translate-x-0 transition-transform easeinout duration-700`}>
             <div className="flex items-center justify-between pb-5 lg:hidden">
                 <p></p>
                 <CircleXIcon onClick={toggleSidebar} className="cursor-pointer"/>

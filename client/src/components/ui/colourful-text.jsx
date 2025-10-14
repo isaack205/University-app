@@ -41,7 +41,7 @@ export default function ColourfulText({
         color: currentColors[index % currentColors.length],
         y: [0, -3, 0],
         scale: [1, 1.01, 1],
-        filter: ["blur(0px)", `blur(5px)`, "blur(0px)"],
+        // filter: ["blur(0px)", `blur(5px)`, "blur(0px)"],
         opacity: [1, 0.8, 1],
       }}
       transition={{

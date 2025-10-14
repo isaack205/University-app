@@ -14,7 +14,7 @@ export const TextGenerateEffect = ({
   useEffect(() => {
     animate("span", {
       opacity: 1,
-      filter: filter ? "blur(0px)" : "none",
+      filter: filter ? "none" : "none",
     }, {
       duration: duration ? duration : 1,
       delay: stagger(0.2),
@@ -30,7 +30,7 @@ export const TextGenerateEffect = ({
               key={word + idx}
               className="dark:text-white text-green-500 opacity-0"
               style={{
-                filter: filter ? "blur(10px)" : "none",
+                filter: filter ? "none" : "none",
               }}>
               {word}{" "}
             </motion.span>
