@@ -1,7 +1,7 @@
 // Imports
 import API from "./api";
 
-export const notificationService ={
+export const notificationService = {
 
     // Create notification
     createNotification: async (notificationData) => {
@@ -24,6 +24,17 @@ export const notificationService ={
             throw error;
         }
     }, 
+
+    // Mark notifications as read
+    markAllNotificationsAsRead: async () => {
+        try {
+            const res = await API.patch('/notifications/mark-all-read');
+            return res.data;
+        } catch (error) {
+            console.error(error.response?.data || error.message);
+            throw error;
+        }
+    },
 
     // Trigger notifications manually
     triggerRemindersManually: async () => {

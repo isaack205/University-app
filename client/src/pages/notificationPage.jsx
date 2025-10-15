@@ -42,13 +42,33 @@ export default function NotificationPage() {
         )
     };
 
+    const markAllAsRead = async () => {
+        try {
+            await notificationService.markAllNotificationsAsRead()
+            setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+        } catch (error) {
+            console.error("Failed to mark all as read:", error);
+        }
+    }
+
     return(
         <div>
             <div className="flex flex-col pb-3">
                 <div>
                     <h3 className="px-5 font-bold text-3xl underline text-blue-500">Notifications</h3>
+                    
                 </div>
-                <div className="flex justify-end pt-3">
+                <div className="flex justify-between items-center pt-3">
+                    <div>
+                        <span
+                            onClick={markAllAsRead}
+                            disabled={unreadCount === 2}
+                            className="flex items-center text-gray-500 hover:underline hover:text-gray-700 cursor-pointer transition ease-in-out duration-300 mt-2 md:mt-0 lg:mt-0"
+                        >
+                            Mark All As Read
+                            <CheckCheckIcon className="ml-2 h-4 w-4" />
+                        </span>
+                    </div>
                     <div className="flex flex-row border rounded-xl shadow-xl pr-3 bg-gray-200 max-w-55 md:max-w-[30%] lg:max-w-[30%]">
                         <span className="flex items-center">
                             <DotIcon className="text-green-500 h-7 w-auto md:h-10 md:w-10 lg:h-10 lg:w-10"/>
@@ -95,13 +115,13 @@ export default function NotificationPage() {
                                     <p className="text-gray-400 text-sm">{notification.createdAt ? new Date(notification.createdAt).toLocaleString() : 'N/A'}</p>
                                 </div>
                             </div>
-                            <div className="flex justify-end">
+                            {/* <div className="flex justify-end">
                                 {!notification.read &&
                                     <Button type='button' onClick={() => markAsRead(notification._id)} className="right-0 bg-blue-300 hover:bg-blue-500 text-black cursor-pointer shadow-md hover:shadow-blue-400 hover:-translate-y-1 transition easeinout duration-500 mr-2 h-5 w-auto md:h-auto lg:h-auto " disabled>
                                         Mark as Read<CheckCheckIcon />
                                     </Button>
                                 }
-                            </div>
+                            </div> */}
                         </div>
                     ))}
                 </div>

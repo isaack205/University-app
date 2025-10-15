@@ -27,6 +27,22 @@ exports.createNotification = async (req, res) => {
   }
 };
 
+exports.markAllNotificationsAsRead = async (req, res) => {
+  try {
+    // Find and update all unread notifications for the current user
+    const result = await Notification.updateMany(
+      { user: req.user._id, read: false },
+      { $set: { read: true } }
+    );
+
+    return res.status(200).json({ message: "All notifications marked as read.", modifiedCount: result.modifiedCount });
+  } catch (error) {
+    console.error("Error marking notifications as read:", error.message);
+    return res.status(500).json({ message: "Failed to mark notifications as read.", error: error.message });
+  }
+};
+
+
 exports.getMyNotifications = async (req, res) => {
   try {
     const user = req.user;
