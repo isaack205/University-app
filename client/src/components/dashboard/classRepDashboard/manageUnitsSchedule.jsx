@@ -168,8 +168,8 @@ export default function ManageUnitSchedule() {
     return (
         <div>
             <Dialog>
-                <DialogTrigger className="rounded-xl shadow-xl p-1 mt-10 bg-blue-300 cursor-pointer hover:shadow-blue-200 transition-all duration-400 text-black">Create Unit</DialogTrigger>
-                <DialogContent className="bg-gray-300">
+                <DialogTrigger className="rounded-xl shadow-xl p-1 mt-10 bg-blue-300 dark:bg-slate-800 text-white cursor-pointer hover:shadow-blue-200 transition-all duration-400 text-black">Create Unit</DialogTrigger>
+                <DialogContent className="bg-gray-300 dark:bg-slate-800">
                     <DialogHeader>
                         <DialogTitle className="text-2xl font-bold text-green-500 text-center ">Register a unit</DialogTitle>
                         <DialogDescription className="text-red-500">* All fields are required</DialogDescription>
@@ -355,7 +355,7 @@ export default function ManageUnitSchedule() {
                 </DialogContent>
             </Dialog>
 
-            <div className="border rounded-xl p-5 mt-10 bg-blue-100">
+            <div className="border rounded-xl p-5 mt-10 bg-blue-100 dark:bg-slate-800">
                 <Table>
                     <TableCaption>Unit management.</TableCaption>
                     <TableHeader>

@@ -47,7 +47,7 @@ export default function SchedulePage() {
             ) : (
                 <div>
                     <h1 className="font-bold text-3xl underline text-white text-shadow-lg text-shadow-yellow-800 text-center mb-5 lg:text-4xl">Time Table</h1>
-                    <div className="border bg-green-100 w-full flex flex-col justify-center p-[10px] shadow-2xl rounded-xl">
+                    <div className="border bg-green-100 dark:bg-slate-800 w-full flex flex-col justify-center p-[10px] shadow-2xl rounded-xl">
                         <div className="flex flex-col items-center underline font-bold italic lg:text-2xl lg:mb-5">
                             <p> Course: {user.course.name || user.user.course.name  || 'N/A'}</p>
                             <p className="mb-3">{user.cohort.name || user.user.cohort.name  || 'N/A'}</p>
@@ -79,9 +79,9 @@ export default function SchedulePage() {
                                             );
 
                                             return (
-                                            <div key={start + day} className="h-10 md:h-20 lg:h-20 border rounded p-1 bg-gray-100 mb-1 mr-1 flex flex-col justify-center">
+                                            <div key={start + day} className="h-10 md:h-20 lg:h-20 border rounded p-1 bg-gray-100 dark:bg-slate-700 mb-1 mr-1 flex flex-col justify-center">
                                                 {classInBlock ? (
-                                                <div className="bg-white shadow p-1 rounded text-xs flex flex-col">
+                                                <div className="bg-white dark:bg-slate-500 shadow p-1 rounded text-xs flex flex-col">
                                                     <p className="font-bold flex flex-col sm:text-lg lg:text-lg text-[10px] text-center">{classInBlock.unitCode.toUpperCase()}</p>
                                                     <div className="flex flex-col md:flex-row text-[9px] lg:flex-row md:gap-2 lg:gap-2 justify-center items-center">
                                                         <p className="lg:text-lg md:text-lg font-semibold hidden md:block lg:block">Venue:</p> 
@@ -105,7 +105,7 @@ export default function SchedulePage() {
                         </div>
                         <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-3">
                             {schedules.map(schedule => (
-                                <div key={schedule._id} className="hover:shadow-lg shadow-blue-500 rounded-2xl p-4 max-w-md border bg-blue-100 hover:shadow-xl hover:-translate-y-1 transform easeinout duration-700">
+                                <div key={schedule._id} className="hover:shadow-lg shadow-blue-500 rounded-2xl p-4 max-w-md border bg-blue-100 dark:bg-slate-800 hover:shadow-xl hover:-translate-y-1 transform easeinout duration-700">
                                     <p className="text-center text-xl font-bold underline">Unit Summary</p>
                                     <hr className="border-green-800"/>
                                     <span className="flex gap-2 justify-between mt-3">

@@ -110,7 +110,7 @@ export default function UpdateCohort({ courses, cohort, refreshCohorts }) {
                 <DialogTrigger className="">
                     <SquarePenIcon className="text-green-500 cursor-pointer hover:-translate-y-1 transition-all duration-500 "/>
                 </DialogTrigger>
-                <DialogContent className="bg-gray-300">
+                <DialogContent className="bg-gray-300 dark:bg-slate-800">
                     <DialogHeader>
                         <DialogTitle className="text-2xl font-bold text-black text-center ">Update Cohort</DialogTitle>
                         <DialogDescription></DialogDescription>

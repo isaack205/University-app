@@ -1,4 +1,5 @@
 // Imports 
+import ChangePasswordPage from "@/components/changePassword";
 import API from "./api";
 
 // CohortService
@@ -44,6 +45,17 @@ export const authService = {
             return res.data;
         } catch (error) {
             console.error('Error updating profile:', error.response?.data || error.message);
+            throw error;
+        }
+    },
+
+    // Change password
+    changePassword: async (passwordData) => {
+        try {
+            const res = await API.put('/auth/change-password', passwordData);
+            return res.data;
+        } catch (error) {
+            console.error('Error updating password:', error.response?.data || error.message);
             throw error;
         }
     },

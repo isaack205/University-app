@@ -125,7 +125,7 @@ export default function UpdateUnit({ unit, refreshUnits }) { // Unit as props
                 <DialogTrigger className="">
                     <SquarePenIcon className="text-green-500 cursor-pointer hover:-translate-y-1 transition-all duration-500 "/>
                 </DialogTrigger>
-                <DialogContent className="bg-gray-300">
+                <DialogContent className="bg-gray-300 dark:bg-slate-800">
                     <DialogHeader>
                         <DialogTitle className="text-2xl font-bold text-green-500 text-center ">Update unit</DialogTitle>
                         <DialogDescription className="text-red-500">* All fields are required</DialogDescription>

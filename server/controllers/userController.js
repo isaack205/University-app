@@ -212,6 +212,42 @@ exports.resetPassword = async (req, res) => {
     }
 };
 
+// Change user password
+exports.changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ message: "currentPassword and newPassword are required" });
+    }
+
+    // Ensure we fetch the hashed password
+    const user = await User.findById(req.user.id).select('+password');
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Current password is incorrect" });
+    }
+
+    user.password = await bcrypt.hash(newPassword, 10);
+    await user.save();
+
+    // Notify user about password change
+    await sendEmail({
+      to: user.email,
+      subject: "Your password was changed",
+      text: `Hi ${user.name},\n\nYour account password was changed successfully.\nIf this wasn't you, contact support immediately.`
+    }).catch(() => { /* swallow email errors */ });
+
+    res.status(200).json({ message: "Password changed successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Error changing password", error: error.message });
+  }
+};
+
 // Delete user account
 exports.deleteUser = async (req, res) => {
     try {

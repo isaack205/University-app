@@ -16,6 +16,9 @@ import { toast } from "sonner";
 import { UserRoundCogIcon } from "lucide-react";
 import { LogOutIcon } from "lucide-react";
 import { notificationService } from "@/services/notificationService";
+import { useTheme } from "@/contexts/themeContext";
+import { Switch } from "../ui/switch";
+import ThemeToggle from "../themeToggle";
 
 export default function Header () {
 
@@ -24,6 +27,8 @@ export default function Header () {
     const navigate = useNavigate();
     const [notifications, setNotifications] = useState([]);
     const [loading, setLoading] = useState(true);
+
+    const { isDark, setIsDark } = useTheme();
 
     const handleLogout = () => {
         logout();
@@ -75,14 +80,14 @@ export default function Header () {
     return(
         <div>
             {isAuthenticated && 
-                <div className="flex justify-between px-4 py-3 bg-blue-400 rounded-b-sm fixed w-full">
+                <div className="flex justify-between px-4 py-3 bg-blue-400 dark:bg-slate-800 rounded-b-sm fixed w-full">
                     <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
                     <div className="flex gap-3 items-center">
                         <MenuIcon onClick={toggleSidebar} className="h-7 w-7 text-white hover:text-blue-700"/>
                         <p className="font-bold text-2xl" onClick={handleCampusHubClick}>CampusHub</p>
                     </div>
                     <div className="flex items-center gap-6">
-                        <SunIcon className="text-white hover:text-blue-700 cursor-pointer" onClick={handleClick}/>
+                        <ThemeToggle />
                         <div className="flex flex-row relative">
                             <BellIcon className="text-white hover:text-blue-700 cursor-pointer" onClick={() => navigate('/notifications')}/>
                             {unreadCount > 0 ? (<p className="absolute -top-3 -right-4 text-[10px] bg-red-500 rounded-full py-0.5 px-1">{unreadCount}</p>) : ('') }
@@ -95,7 +100,7 @@ export default function Header () {
                                 <DropdownMenuLabel>Hi, {user.name || 'user'}</DropdownMenuLabel>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem onClick={() => navigate('/profile')}><UserRoundCogIcon /> Profile</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => toast.info('Feature coming soon!')}><SettingsIcon /> Settings</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => navigate('/settings')}><SettingsIcon /> Settings</DropdownMenuItem>
                                 <DropdownMenuItem onClick={handleLogout} className="flex justify-betwe">Log Out <LogOutIcon /> </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>

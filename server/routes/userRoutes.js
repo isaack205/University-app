@@ -2,12 +2,13 @@
 const express = require('express');
 const router = express.Router();
 const { protect, authorize } = require('../middlewares/auth');
-const { registerUser, loginUser, getOwnProfile, updateProfile, forgotPassword, resetPassword, deleteUser, getAllUsers } = require('../controllers/userController');
+const { registerUser, loginUser, getOwnProfile, updateProfile, changePassword, forgotPassword, resetPassword, deleteUser, getAllUsers } = require('../controllers/userController');
 
 router.post('/register', registerUser);
 router.post('/login', loginUser);
 router.get('/me', protect, getOwnProfile);
 router.put('/update-profile', protect, updateProfile);
+router.put('/change-password', protect, changePassword)
 router.post('/forgot-password', forgotPassword);
 router.post('/reset-password', resetPassword);
 router.delete('/me', protect, deleteUser);

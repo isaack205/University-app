@@ -139,7 +139,7 @@ export default function UpdateAssignment({ assignment, refreshAssignment }) {
                 <DialogTrigger>
                     <SquarePenIcon className="text-green-500 cursor-pointer hover:-translate-y-1 transition-all duration-500 "/>
                 </DialogTrigger>
-                <DialogContent className="bg-gray-300">
+                <DialogContent className="bg-gray-300 dark:bg-slate-800">
                     <DialogHeader>
                         <DialogTitle className="text-2xl font-bold text-green-500 text-center ">Update assignment</DialogTitle>
                         <DialogDescription className="text-red-500">

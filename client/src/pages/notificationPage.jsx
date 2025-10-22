@@ -69,7 +69,7 @@ export default function NotificationPage() {
                             <CheckCheckIcon className="ml-2 h-4 w-4" />
                         </span>
                     </div>
-                    <div className="flex flex-row border rounded-xl shadow-xl pr-3 bg-gray-200 max-w-55 md:max-w-[30%] lg:max-w-[30%]">
+                    <div className="flex flex-row border rounded-xl shadow-xl pr-3 bg-gray-200 dark:bg-slate-800 max-w-55 md:max-w-[30%] lg:max-w-[30%]">
                         <span className="flex items-center">
                             <DotIcon className="text-green-500 h-7 w-auto md:h-10 md:w-10 lg:h-10 lg:w-10"/>
                             <p className="italic text-[13px] md:text-sm lg:text-sm">Read</p>
@@ -93,7 +93,7 @@ export default function NotificationPage() {
             ) : notifications.length > 0 ? (
                 <div>
                     {notifications.map(notification => (
-                        <div className="border py-2 m-5 bg-green-100 rounded-xl flex flex-col md:flex-row lg:flex-row md:justify-between lg:justify-between md:items-center lg:items-center p-1" key={notification._id}>
+                        <div className="border py-2 m-5 bg-green-100 dark:bg-slate-800 rounded-xl flex flex-col md:flex-row lg:flex-row md:justify-between lg:justify-between md:items-center lg:items-center p-1" key={notification._id}>
                             <div className="flex flex-row">
                                 <div className="flex items-center">
                                     <div>{notification.read === true ? (

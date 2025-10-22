@@ -20,6 +20,7 @@ import AdminDashboard from "./components/dashboard/adminDashboard/adminDashboard
 import CoursePage from "./components/dashboard/adminDashboard/coursePage";
 import CohortPage from "./components/dashboard/adminDashboard/cohortPage";
 import { PathTracker, StartupRedirect } from "./components/common/routerTracker";
+import SettingsPage from "./pages/settingsPage";
 
 export default function App () {
   return (
@@ -34,6 +35,7 @@ export default function App () {
         <Route path='/register' element={<RegisterPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
 
         <Route element={<Layout />}>
           <Route element={<ProtectedRoute allowedRoles={['student', 'classRep']} />}>

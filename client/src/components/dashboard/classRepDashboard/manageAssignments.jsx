@@ -156,8 +156,8 @@ export default function ManageAssignment() {
     return(
         <div>
             <Dialog>
-                <DialogTrigger className="rounded-xl shadow-xl p-1 mt-10 bg-blue-300 cursor-pointer hover:shadow-blue-200 transition-all duration-400 text-black">Create assignment</DialogTrigger>
-                <DialogContent className="bg-gray-300">
+                <DialogTrigger className="rounded-xl shadow-xl p-1 mt-10 bg-blue-300 cursor-pointer hover:shadow-blue-200 dark:bg-slate-800 text-white transition-all duration-400 text-black">Create assignment</DialogTrigger>
+                <DialogContent className="bg-gray-300 dark:bg-slate-800">
                     <DialogHeader>
                         <DialogTitle className="text-2xl font-bold text-green-500 text-center ">Register an assignment</DialogTitle>
                         <DialogDescription className="text-red-500">
@@ -277,7 +277,7 @@ export default function ManageAssignment() {
                 </DialogContent>
             </Dialog>
             
-            <div className="border rounded-xl p-5 mt-10 bg-blue-100">
+            <div className="border rounded-xl p-5 mt-10 bg-blue-100 dark:bg-slate-800">
                 <Table>
                     <TableCaption>Assignments manager.</TableCaption>
                     <TableHeader>

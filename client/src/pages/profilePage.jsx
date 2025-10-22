@@ -18,9 +18,9 @@ export default function ProfilePage() {
         <div>
             <h3 className="font-bold text-3xl underline text-white text-shadow-lg text-shadow-blue-800 mb-5 lg:text-4xl">Profile Page</h3>
             <div className="flex items-center justify-center flex-col lg:flex-row w-[100%]">
-                <div className="w-full lg:w-[60%] border shadow-xl flex flex-col md:flex-row lg:flex-col md:gap-7 lg:gap-7 md:items-center lg:items-center rounded-2xl m-5 bg-gradient-to-t from-green-300 to-white">
+                <div className="w-full lg:w-[60%] border shadow-xl flex flex-col md:flex-row lg:flex-col md:gap-7 lg:gap-7 md:items-center lg:items-center rounded-2xl m-5 bg-gradient-to-t from-green-300 to-white dark:from-slate-800 dark:to-slate-800">
                     <div className="flex justify-center p-5">
-                        <img src={avator} alt="Avator icon" className="bg-gray-100 rounded-xl h-30 w-30 lg:h-40 lg:w-40"/>
+                        <img src={avator} alt="Avator icon" className="bg-gray-100 dark:bg-slate-800 rounded-xl h-30 w-30 lg:h-40 lg:w-40"/>
                     </div>
                     <div className="flex flex-col md:flex-row lg:flex-row gap-7 lg:gap-10 p-4">
                         <div className="flex flex-col px-10 md:px-0 lg:px-0">
@@ -63,7 +63,7 @@ export default function ProfilePage() {
                         </div>
                     </div>
                 </div>
-                <hr className="border-2 border-blue-500 w-full lg:hidden"/>
+                <hr className="border-2 border-blue-500 dark:border-slate-500 w-full lg:hidden"/>
                 <div className="lg:w-[40%]">
                     <UpdateDetails />
                 </div>

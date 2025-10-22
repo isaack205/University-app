@@ -105,7 +105,7 @@ export default function CoursePage() {
         <div>
             <div>
                 <h3 className="text-2xl text-center mb-10 underline font-bold">Course Management Page</h3>
-                <form onSubmit={handleSubmit} className="p-5 border border-gray-300 rounded-xl shadow-xl bg-green-100">
+                <form onSubmit={handleSubmit} className="p-5 border border-gray-300 dark:border-slate-500 rounded-xl shadow-xl bg-green-100 dark:bg-slate-800">
                     {errors && <p className="text-red-500 mt-1 font-bold text-end">! {errors}</p> }
                     <p>Fill in below:</p>
                     <span className="flex flex-col gap-2 mt-3">
@@ -154,7 +154,7 @@ export default function CoursePage() {
                         />
                     </span>
 
-                    <Button className="mt-10 w-full bg-white text-black font-bold text-lg hover:bg-gray-200 hover:translate-y-1 transition-all duration-500" disabled={loading} type="submit">
+                    <Button className="mt-10 w-full bg-white dark:bg-slate-300 text-black font-bold text-lg hover:bg-gray-200 hover:translate-y-1 transition-all duration-500" disabled={loading} type="submit">
                         {loading ? (
                             <div className="flex items-center gap-3">
                                 <p>Registering </p>
@@ -169,7 +169,7 @@ export default function CoursePage() {
                     </Button>
                 </form>
             </div>
-            <div className="mt-10 border rounded-xl p-3 shadow-xl bg-white">
+            <div className="mt-10 border rounded-xl p-3 shadow-xl bg-white dark:bg-slate-800">
                 <Table>
                     <TableCaption>A list of courses registered.</TableCaption>
                     <TableHeader>

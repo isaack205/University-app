@@ -91,11 +91,11 @@ export default function UpdateDetails() {
 
     return(
         <div className="flex flex-col items-center justify-center mt-10">
-            <form onSubmit={handleSubmit} className="border shadow-xl p-4 rounded-xl flex flex-col max-w-md lg:max-w-lg w-full bg-green-100">
+            <form onSubmit={handleSubmit} className="border shadow-xl p-4 rounded-xl flex flex-col max-w-md lg:max-w-lg w-full bg-green-100 dark:bg-slate-800">
                 <div className="mb-1">
                     <h3 className="text-2xl md:text-3xl lg:text-4xl text-center font-bold text-green-800">Update user details</h3>
                 </div>
-                <hr className="mb-2 border-green-300 rounded-xl border-2"/>
+                <hr className="mb-2 border-green-300 dark:border-slate-500 rounded-xl border-2"/>
                 {generalError && <p className="font-bold text-red-500 text-end text-lg">{generalError}</p> }
                 <span className="flex flex-col gap-2 lg:gap-0 mb-5">
                     <Label htmlFor="name" className="text-lg md:text-2xl lg:text-2xl text-blue-600">Enter name:</Label>
@@ -142,7 +142,7 @@ export default function UpdateDetails() {
                     />
                 </span>
                 {formError.phoneNumber && <p className="text-red-500 text-sm mt-1">{formError.phoneNumber}</p> }
-                <Button className="bg-white text-black font-bold shadow-md shadow-green-500 hover:shadow-xl hover:bg-white border md:text-lg lg:text-xl hover:-translate-y-1 transform easeinout duration-500 mt-5" disabled={loading} type="submit">
+                <Button className="bg-white dark:bg-slate-800 text-black dark:text-white font-bold shadow-md shadow-green-500 hover:shadow-xl hover:bg-white border md:text-lg lg:text-xl hover:-translate-y-1 transform easeinout duration-500 mt-5" disabled={loading} type="submit">
                     { loading ? (
                         <div className="flex gap-3 items-center">
                             Saving
