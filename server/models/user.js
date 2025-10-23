@@ -15,6 +15,7 @@ const userSchema = new mongoose.Schema({
     smsNotifications: { type: Boolean, default: false },
     offlineMode: { type: Boolean, default: false }
   },
+  notificationsEnabled: { type: Boolean, default: false },
   resetPasswordToken: String,
   resetPasswordExpire: Date,
 }, { timestamps: true });

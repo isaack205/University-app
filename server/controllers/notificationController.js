@@ -1,5 +1,9 @@
+// Imports
 const { runReminders } = require('../services/reminderService');
-const Notification = require('../models/notification')
+const Notification = require('../models/notification');
+const Subscription = require("../models/subscription");
+const User = require("../models/user");
+const webpush = require("../config/webPush");
 
 exports.triggerRemindersManually = async (req, res) => {
   try {
@@ -62,5 +66,89 @@ exports.deleteNotification = async (req, res) => {
     res.status(200).json({ message: 'Notification deleted' });
   } catch (err) {
     res.status(500).json({ message: 'Failed to delete notification', error: err.message });
+  }
+};
+
+// Save user's push subscription
+exports.saveSubscription = async (req, res) => {
+  try {
+    const { subscription } = req.body;
+    const userId = req.user._id;
+
+    // Check if user exists
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    // Check if user has notifications enabled
+    if (!user.notificationsEnabled) {
+      return res.status(403).json({ message: "Notifications are disabled for this user." });
+    }
+
+    // Validate subscription payload
+    if (!subscription || !subscription.endpoint || !subscription.keys) {
+      return res.status(400).json({ message: "Invalid subscription data." });
+    }
+
+    // Upsert (update if exists, otherwise create)
+    const updatedSub = await Subscription.findOneAndUpdate(
+      { user: userId, endpoint: subscription.endpoint },
+      {
+        user: userId,
+        endpoint: subscription.endpoint,
+        keys: subscription.keys,
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
+
+    return res.status(201).json({
+      message: "Subscription saved successfully.",
+      subscription: updatedSub,
+    });
+  } catch (error) {
+    console.error("Error saving subscription:", error);
+    return res.status(500).json({
+      message: "Failed to save subscription.",
+      error: error.message,
+    });
+  }
+};
+
+// Toggle notifications on/off
+exports.toggleNotifications = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    user.notificationsEnabled = !user.notificationsEnabled;
+    await user.save();
+
+    res.status(200).json({
+      message: `Notifications ${user.notificationsEnabled ? "enabled" : "disabled"} successfully.`,
+      status: user.notificationsEnabled,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to toggle notifications." });
+  }
+};
+
+// Send test push notification (optional)
+exports.sendTestNotification = async (req, res) => {
+  try {
+    const subscriptions = await Subscription.find({ user: req.user._id });
+
+    for (const sub of subscriptions) {
+      await webpush.sendNotification(
+        sub,
+        JSON.stringify({
+          title: "🔔 Test Notification",
+          body: "Push notifications are working!",
+        })
+      );
+    }
+
+    res.status(200).json({ message: "Test notification sent!" });
+  } catch (error) {
+    console.error("Error sending test notification:", error);
+    res.status(500).json({ message: "Failed to send notification." });
   }
 };
