@@ -13,9 +13,11 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from "@/contexts/authContext";
 import AccountProfile from "@/components/accountProfile";
 import { useTheme } from "@/contexts/themeContext";
+import { toast } from "sonner";
+import { notificationService } from "@/services/notificationService";
+import { pushManager } from "@/utils/pushManager";
 
 export default function SettingsPage() {
-  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [emailReminders, setEmailReminders] = useState(false);
   const [smsReminders, setSmsReminders] = useState(true);
 
@@ -24,6 +26,7 @@ export default function SettingsPage() {
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
 
   const { user } = useAuth();
+  const [notificationsEnabled, setNotificationsEnabled] = useState(user?.notificationsEnabled || false);
   const { isDark, setIsDark} = useTheme();
   const navigate = useNavigate();
 
@@ -48,6 +51,39 @@ export default function SettingsPage() {
     setShowDeleteConfirm(false);
   };
 
+  const handleToggleNotifications = async (checked) => {
+
+    setNotificationsEnabled(checked);
+
+    try {
+
+      // Call backend to toggle notifications
+      await notificationService.toggleNotifications(checked);
+
+      if (checked) {
+        try {
+          await pushManager.subscribeUser();
+          toast.success("🔔 Notifications successfully enabled!"); 
+        } catch (pushError) {
+          // If push subscription fails (due to VAPID or SW error)
+          console.error("Browser Push Subscription Failed:", pushError);
+          
+          // The user still prefers notifications, we just can't deliver to this device yet.
+          toast.warning("Notifications enabled in settings, but failed to activate on this device. Please clear browser cache/check permissions.");
+        }
+      } else {
+        await pushManager.unsubscribeUser();
+        toast.info("🔔 Notifications disabled. You won't receive alerts.");
+      }
+
+    } catch (error) {
+      setNotificationsEnabled(!checked); // Revert UI if failed
+      toast.error("Failed to update notification settings.");
+      console.error(error);
+    }
+  };
+
+
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-8 mb-10">
         <Button className="bg-blue-500 hover:bg-blue-600 cursor-pointer" type="button" onClick={handleNavigation}>
@@ -70,8 +106,8 @@ export default function SettingsPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
-            <span>Enable In-App Notifications</span>
-            <Switch checked={notificationsEnabled} disabled onCheckedChange={setNotificationsEnabled} />
+            <span>Enable push Notifications</span>
+            <Switch checked={notificationsEnabled}  onCheckedChange={handleToggleNotifications} />
           </div>
           <div className="flex items-center justify-between">
             <span>Email Reminders</span>
@@ -111,7 +147,7 @@ export default function SettingsPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Toggleable Change Password panel */}
-          <div className="space-y-2">
+          <div className="space-y-2 ">
             <div className="grid md:grid-cols-2 gap-4">
               <Button variant="outline" className="w-full md:w-auto" onClick={() => {setShowChangePassword((s) => !s); 
                                                                                     setShowDeleteConfirm(false);
@@ -133,13 +169,13 @@ export default function SettingsPage() {
             </div>
 
             {showChangePassword && (
-              <div className="mt-4 p-4 border rounded-md bg-white/60 backdrop-blur-sm">
+              <div className="mt-4 p-4 border rounded-md bg-white/60 dark:bg-slate-800 backdrop-blur-sm">
                 <ChangePasswordPage />
               </div>
             )}
 
             {showDeleteConfirm && (
-              <div className="mt-4 p-4 border rounded-md bg-white/60 backdrop-blur-sm">
+              <div className="mt-4 p-4 border rounded-md bg-white/60 dark:bg-slate-800 backdrop-blur-sm">
                 <p className="mb-2">
                   To confirm account deletion, type <strong className="text-red-600">Delete Account</strong> in the input below, then press Confirm.
                 </p>

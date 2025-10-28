@@ -89,9 +89,9 @@ export default function ChangePasswordPage() {
   };
 
   return (
-    <div className="container mx-auto py-8 max-w-md">
-        <h1 className="text-4xl font-bold text-center mb-8 text-gray-800">Change Password</h1>
-        <div className="bg-white rounded-lg shadow-lg p-6">
+    <div className="container mx-auto py-8 max-w-md dark:border-slate-500">
+        <h1 className="text-4xl font-bold text-center mb-8 text-gray-800 dark:text-white">Change Password</h1>
+        <div className="bg-white dark:bg-slate-500 rounded-lg shadow-lg p-6">
             <form onSubmit={handleSubmit} className="space-y-6">
                 {errors && <p className='text-end text-red-500'>{errors}</p> }
                 <div>

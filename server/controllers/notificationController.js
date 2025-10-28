@@ -142,6 +142,9 @@ exports.sendTestNotification = async (req, res) => {
         JSON.stringify({
           title: "🔔 Test Notification",
           body: "Push notifications are working!",
+          type: 'emergency',
+          icon: "/icons/maskable_icon_x192.png",
+          url: "/notifications"
         })
       );
     }

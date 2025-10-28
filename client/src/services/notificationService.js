@@ -45,12 +45,34 @@ export const notificationService = {
             console.error(error.response?.data || error.message);
             throw error;
         }
-    }, 
+    },
+
+    // Toggle Notifications
+    toggleNotifications: async () => {
+        try {
+            const res = await API.put('/notifications/toggle');
+            return res.data;
+        } catch (error) {
+            console.error(error.response?.data || error.message);
+            throw error;
+        }
+    },
 
     // Delete notification
     deleteNotification: async (notificatioId) => {
         try {
             const res = await API.delete(`/notifications/${notificatioId}`);
+            return res.data;
+        } catch (error) {
+            console.error(error.response?.data || error.message);
+            throw error;
+        }
+    },
+
+    // Save subscription
+    saveSubscription: async (subscription) => {
+        try {
+            const res = await API.post('/notifications/push/subscribe', { subscription: subscription });
             return res.data;
         } catch (error) {
             console.error(error.response?.data || error.message);

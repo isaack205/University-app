@@ -1,6 +1,7 @@
 const Notification = require('../models/notification');
 const DeliveryLog = require('../models/delivery');
-const { sendPushNotification } = require('./webPushService')
+const { sendPushNotification } = require('./webPushService');
+const Subscription = require('../models/subscription');
 
 exports.sendAppNotification = async (userId, message, type, referenceId = null, expiresAt = null, reminderType = null ) => {
   try {
@@ -23,14 +24,9 @@ exports.sendAppNotification = async (userId, message, type, referenceId = null, 
 
     // Fetch user's push subscriptions
     const subscriptions = await Subscription.find({ user: userId });
-    if (!subscriptions.length) {
-      console.log(`ℹ️ No push subscription found for user ${userId}`);
-    }
-
-    //  Attempt to send push notification(s)
-    for (const sub of subscriptions) {
+    if (subscriptions.length) {
       try {
-        await sendPushNotification(sub, { title: 'New Notification', body: message, type });
+        await sendPushNotification(userId, { title: 'New Notification', body: message, type });
         await DeliveryLog.create({
           user: userId,
           method: 'push',
@@ -49,8 +45,10 @@ exports.sendAppNotification = async (userId, message, type, referenceId = null, 
           error: pushErr.message,
         });
       }
+    } else {
+      console.log(`ℹ️ No push subscription found for user ${userId}`);
     }
-
+    
     await DeliveryLog.create({ user: userId, method: 'app', message, type });
   } catch (err) {
     if (err.code === 11000) {

@@ -392,7 +392,7 @@ export default function RegisterPage() {
                             </div>
                             {error && <p className="text-red-500 mt-1 font-bold">{error}</p> }
                             <div>
-                                <Button className="mt-8 cursor-pointer w-full bg-green-500 hover:bg-green-600 text-lg font-bold border text-black border-black" disabled type="submit">
+                                <Button className="mt-8 cursor-pointer w-full bg-green-500 hover:bg-green-600 text-lg font-bold border text-black border-black" disabled={loading} type="submit">
                                     {loading ? (
                                             <div className="flex items-center gap-3">
                                                 <p>Signing Up</p>

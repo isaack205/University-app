@@ -1,12 +1,6 @@
 const webPush = require("../config/webPush");
 const Subscription = require("../models/subscription");
 
-webPush.setVapidDetails(
-  "mailto:kahuraisaac30@gmail.com",
-  process.env.VAPID_PUBLIC_KEY,
-  process.env.VAPID_PRIVATE_KEY
-);
-
 exports.sendPushNotification = async (userId, payload) => {
   try {
     const subscriptions = await Subscription.find({ user: userId });

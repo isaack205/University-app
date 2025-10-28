@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { authService } from "@/services/authApi";
 import { LoaderCircle } from "lucide-react";
 import { toast } from "sonner";
+import { pushManager } from "@/utils/pushManager";
 
 // Create the authContext
 const AuthContext = createContext(null);
@@ -45,6 +46,14 @@ export const AuthProvider = ({ children }) => {
     useEffect(() => {
         checkAuthStatus();
     }, []);
+
+    // Automatically subscribe user for push notifications
+    useEffect(() => {
+        if (user && user.notificationsEnabled) {
+            pushManager.subscribeUser();
+        }
+    }, [user]);
+
 
     const register = async (userData) => {
         // Clear previous errors

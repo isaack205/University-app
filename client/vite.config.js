@@ -8,13 +8,17 @@ import { VitePWA } from 'vite-plugin-pwa'
 export default defineConfig({
   plugins: [react(), tailwindcss(),
     VitePWA({
-      registerType: 'autoUpdate', // Automatically update service worker
-      injectRegister: 'auto',     // Automatically inject the service worker registration script
+      // registerType: 'autoUpdate',
+      injectRegister: 'auto',
+      strategies: 'injectManifest',
+      srcDir: 'src',
+      filename: 'sw.js',
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,webp}'], // Cache these file types
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,webp}'],
       },
       devOptions: {
-        enabled: true, // Enable PWA in development for testing
+        enabled: true,
+        type: 'module'
       },
       manifest: {
         name: 'Campus Hub University App', // Your app's full name
