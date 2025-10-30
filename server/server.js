@@ -24,6 +24,7 @@ const scheduleNotifications = require('./services/notificationScheduler');
 const feedbackRoutes = require('./routes/feedbackRoutes');
 const upcomingRoutes = require('./routes/upcomingsRoutes')
 const notificationRoutes = require('./routes/notificationRoutes');
+const adminDashboardRoutes = require('./routes/adminRoute');
 
 // Initialize app
 const app = express();
@@ -54,6 +55,7 @@ app.use('/api/assignment', assignementRoutes);
 app.use('/api/feedback', feedbackRoutes);
 app.use('/api/upcoming', upcomingRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/admin', adminDashboardRoutes);
 
 // Health check
 app.get('/', (req, res) => {
