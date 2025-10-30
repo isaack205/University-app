@@ -32,7 +32,7 @@ exports.getDashboardSummary = async (req, res) => {
 
             // Failed Push Notifications (Last 30 Days)
             DeliveryLog.countDocuments({
-                createdAt: { $gte: thirtyDaysAgo },
+                timestamp: { $gte: thirtyDaysAgo },
                 method: 'push',
                 status: 'failed',
             }),

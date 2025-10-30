@@ -1,5 +1,4 @@
 import React, {useState, useEffect} from "react";
-import { Button } from "../ui/button";
 import { MenuIcon, SettingsIcon, CircleUserRoundIcon, MoonIcon, SunIcon, BellIcon } from "lucide-react";
 import { Sidebar } from '@/components/ui/sidebar';
 import { useAuth } from "@/contexts/authContext";
@@ -16,28 +15,21 @@ import { toast } from "sonner";
 import { UserRoundCogIcon } from "lucide-react";
 import { LogOutIcon } from "lucide-react";
 import { notificationService } from "@/services/notificationService";
-import { useTheme } from "@/contexts/themeContext";
-import { Switch } from "../ui/switch";
 import ThemeToggle from "../themeToggle";
 
 export default function Header () {
 
     const [ isSidebarOpen, setIsSidebarOpen ] = useState(false);
-    const { isAuthenticated, user, logout} = useAuth();
+    const { isAuthenticated, user, logout, hasRole} = useAuth();
     const navigate = useNavigate();
     const [notifications, setNotifications] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    const { isDark, setIsDark } = useTheme();
 
     const handleLogout = () => {
         logout();
         navigate('/login')
     };
-
-    const handleClick = () => {
-        toast.info('Feature coming soon');
-    }
 
     useEffect(() => {
     
@@ -88,10 +80,12 @@ export default function Header () {
                     </div>
                     <div className="flex items-center gap-6">
                         <ThemeToggle />
-                        <div className="flex flex-row relative">
-                            <BellIcon className="text-white hover:text-blue-700 cursor-pointer" onClick={() => navigate('/notifications')}/>
-                            {unreadCount > 0 ? (<p className="absolute -top-3 -right-4 text-[10px] bg-red-500 rounded-full py-0.5 px-1">{unreadCount}</p>) : ('') }
-                        </div>
+                        {hasRole(['classRep', 'student']) && 
+                            <div className="flex flex-row relative">
+                                <BellIcon className="text-white hover:text-blue-700 cursor-pointer" onClick={() => navigate('/notifications')}/>
+                                {unreadCount > 0 ? (<p className="absolute -top-3 -right-4 text-[10px] bg-red-500 rounded-full py-0.5 px-1">{unreadCount}</p>) : ('') }
+                            </div>
+                        }
                         <DropdownMenu>
                             <DropdownMenuTrigger>
                                 <CircleUserRoundIcon className="text-white hover:text-blue-700 cursor-pointer"/>
