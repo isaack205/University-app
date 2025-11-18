@@ -21,6 +21,8 @@ import CoursePage from "./components/dashboard/adminDashboard/coursePage";
 import CohortPage from "./components/dashboard/adminDashboard/cohortPage";
 import { PathTracker, StartupRedirect } from "./components/common/routerTracker";
 import SettingsPage from "./pages/settingsPage";
+import ManageCat from "./components/dashboard/classRepDashboard/manageCAT";
+import CATPage from "./pages/catPage";
 
 export default function App () {
   return (
@@ -44,13 +46,14 @@ export default function App () {
             <Route path="/notifications" element={<NotificationPage /> }/>
             <Route path="/schedule" element={<SchedulePage />} />
             <Route path="/assignment/assignments" element={<AssignmentPage /> } />
+            <Route path="/CAT" element={<CATPage /> } />
           </Route>
 
           <Route element={<ProtectedRoute allowedRoles={['classRep', 'admin']} />}>
             <Route path="/dashboard" element={<Dashboard />} >
               <Route path='schedule' element={<ManageUnitSchedule />} />
               <Route path="assignment" element={<ManageAssignment /> }/>
-              <Route path="emergency" element={<ManageEmergencies />} />
+              <Route path="CAT" element={<ManageCat />} />
             </Route>
           </Route>
 

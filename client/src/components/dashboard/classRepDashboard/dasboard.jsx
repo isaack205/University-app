@@ -31,8 +31,8 @@ export default function Dashboard() {
                         </NavLink>
                     </li>
                     <li className="bg-green-300 hover:bg-green-400 dark:bg-slate-800 p-2 rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-1 transition easeinout duration-500 cursor-pointer w-[30%] md:w-50 lg:w-70">
-                        <NavLink to='/dashboard/emergency' onClick={() => toast.info('Feature coming soon')}> 
-                            <p className="text-sm md:text-lg lg:text-xl">Emergencies</p>
+                        <NavLink to='/dashboard/CAT'> 
+                            <p className="text-sm md:text-lg lg:text-xl">Manage CAT (s)</p>
                         </NavLink>
                     </li>
                 </ul>
