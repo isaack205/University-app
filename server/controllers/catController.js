@@ -1,6 +1,6 @@
 //Imports
 const Cat = require('../models/cat');
-const sendAppNotification = require('../services/notificationService');
+const { sendAppNotification } = require('../services/notificationService');
 const User = require('../models/user');
 const sendSMS = require('../services/smsService');
 
@@ -13,7 +13,7 @@ exports.createCAT = async (req, res) => {
             return res.status(403).json({ message: "You can only create CAT(S) for your cohort" })
         }
 
-        const { title, description, cohort, unit, type, submissionDate, submissionFormat, sittingDate, sittingDay, sittingTime, venue, requiredItems, catNumber } = req.body;
+        const { title, description, cohort, unit, type, submissionDate, submissionFormat, sittingDate, sittingDay, sittingTime, venue, requiredItems, catNumber, isPublished } = req.body;
         const catData = { title, description, cohort, unit, type, catNumber, createdBy: req.user._id, isPublished: isPublished ?? false };
 
         // Takeaway fields
@@ -24,13 +24,6 @@ exports.createCAT = async (req, res) => {
             
             catData.submissionDate = submissionDate;
             catData.submissionFormat = submissionFormat;
-
-            // Remove sitting fields
-            // catData.sittingDate = undefined;
-            // catData.sittingDay = undefined;
-            // catData.sittingTime = undefined;
-            // catData.venue = undefined;
-            // catData.requiredItems = undefined;
         }
 
         // Sitting fileds
@@ -44,18 +37,9 @@ exports.createCAT = async (req, res) => {
             catData.sittingTime = sittingTime;
             catData.venue = venue;
             catData.requiredItems = requiredItems;
-
-            // Remove takeaway fields
-            // catData.submissionDate = undefined;
-            // catData.submissionFormat = undefined;
         }
 
-        
-
-        
-
         const cat = await Cat.create(catData);
-    
         
         // Notify students via app notification
         const students = await User.find({ cohort: cat.cohort });
@@ -90,16 +74,25 @@ exports.createCAT = async (req, res) => {
     }
 }
 
-// Get all CATs for logged-in user's cohort
+// Get all CATs for logged-in user's cohort (students see only published)
 exports.getCATsForCohort = async (req, res) => {
     try {
         const cohortId = req.user.cohort;
 
-        const cats = await Cat.find({ cohort: cohortId })
-            .populate([ {path: 'unit', select: 'unitCode'}])
+        // Build query: students only get published CATs; staff/classRep/admin see all for cohort
+        const query = { cohort: cohortId };
+        const role = req.user.role || '';
+
+        const studentRoles = ['student'];
+        if (studentRoles.includes(role)) {
+            query.isPublished = true;
+        }
+
+        const cats = await Cat.find(query)
+            .populate([{ path: 'unit', select: 'unitCode' }])
             .populate("createdBy", "name");
 
-        res.status(200).json({ cats });
+        res.status(200).json(cats);
     } catch (err) {
         res.status(500).json({ message: "Failed to fetch CATs", error: err.message });
     }
@@ -110,18 +103,28 @@ exports.getCATById = async (req, res) => {
     try {
         const cat = await Cat.findById(req.params.id)
             .populate([
-                { path: 'unit', select: 'unitCode lecturer'},
-                { path: 'cohort', select: 'name'}
+                { path: 'unit', select: 'unitCode lecturer' },
+                { path: 'cohort', select: 'name' }
             ])
             .populate("createdBy", "name");
 
         if (!cat) return res.status(404).json({ message: "CAT not found" });
 
-        if (cat.cohort.toString() !== req.user.cohort.toString()) {
+        // Must be same cohort
+        if (cat.cohort._id.toString() !== req.user.cohort.toString()) {
             return res.status(403).json({ message: "Not allowed to view this CAT" });
         }
 
-        res.status(200).json({ cat });
+        // If CAT is not published: allow creator or non-student roles (staff/admin); block students
+        const role = req.user.role || '';
+        const isStudent = role === 'student';
+        const isCreator = cat.createdBy && req.user._id.toString() === cat.createdBy._id.toString();
+
+        if (!cat.isPublished && isStudent && !isCreator) {
+            return res.status(403).json({ message: "Not allowed to view this CAT" });
+        }
+
+        res.status(200).json(cat);
     } catch (err) {
         res.status(500).json({ message: "Error fetching CAT", error: err.message });
     }
