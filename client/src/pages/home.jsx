@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from "react";
 import { useAuth } from "@/contexts/authContext";
 import { upcomingsService } from "@/services/upcomingSchedulerApi";
-import { CalendarDaysIcon, LoaderIcon, GraduationCapIcon, BookOpenIcon, ClockIcon, Calendar1Icon, MapPinIcon } from "lucide-react";
+import { CalendarDaysIcon, LoaderIcon, GraduationCapIcon, BookOpenIcon, ClockIcon, Calendar1Icon, MapPinIcon, PencilLineIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from 'react-router-dom';
 import imageUrl from '@/assets/download.png';
@@ -74,7 +74,7 @@ export default function Home () {
                             <GraduationCapIcon />
                             <h1 className="font-bold text-xl text-blue-600">Academic Overview</h1>
                         </span>
-                        <div className="flex flex-row gap-5 max-w-sm lg:max-w-[100%] p-4 rounded-xl justify-center">
+                        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-5 max-w-sm lg:max-w-[100%] p-4 rounded-xl justify-center">
                             <div className="border w-[50%] w-full shadow-xl rounded-xl p-5 flex flex-col gap-1 bg-blue-100 dark:bg-slate-500">
                                 <GraduationCapIcon  className="text-red-500 h-10 w-10 p-1 rounded-lg bg-blue-300 mb-1"/>
                                 <p className="font-bold text-2xl">{units.length || '0'}</p>
@@ -85,6 +85,12 @@ export default function Home () {
                                 <BookOpenIcon className="text-red-500 h-10 w-10 p-1 rounded-lg bg-blue-300 mb-1"/>
                                 <p className="font-bold text-2xl">{upcomings && upcomings.upcomingAssignments ? upcomings.upcomingAssignments.length : 0}</p>
                                 <h1 className="font-bold text-xl">Assignements</h1>
+                                <p className="text-sm italic">⚠️ Due in next 7 days?</p>
+                            </div>
+                            <div className="border w-[50%] w-full shadow-xl rounded-xl p-5 flex flex-col gap-1 bg-blue-100 dark:bg-slate-500 hover:cursor-pointer" onClick={() => navigate('/CAT')} title="Click me to view the CATs page" aria-label="Click to view CATs page" >
+                                <PencilLineIcon  className="text-red-500 h-10 w-10 p-1 rounded-lg bg-blue-300 mb-1"/>
+                                <p className="font-bold text-2xl">{upcomings && upcomings.upcomingCats ? upcomings.upcomingCats.length : '0'}</p>
+                                <h1 className="font-bold text-xl">CAT(S)</h1>
                                 <p className="text-sm italic">⚠️ Due in next 7 days?</p>
                             </div>
                         </div>
@@ -126,7 +132,7 @@ export default function Home () {
                         </div>
                     </div>
                 </div>
-                <div className="bg-gray-200 dark:bg-slate-800 rounded-xl p-5 md:w-[50%] lg:w-[50%] h-130 overflow-x-auto">
+                <div className="bg-gray-200 dark:bg-slate-800 rounded-xl p-5 md:w-[50%] lg:w-[50%] h-130 md:h-190 lg:h-130  overflow-x-auto">
                     <span className="flex gap-3 mb-8">
                         <ClockIcon />
                         <h3 className="font-bold text-xl text-blue-600">Upcoming Classes (in 24 hours)</h3>

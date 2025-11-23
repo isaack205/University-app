@@ -365,11 +365,21 @@ export default function CATPage() {
       </Dialog>
 
        {/* FOOTER NOTE */}
-       <div className="flex items-center gap-3 mt-10 justify-center">
-         <InfoIcon className="text-blue-500" />
-         <p className="text-blue-600">
-           To view CAT's full details, click an individual row!
-         </p>
+       <div className="flex flex-col items-center mt-10 justify-center">
+         <div className="flex items-center gap-3 mt-10 justify-center">
+          <InfoIcon className="text-blue-500" />
+          <p className="text-blue-600">
+            To view CAT's full details, click an individual row!
+          </p>
+         </div>
+          {user.role === 'classRep' && 
+            <div className="flex items-center gap-3 justify-center">
+              <InfoIcon className="text-blue-500" />
+              <p className="text-blue-600">
+                Unpublished Cats have a red background!
+              </p>
+            </div>
+          }
        </div>
     </div>
   );
