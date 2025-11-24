@@ -11,12 +11,15 @@ import { unitScheduleService } from "@/services/unitSchedulerApi";
 import { UserIcon } from "lucide-react";
 import { InfoIcon } from "lucide-react";
 
+import Onboarding from "@/components/Onboarding"; // <-- new import
+
 export default function Home () {
 
     const { user, loading } = useAuth();
 
     const [upcomings, setUpcomings] = useState([]);
     const [units, setUnits] = useState([]);
+    const [showOnboarding, setShowOnboarding] = useState(false); // <-- new state
     const navigate = useNavigate();
     const words = 'Hello, this is a Learner management system which tracks upcoming classes, due assignements, fetches your weekly timetable and helps one plan adequately.';
     
@@ -47,6 +50,14 @@ export default function Home () {
         fetchUnits();
         fetchUpcomingList();
     }, []);
+
+    // show onboarding on first login/register (local only)
+    useEffect(() => {
+      if (!loading && user) {
+        const seen = localStorage.getItem("isOnboarded");
+        if (!seen) setShowOnboarding(true);
+      }
+    }, [user, loading]);
 
     return(
         <div className="">
@@ -192,6 +203,10 @@ export default function Home () {
                     <CalendarDaysIcon className="h-40 w-40"/>
                 </div>
             </div>
+
+            {/* Onboarding modal */}
+            <Onboarding open={showOnboarding} onFinish={() => setShowOnboarding(false)} />
+
         </div>
     )
 }
