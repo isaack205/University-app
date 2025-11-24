@@ -18,8 +18,10 @@ export const useAuth = () => {
 // Authprovider that wrpas up the app
 export const AuthProvider = ({ children }) => {
 
+    const token = localStorage.getItem('userToken');
+
     const [user, setUser] = useState(null);
-    const [loading, setLOading] = useState(true);
+    const [loading, setLOading] = useState(token ? true : false);
     const [error, setError] = useState('');
 
     const navigate = useNavigate();
