@@ -65,7 +65,7 @@ export default function UpdateCohort({ courses, cohort, refreshCohorts }) {
             isValid = false;
         }
 
-        if (!year.trim()) {
+        if (!String(year).trim()) {
             errors.year = 'Cohort year is required.';
             isValid = false;
         }
