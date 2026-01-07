@@ -3,10 +3,10 @@ import { Button } from "./button";
 import { CircleXIcon } from "lucide-react";
 import { useNavigate } from 'react-router-dom'
 import { LayoutDashboardIcon, CalendarDaysIcon, NotebookPenIcon, PencilLineIcon } from "lucide-react";
-import { User2Icon } from "lucide-react";
 import { GraduationCapIcon } from "lucide-react";
 import { useAuth } from "@/contexts/authContext";
 import { SchoolIcon } from "lucide-react";
+import FileMenu from "../fileMenu";
 
 export const Sidebar =  ({ isOpen, toggleSidebar }) => {
 
@@ -47,6 +47,7 @@ export const Sidebar =  ({ isOpen, toggleSidebar }) => {
                                 <PencilLineIcon /> 
                                 CAT(S)
                             </Button>
+                            <FileMenu />
                             <hr className="border-black mb-2 w-full rounded-xl"/>
                             {hasRole('classRep')  && 
                                 <Button className="bg-no text-blue-500 font-bold md:text-xl lg:text-2xl cursor-pointer shadow-lg hover:shadow-xl hover:underline hover:bg-no hover:-translate-y-2 transform easeinout duration-500" onClick={() => { navigate('/dashboard'); if (window.innerWidth < 1024) toggleSidebar(); }}>
