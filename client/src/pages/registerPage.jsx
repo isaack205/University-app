@@ -222,7 +222,7 @@ export default function RegisterPage() {
                 <Card className="max-w-sm w-full bg-blue-500  shadow-2xl rounded-3xl">
                     <CardHeader className="text-center">
                         <CardTitle className="text-3xl">Sign Up!</CardTitle>
-                        <CardDescription className="text-black text-md">Register to CHUXEN App</CardDescription>
+                        <CardDescription className="text-black text-md">Register to CampusHub App</CardDescription>
                     </CardHeader>
                     <CardContent className="ml-2 mr-2 p-2 rounded-md bg-gradient-to-b from to-gray-300">
                         <form onSubmit={handleSubmit}>
