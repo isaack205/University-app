@@ -26,6 +26,7 @@ const upcomingRoutes = require('./routes/upcomingsRoutes')
 const notificationRoutes = require('./routes/notificationRoutes');
 const adminDashboardRoutes = require('./routes/adminRoute');
 const catRoutes = require('./routes/catRoutes');
+const fileUploadRoutes = require('./routes/fileUploadRoutes')
 
 // Initialize app
 const app = express();
@@ -58,6 +59,7 @@ app.use('/api/upcoming', upcomingRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/admin', adminDashboardRoutes);
 app.use('/api/CAT', catRoutes);
+app.use('/api/upload', fileUploadRoutes);
 
 // Health check
 app.get('/', (req, res) => {
