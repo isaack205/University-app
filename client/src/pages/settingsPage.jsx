@@ -107,15 +107,15 @@ export default function SettingsPage() {
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <span>Enable push Notifications</span>
-            <Switch checked={notificationsEnabled}  onCheckedChange={handleToggleNotifications} />
+            <Switch className="cursor-pointer" checked={notificationsEnabled}  onCheckedChange={handleToggleNotifications} />
           </div>
           <div className="flex items-center justify-between">
             <span>Email Reminders</span>
-            <Switch checked={emailReminders} disabled onCheckedChange={setEmailReminders} />
+            <Switch className="cursor-pointer" checked={emailReminders} disabled onCheckedChange={setEmailReminders} />
           </div>
           <div className="flex items-center justify-between">
             <span>SMS Reminders</span>
-            <Switch checked={smsReminders} disabled onCheckedChange={setSmsReminders} />
+            <Switch className="cursor-pointer" checked={smsReminders} disabled onCheckedChange={setSmsReminders} />
           </div>
         </CardContent>
       </Card>
@@ -130,7 +130,7 @@ export default function SettingsPage() {
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <span>Dark Mode</span>
-            <Switch checked={isDark} onCheckedChange={setIsDark} />
+            <Switch className="cursor-pointer" checked={isDark} onCheckedChange={setIsDark} />
           </div>
           <p className="text-sm text-muted-foreground">
             Switch between light and dark themes. Changes apply instantly.
@@ -149,7 +149,7 @@ export default function SettingsPage() {
           {/* Toggleable Change Password panel */}
           <div className="space-y-2 ">
             <div className="grid md:grid-cols-2 gap-4">
-              <Button variant="outline" className="w-full md:w-auto" onClick={() => {setShowChangePassword((s) => !s); 
+              <Button variant="outline" className="w-full md:w-auto cursor-pointer" onClick={() => {setShowChangePassword((s) => !s); 
                                                                                     setShowDeleteConfirm(false);
                                                                             }}
               >
@@ -158,7 +158,7 @@ export default function SettingsPage() {
 
               <Button
                 variant="destructive"
-                className="w-full md:w-auto"
+                className="w-full md:w-auto cursor-pointer"
                 onClick={() => {
                   setShowDeleteConfirm((s) => !s);
                   setShowChangePassword(false);

@@ -1,135 +1,154 @@
-// Imports
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 import { notificationService } from "@/services/notificationService";
-import { CheckCheckIcon, DotIcon } from "lucide-react";
-import { useAuth } from "@/contexts/authContext";
-import { LoaderIcon } from "lucide-react";
+import { 
+  BellIcon, 
+  CheckCheckIcon, 
+  LoaderIcon, 
+  InboxIcon, 
+  CircleIcon,
+  XIcon
+} from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
-export default function NotificationPage() {
+export default function NotificationDialog() {
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [open, setOpen] = useState(false);
 
-    const [notifications, setNotifications] = useState([]);
-    const unreadCount = notifications.filter(n => !n.read).length // Unread notifications (read: false)
-    const readCount = notifications.filter(n => n.read).length // Read notifications
+  const unreadCount = notifications.filter(n => !n.read).length;
 
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-
-        const fetchNotifications = async () => {
-            try {
-                const notificationsData = await notificationService.getMyNotifications();
-                setNotifications(notificationsData);
-            } catch (error) {
-                console.error('Failed to load notifications:', error)
-            } finally {
-                setLoading(false);
-            }
-        }
-
-        fetchNotifications();
-
-        // Interval that runs 30secs to check for new notifications
-        const interval = setInterval(fetchNotifications, 30000);
-
-        // CleanUp
-        return () => clearInterval(interval);
-    }, []);
-
-    const markAsRead = (id) => {
-        setNotifications (prev => (
-            prev.map (n => n._id === id ? {...n, read: true} : n))
-        )
-    };
-
-    const markAllAsRead = async () => {
-        try {
-            await notificationService.markAllNotificationsAsRead()
-            setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-        } catch (error) {
-            console.error("Failed to mark all as read:", error);
-        }
+  const fetchNotifications = async () => {
+    try {
+      const data = await notificationService.getMyNotifications();
+      setNotifications(data);
+    } catch (error) {
+      console.error('Failed to load notifications:', error);
+    } finally {
+      setLoading(false);
     }
+  };
 
-    return(
-        <div>
-            <div className="flex flex-col pb-3">
-                <div>
-                    <h3 className="px-5 font-bold text-3xl underline text-blue-500">Notifications</h3>
-                    
-                </div>
-                <div className="flex justify-between items-center pt-3">
-                    <div>
-                        <span
-                            onClick={markAllAsRead}
-                            disabled={unreadCount === 2}
-                            className="flex items-center text-gray-500 hover:underline hover:text-gray-700 cursor-pointer transition ease-in-out duration-300 mt-2 md:mt-0 lg:mt-0"
-                        >
-                            Mark All As Read
-                            <CheckCheckIcon className="ml-2 h-4 w-4" />
-                        </span>
-                    </div>
-                    <div className="flex flex-row border rounded-xl shadow-xl pr-3 bg-gray-200 dark:bg-slate-800 max-w-55 md:max-w-[30%] lg:max-w-[30%]">
-                        <span className="flex items-center">
-                            <DotIcon className="text-green-500 h-7 w-auto md:h-10 md:w-10 lg:h-10 lg:w-10"/>
-                            <p className="italic text-[13px] md:text-sm lg:text-sm">Read</p>
-                            ({readCount && <p className="text-green-500 rounded-full text-sm">{readCount}</p> })
-                        </span>
-                        <span className="flex items-center">
-                            <DotIcon className="text-red-500 h-7 w-auto md:h-10 md:w-10 lg:h-10 lg:w-10"/>
-                            <p className="italic text-[13px] md:text-sm lg:text-sm">Unread</p>
-                            ({unreadCount && <p className="text-red-500 rounded-full text-sm">{unreadCount}</p> })
-                        </span>
-                    </div>
-                </div>
-            </div>
-            {loading ? (
-                <div className="flex justify-center">
-                    <div className="flex items-center gap-2">
-                        <p className="text-2xl">Loading notifications</p>
-                        <LoaderIcon className="animate-spin h-7 w-7"/>
-                    </div>
-                </div>
-            ) : notifications.length > 0 ? (
-                <div>
-                    {notifications.map(notification => (
-                        <div className="border py-2 m-5 bg-green-100 dark:bg-slate-800 rounded-xl flex flex-col md:flex-row lg:flex-row md:justify-between lg:justify-between md:items-center lg:items-center p-1" key={notification._id}>
-                            <div className="flex flex-row">
-                                <div className="flex items-center">
-                                    <div>{notification.read === true ? (
-                                        <div>
-                                            <DotIcon className="text-green-500 h-10 w-10"/>
-                                        </div>
-                                        ) : (
-                                        <div>
-                                            <DotIcon className="text-red-500 h-10 w-10"/>
-                                        </div>
-                                        )}
-                                    </div>
-                                </div>
-                                <div>
-                                    <p className="font-bold underline text-gray-500 italic ">{notification.type.toUpperCase()}</p>
-                                    <span className="flex md:gap-4 lg:gap-4 flex-col md:flex-row lg:flex-row">
-                                        <p>{notification.message}</p>
-                                    </span>
-                                    <p className="text-gray-400 text-sm">{notification.createdAt ? new Date(notification.createdAt).toLocaleString() : 'N/A'}</p>
-                                </div>
-                            </div>
-                            {/* <div className="flex justify-end">
-                                {!notification.read &&
-                                    <Button type='button' onClick={() => markAsRead(notification._id)} className="right-0 bg-blue-300 hover:bg-blue-500 text-black cursor-pointer shadow-md hover:shadow-blue-400 hover:-translate-y-1 transition easeinout duration-500 mr-2 h-5 w-auto md:h-auto lg:h-auto " disabled>
-                                        Mark as Read<CheckCheckIcon />
-                                    </Button>
-                                }
-                            </div> */}
-                        </div>
-                    ))}
-                </div>
-            ) : (
-                <div className="flex items-center justify-center">
-                    <p className="font-bold text-xl">No notifications found!</p>
-                </div>
+  useEffect(() => {
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const markAllAsRead = async () => {
+    try {
+      await notificationService.markAllNotificationsAsRead();
+      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    } catch (error) {
+      console.error("Failed to mark all as read:", error);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      {/* 1. Trigger (The Bell Icon for your Navbar) */}
+      <DialogTrigger asChild>
+        <button className="relative p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+          <BellIcon className="h-6 w-6 text-slate-600 dark:text-slate-300" />
+          {unreadCount > 0 && (
+            <span className="absolute top-1.5 right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white border-2 border-white dark:border-slate-900">
+              {unreadCount}
+            </span>
+          )}
+        </button>
+      </DialogTrigger>
+
+      {/* 2. Modern Dialog Content (Floating Panel style) */}
+      <DialogContent className="sm:max-w-[420px] p-0 overflow-hidden border-none shadow-2xl dark:bg-slate-950">
+        <DialogHeader className="p-4 border-b bg-white dark:bg-slate-950 flex flex-row items-center justify-between space-y-0">
+          <DialogTitle className="text-lg font-black flex items-center gap-2">
+            Notifications
+            {unreadCount > 0 && (
+              <span className="bg-blue-100 text-blue-600 dark:bg-blue-900/30 text-[10px] px-2 py-0.5 rounded-full">
+                {unreadCount} New
+              </span>
             )}
+          </DialogTitle>
+          <button 
+            onClick={markAllAsRead}
+            disabled={unreadCount === 0}
+            className="text-[10px] font-bold text-blue-600 hover:text-blue-700 disabled:opacity-30 flex items-center gap-1 uppercase tracking-tighter"
+          >
+            Mark all read <CheckCheckIcon size={12} />
+          </button>
+        </DialogHeader>
+
+        {/* 3. Notification List */}
+        <div className="max-h-[70vh] overflow-y-auto scrollbar-hide">
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-12">
+              <LoaderIcon className="animate-spin text-blue-500 mb-2" />
+              <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">Checking Inbox...</p>
+            </div>
+          ) : notifications.length > 0 ? (
+            <div className="divide-y divide-slate-50 dark:divide-slate-900">
+              {notifications.map((n) => (
+                <div 
+                  key={n._id} 
+                  className={`p-4 flex gap-3 transition-colors ${
+                    !n.read ? "bg-blue-50/40 dark:bg-blue-900/10" : "hover:bg-slate-50 dark:hover:bg-slate-900/50"
+                  }`}
+                >
+                  {/* Presence indicator */}
+                  <div className="mt-1.5">
+                    {!n.read ? (
+                       <CircleIcon size={8} className="fill-blue-600 text-blue-600" />
+                    ) : (
+                       <div className="w-2" /> 
+                    )}
+                  </div>
+
+                  <div className="flex-1 space-y-1">
+                    <div className="flex justify-between items-center">
+                      <p className={`text-[10px] font-black uppercase tracking-widest ${!n.read ? 'text-blue-600' : 'text-slate-400'}`}>
+                        {n.type}
+                      </p>
+                      <span className="text-[9px] font-medium text-slate-400">
+                        {new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </div>
+                    <p className={`text-sm leading-tight ${!n.read ? 'font-semibold text-slate-900 dark:text-white' : 'text-slate-500'}`}>
+                      {n.message}
+                    </p>
+                    <p className="text-[9px] text-slate-400">
+                      {new Date(n.createdAt).toDateString()}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-16 px-10 text-center">
+              <div className="bg-slate-100 dark:bg-slate-900 p-4 rounded-full mb-4">
+                <InboxIcon size={32} className="text-slate-300" />
+              </div>
+              <p className="font-bold text-slate-900 dark:text-white">All caught up!</p>
+              <p className="text-xs text-slate-500 mt-1">No new activity to show right now.</p>
+            </div>
+          )}
         </div>
-    )
+
+        {/* 4. Footer */}
+        <div className="p-3 border-t bg-slate-50/50 dark:bg-slate-900/50 text-center">
+          <button 
+            onClick={() => setOpen(false)}
+            className="text-[10px] font-bold text-slate-400 hover:text-slate-600 uppercase tracking-widest"
+          >
+            Dismiss Panel
+          </button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
 }

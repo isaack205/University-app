@@ -11,7 +11,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { toast } from "sonner";
 import { UserRoundCogIcon } from "lucide-react";
 import { LogOutIcon } from "lucide-react";
 import { notificationService } from "@/services/notificationService";
@@ -23,7 +22,6 @@ export default function Header () {
     const { isAuthenticated, user, logout, hasRole} = useAuth();
     const navigate = useNavigate();
     const [notifications, setNotifications] = useState([]);
-    const [loading, setLoading] = useState(true);
 
 
     const handleLogout = () => {
@@ -41,9 +39,7 @@ export default function Header () {
                 setNotifications(notificationsData);
             } catch (error) {
                 console.error('Failed to load notifications:', error)
-            } finally {
-                setLoading(false);
-            }
+            };
         }
 
         fetchNotifications();
@@ -72,11 +68,11 @@ export default function Header () {
     return(
         <div>
             {isAuthenticated && 
-                <div className="flex justify-between px-4 py-3 bg-blue-400 dark:bg-slate-800 rounded-b-sm fixed w-full">
+                <div className="flex justify-between px-4 py-3 bg-gradient-to-b z-90 from-blue-600 to-blue-200 dark:bg-slate-800 rounded-b-sm fixed w-full">
                     <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
                     <div className="flex gap-3 items-center">
-                        <MenuIcon onClick={toggleSidebar} className="h-7 w-7 text-white hover:text-blue-700"/>
-                        <p className="font-bold text-2xl" onClick={handleCampusHubClick}>CampusHub</p>
+                        <MenuIcon onClick={toggleSidebar} className="h-7 w-7 text-white hover:text-blue-700 cursor-pointer"/>
+                        <p className="font-bold text-2xl cursor-pointer" onClick={handleCampusHubClick}>CampusHub</p>
                     </div>
                     <div className="flex items-center gap-6">
                         <ThemeToggle />
@@ -93,9 +89,9 @@ export default function Header () {
                             <DropdownMenuContent>
                                 <DropdownMenuLabel>Hi, {user.name || 'user'}</DropdownMenuLabel>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={() => navigate('/profile')}><UserRoundCogIcon /> Profile</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => navigate('/settings')}><SettingsIcon /> Settings</DropdownMenuItem>
-                                <DropdownMenuItem onClick={handleLogout} className="flex justify-betwe">Log Out <LogOutIcon /> </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => navigate('/profile')} className="cursor-pointer"><UserRoundCogIcon /> Profile</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => navigate('/settings')} className="cursor-pointer"><SettingsIcon /> Settings</DropdownMenuItem>
+                                <DropdownMenuItem onClick={handleLogout} className="flex justify-between cursor-pointer">Log Out <LogOutIcon /> </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </div>

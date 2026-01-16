@@ -14,7 +14,7 @@ export const Sidebar =  ({ isOpen, toggleSidebar }) => {
     const {hasRole} = useAuth();
 
     return (
-        <div className={`min-h-screen border-to-r border-purple-400 flex flex-col p-5 fixed top-15 left-0 h-full w-[60%] md:w-[30%] lg:w-90 z-[999] rounded-r-2xl backdrop-blur-md border ${ isOpen ? 'translate-x-0' : '-translate-x-full'} lg:transform-none lg:translate-x-0 transition-transform easeinout duration-700`}>
+        <div className={`min-h-screen border-to-r border-purple-400 flex flex-col p-5 fixed top-15 left-0 h-full w-[60%] md:w-[30%] lg:w-90 z-[999] rounded-r-2xl backdrop-blur-lg border ${ isOpen ? 'translate-x-0' : '-translate-x-full'} lg:transform-none lg:translate-x-0 transition-transform easeinout duration-700`}>
             <div className="flex items-center justify-between pb-5 lg:hidden">
                 <p></p>
                 <CircleXIcon onClick={toggleSidebar} className="cursor-pointer"/>
@@ -24,7 +24,7 @@ export const Sidebar =  ({ isOpen, toggleSidebar }) => {
             {hasRole(['classRep', 'student']) && 
                 <div className="flex flex-col flex-1">
                     <div>
-                        <h3 className="font-bold text-xl">Dashboard menu</h3>
+                        <h3 className="font-bold text-xl text-green-600">Dashboard menu</h3>
                         <Button className="bg-no text-blue-500 font-bold md:text-xl lg:text-2xl cursor-pointer shadow-lg hover:shadow-xl hover:underline hover:bg-no hover:-translate-y-2 transform easeinout duration-500" onClick={() => { navigate('/home'); if (window.innerWidth < 1024) toggleSidebar(); }}>
                             <LayoutDashboardIcon /> 
                             My dashboard
@@ -33,7 +33,7 @@ export const Sidebar =  ({ isOpen, toggleSidebar }) => {
                             <hr className="border-black mt-2 w-full rounded-xl"/>
 
                     <div className="mt-4">
-                        <h3 className="font-bold text-xl">Academics</h3>
+                        <h3 className="font-bold text-xl  text-green-600">Academics</h3>
                         <div className="flex flex-col items-start">
                             <Button className="bg-no mb-5 text-blue-500 font-bold md:text-xl lg:text-2xl cursor-pointer shadow-lg hover:shadow-xl hover:underline hover:bg-no hover:-translate-y-2 transform easeinout duration-500" onClick={() => { navigate('/schedule'); if (window.innerWidth < 1024) toggleSidebar(); }}>
                                 <CalendarDaysIcon /> 
@@ -47,7 +47,7 @@ export const Sidebar =  ({ isOpen, toggleSidebar }) => {
                                 <PencilLineIcon /> 
                                 CAT(S)
                             </Button>
-                            <FileMenu />
+                            <FileMenu isOpen={isOpen} toggleSidebar={toggleSidebar} />
                             <hr className="border-black mb-2 w-full rounded-xl"/>
                             {hasRole('classRep')  && 
                                 <Button className="bg-no text-blue-500 font-bold md:text-xl lg:text-2xl cursor-pointer shadow-lg hover:shadow-xl hover:underline hover:bg-no hover:-translate-y-2 transform easeinout duration-500" onClick={() => { navigate('/dashboard'); if (window.innerWidth < 1024) toggleSidebar(); }}>

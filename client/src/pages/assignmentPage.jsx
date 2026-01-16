@@ -1,4 +1,3 @@
-// Imports
 import React, { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/authContext";
 import { assignmentService } from "@/services/assignementApi";
@@ -12,7 +11,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { LoaderIcon, InfoIcon } from "lucide-react";
+import { 
+  LoaderIcon, 
+  InfoIcon, 
+  CalendarIcon, 
+  BookOpenIcon, 
+  ClipboardCheckIcon,
+  ClockIcon,
+  UserIcon,
+  HashIcon
+} from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -30,7 +38,6 @@ export default function AssignmentPage() {
 
   const { user } = useAuth();
 
-  // Fetch all assignments
   const fetchAssignments = async () => {
     setLoading(true);
     try {
@@ -49,15 +56,12 @@ export default function AssignmentPage() {
     fetchAssignments();
   }, []);
 
-  // Fetch single assignment details
   const handleClick = async (id) => {
     setLoadingAssignment(true);
     setOpen(true);
     setSelectedAssignment(null);
-
     try {
-      const singleAssignmentDetails =
-        await assignmentService.getAssignmentById(id);
+      const singleAssignmentDetails = await assignmentService.getAssignmentById(id);
       setSelectedAssignment(singleAssignmentDetails);
     } catch (error) {
       const message = "Failed to fetch assignment details.";
@@ -68,234 +72,194 @@ export default function AssignmentPage() {
     }
   };
 
-  // Separate current and past assignments
   const currentDate = new Date();
   const currentAssignments = assignments.filter((a) => new Date(a.dueDate) >= currentDate);
-
   const pastAssignments = assignments.filter((a) => new Date(a.dueDate) < currentDate);
 
   return (
-    <div>
-      <h3 className="text-2xl font-bold text-green-600 underline md:text-2xl lg:text-3xl mb-4">
-        My Assignments
-      </h3>
-
-      {error && <p className="text-end text-red-500 text-xl">{error}</p>}
-
-      {/* CURRENT ASSIGNMENTS */}
-      <div className="border rounded-xl p-4 shadow-xl bg-gradient-to-b from-green-500 to-gray-200 dark:from-slate-800 dark:to-slate-800 mb-10">
-        <h4 className="text-xl font-bold text-blue-700 underline mb-3">
-          Current Assignments
-        </h4>
-
-        <Table className="mt-2">
-          <TableCaption>
-            All {user?.cohort?.name} current assignments
-          </TableCaption>
-          <TableHeader>
-            <TableRow className="font-bold text-xl">
-              <TableHead>Unit</TableHead>
-              <TableHead>Title</TableHead>
-              <TableHead>Due date</TableHead>
-              <TableHead className="text-right">Status</TableHead>
-            </TableRow>
-          </TableHeader>
-
-          {loading ? (
-            <TableBody>
-              <TableRow>
-                <TableCell colSpan={4} className="text-center">
-                  <div className="flex items-center justify-center gap-2">
-                    <LoaderIcon className="animate-spin h-6 w-6 text-white" />
-                    <p className="text-white font-bold text-xl">
-                      Loading assignments
-                    </p>
-                  </div>
-                </TableCell>
-              </TableRow>
-            </TableBody>
-          ) : currentAssignments.length > 0 ? (
-            <TableBody>
-              {currentAssignments.map((assignment) => (
-                <TableRow
-                  key={assignment._id}
-                  onClick={() => handleClick(assignment._id)}
-                  className="cursor-pointer hover:bg-green-100 transition"
-                >
-                  <TableCell>{assignment.unit.unitName || "N/A"}</TableCell>
-                  <TableCell>{assignment.title || "N/A"}</TableCell>
-                  <TableCell>
-                    {assignment.dueDate
-                      ? new Date(assignment.dueDate).toLocaleString()
-                      : "N/A"}
-                  </TableCell>
-                  <TableCell>{assignment.statusByStudent || "N/A"}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          ) : (
-            <TableBody>
-              <TableRow>
-                <TableCell colSpan={4} className="text-center">
-                  <p className="text-gray-500 italic text-lg">
-                    No current assignments 😊
-                  </p>
-                </TableCell>
-              </TableRow>
-            </TableBody>
-          )}
-        </Table>
+    <div className="p-4 md:p-6 lg:p-8 space-y-8 max-w-7xl mx-auto">
+      {/* HEADER */}
+      <div className="flex justify-between items-center border-b pb-4">
+        <h3 className="text-3xl font-extrabold text-slate-800 dark:text-white flex items-center gap-2">
+          <ClipboardCheckIcon className="text-green-600" size={32} />
+          My Assignments
+        </h3>
+        {error && <p className="text-red-500 font-medium animate-pulse">{error}</p>}
       </div>
 
-      {/*  PAST ASSIGNMENTS  */}
-      <div className="border rounded-xl p-4 shadow-xl bg-gradient-to-b from-gray-300 to-gray-100 dark:from-slate-700 dark:to-slate-700">
-        <h4 className="text-xl font-bold text-red-600 underline mb-3">
-          Past Assignments
-        </h4>
+      {/* CURRENT ASSIGNMENTS SECTION */}
+      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
+        <div className="p-5 border-b bg-slate-50/50 dark:bg-slate-800/50 flex items-center justify-between">
+          <h4 className="font-bold text-blue-600 flex items-center gap-2 uppercase tracking-wider text-sm">
+            <ClockIcon size={18} /> Current Assignments
+          </h4>
+          <span className="bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-full">
+            {currentAssignments.length} Pending
+          </span>
+        </div>
 
-        <Table className="mt-2">
-          <TableCaption>Past {user?.cohort?.name} assignments</TableCaption>
-          <TableHeader>
-            <TableRow className="font-bold text-xl">
-              <TableHead>Unit</TableHead>
-              <TableHead>Title</TableHead>
-              <TableHead>Due date</TableHead>
-              <TableHead className="text-right">Status</TableHead>
-            </TableRow>
-          </TableHeader>
-
-          {pastAssignments.length > 0 ? (
-            <TableBody>
-              {pastAssignments.map((assignment) => (
-                <TableRow
-                  key={assignment._id}
-                  onClick={() => handleClick(assignment._id)}
-                  className="cursor-pointer hover:bg-gray-100 transition"
-                >
-                  <TableCell>{assignment.unit.unitName || "N/A"}</TableCell>
-                  <TableCell>{assignment.title || "N/A"}</TableCell>
-                  <TableCell>
-                    {assignment.dueDate
-                      ? new Date(assignment.dueDate).toLocaleString()
-                      : "N/A"}
-                  </TableCell>
-                  <TableCell>{assignment.statusByStudent || "N/A"}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          ) : (
-            <TableBody>
-              <TableRow>
-                <TableCell colSpan={4} className="text-center">
-                  <p className="text-gray-500 italic text-lg">
-                    No past assignments 📘
-                  </p>
-                </TableCell>
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow className="hover:bg-transparent">
+                <TableHead className="font-bold">Unit</TableHead>
+                <TableHead className="font-bold">Assignment Title</TableHead>
+                <TableHead className="font-bold">Due Date</TableHead>
+                <TableHead className="text-right font-bold">Status</TableHead>
               </TableRow>
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={4} className="h-32 text-center">
+                    <div className="flex flex-col items-center justify-center gap-2 text-slate-500">
+                      <LoaderIcon className="animate-spin h-8 w-8 text-blue-500" />
+                      <p className="font-medium">Fetching active tasks...</p>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : currentAssignments.length > 0 ? (
+                currentAssignments.map((assignment) => (
+                  <TableRow
+                    key={assignment._id}
+                    onClick={() => handleClick(assignment._id)}
+                    className="cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors border-b"
+                  >
+                    <TableCell className="font-semibold text-slate-700 dark:text-slate-300">
+                      {assignment.unit.unitName || "N/A"}
+                    </TableCell>
+                    <TableCell>{assignment.title || "N/A"}</TableCell>
+                    <TableCell className="text-slate-500 text-xs">
+                      {assignment.dueDate ? new Date(assignment.dueDate).toLocaleString() : "N/A"}
+                    </TableCell>
+                    <TableCell className="text-right">
+                       <span className="inline-block px-2 py-1 rounded bg-amber-100 text-amber-700 text-[10px] font-bold uppercase tracking-widest">
+                        {assignment.statusByStudent || "N/A"}
+                       </span>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={4} className="h-24 text-center text-slate-400 italic">
+                    No current assignments available 😊
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
-          )}
-        </Table>
+          </Table>
+        </div>
+      </div>
+
+      {/* PAST ASSIGNMENTS SECTION */}
+      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden opacity-90">
+        <div className="p-5 border-b bg-slate-50/50 dark:bg-slate-800/50 flex items-center justify-between">
+          <h4 className="font-bold text-red-500 flex items-center gap-2 uppercase tracking-wider text-sm">
+            <CalendarIcon size={18} /> Completed / Past
+          </h4>
+        </div>
+
+        <div className="overflow-x-auto">
+          <Table>
+            <TableBody>
+              {pastAssignments.length > 0 ? (
+                pastAssignments.map((assignment) => (
+                  <TableRow
+                    key={assignment._id}
+                    onClick={() => handleClick(assignment._id)}
+                    className="cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 border-b last:border-0"
+                  >
+                    <TableCell className="text-slate-500 w-1/4">{assignment.unit.unitName}</TableCell>
+                    <TableCell className="text-slate-500">{assignment.title}</TableCell>
+                    <TableCell className="text-right">
+                       <span className="px-2 py-1 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 text-[10px] font-bold">
+                        {assignment.statusByStudent || "CLOSED"}
+                       </span>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={4} className="h-20 text-center text-slate-400 italic">
+                    No history found 📘
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      </div>
+
+      {/* FOOTER NOTE */}
+      <div className="flex items-center gap-3 justify-center py-6 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-dashed border-slate-300 dark:border-slate-700">
+        <InfoIcon className="text-blue-500" size={18} />
+        <p className="text-slate-500 text-sm font-medium">
+          Select a row to view full description, cohort details, and lecturer information.
+        </p>
       </div>
 
       {/* ASSIGNMENT DETAILS DIALOG */}
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="bg-gray-300 dark:bg-slate-800">
-          <DialogHeader>
-            <DialogTitle className="text-xl flex items-center justify-center gap-2">
-              <InfoIcon className="text-blue-500" />
-              Assignment Details
+        <DialogContent className="max-w-2xl bg-white dark:bg-slate-900 p-0 overflow-hidden border-none shadow-2xl">
+          <DialogHeader className="bg-slate-900 dark:bg-slate-950 p-6 text-white">
+            <DialogTitle className="text-2xl flex items-center gap-3">
+              <BookOpenIcon className="text-blue-400" />
+              Assignment Brief
             </DialogTitle>
           </DialogHeader>
-          <hr className="border-green-500 border-2 dark:border-slate-500 rounded-xl" />
 
-          {loadingAssignment ? (
-            <div className="flex flex-row items-center justify-center gap-2">
-              <LoaderIcon className="animate-spin h-6 w-6 text-green-500" />
-              <p className="text-green-500 font-bold text-md lg:text-xl">
-                Loading assignment details
-              </p>
-            </div>
-          ) : !selectedAssignment ? (
-            <div className="flex flex-row items-center justify-center gap-2">
-              <p className="text-red-500 font-bold text-xl">No Details</p>
-            </div>
-          ) : (
-            <div>
-              <span className="flex flex-col justify-center ">
-                <p className="font-bold text-lg">Title:</p>
-                <p className="text-yellow-600 font-bold pl-5">
-                  {selectedAssignment.title || "N/A"}
-                </p>
-              </span>
-              <span className="flex flex-col justify-center ">
-                <p className="font-bold text-lg">Description:</p>
-                <p className="text-yellow-600 font-bold pl-5">
-                  {selectedAssignment.description || "N/A"}
-                </p>
-              </span>
-              <span className="flex flex-col justify-center ">
-                <p className="font-bold text-lg">Unit Name:</p>
-                <p className="text-yellow-600 font-bold pl-5">
-                  {selectedAssignment.unit.unitName || "N/A"}
-                </p>
-              </span>
-              <span className="flex flex-col justify-center ">
-                <p className="font-bold text-lg">Unit Code:</p>
-                <p className="text-yellow-600 font-bold pl-5">
-                  {selectedAssignment.unit.unitCode.toUpperCase() || "N/A"}
-                </p>
-              </span>
-              <span className="flex flex-col justify-center ">
-                <p className="font-bold text-lg">Lecturer:</p>
-                <p className="text-yellow-600 font-bold pl-5">
-                  Mr/Mrs. {selectedAssignment.unit.lecturer || "N/A"}
-                </p>
-              </span>
-              <span className="flex flex-col justify-center ">
-                <p className="font-bold text-lg">Cohort:</p>
-                <p className="text-yellow-600 font-bold pl-5">
-                  {selectedAssignment.cohort.name || "N/A"}
-                </p>
-              </span>
-              <span className="flex flex-col justify-center ">
-                <p className="font-bold text-lg">Start Date:</p>
-                <p className="text-yellow-600 font-bold pl-5">
-                  {new Date(selectedAssignment.createdAt).toLocaleString() ||
-                    "N/A"}
-                </p>
-              </span>
-              <span className="flex flex-col justify-center ">
-                <p className="font-bold text-lg">Due Date:</p>
-                <p className="text-red-500 font-bold pl-5">
-                  {new Date(selectedAssignment.dueDate).toLocaleString() ||
-                    "N/A"}
-                </p>
-              </span>
-              <span className="flex flex-col justify-center ">
-                <p className="font-bold text-lg">Status:</p>
-                <p className="text-yellow-600 font-bold pl-5">
-                  {selectedAssignment.statusByStudent || "N/A"}
-                </p>
-              </span>
-              <span className="flex items-center justify-end text-[12px] gap-2">
-                <p className="text-gray-600">Updated:</p>
-                <p className="text-gray-500 font-bold">
-                  {new Date(selectedAssignment.updatedAt).toLocaleString() ||
-                    "N/A"}
-                </p>
-              </span>
-            </div>
-          )}
+          <div className="p-6">
+            {loadingAssignment ? (
+              <div className="flex flex-col items-center justify-center py-10 gap-3">
+                <LoaderIcon className="animate-spin h-10 w-10 text-blue-500" />
+                <p className="text-blue-500 font-bold animate-pulse uppercase text-xs tracking-widest">Loading Details...</p>
+              </div>
+            ) : !selectedAssignment ? (
+              <div className="text-center py-10 text-red-500 font-bold">Could not retrieve assignment details.</div>
+            ) : (
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <DetailItem label="Title" value={selectedAssignment.title} icon={<ClipboardCheckIcon size={14}/>} color="text-blue-600" />
+                  <DetailItem label="Unit Name" value={selectedAssignment.unit.unitName} icon={<BookOpenIcon size={14}/>} />
+                  <DetailItem label="Unit Code" value={selectedAssignment.unit.unitCode.toUpperCase()} icon={<HashIcon size={14}/>} />
+                  <DetailItem label="Lecturer" value={`Mr/Mrs. ${selectedAssignment.unit.lecturer}`} icon={<UserIcon size={14}/>} />
+                  <DetailItem label="Cohort" value={selectedAssignment.cohort.name} icon={<UserIcon size={14}/>} />
+                  <DetailItem label="Due Date" value={new Date(selectedAssignment.dueDate).toLocaleString()} icon={<CalendarIcon size={14}/>} color="text-red-500" />
+                </div>
+
+                <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg border">
+                  <p className="text-[10px] font-black uppercase text-slate-400 mb-1 tracking-widest">Full Description</p>
+                  <p className="text-slate-700 dark:text-slate-300 leading-relaxed text-sm">
+                    {selectedAssignment.description || "No description provided."}
+                  </p>
+                </div>
+
+                <div className="flex justify-between items-center text-[10px] text-slate-400 font-bold uppercase pt-4 border-t">
+                  <div className="flex gap-4">
+                    <span>Issued: {new Date(selectedAssignment.createdAt).toLocaleDateString()}</span>
+                    <span>Status: {selectedAssignment.statusByStudent}</span>
+                  </div>
+                  <span>Updated: {new Date(selectedAssignment.updatedAt).toLocaleDateString()}</span>
+                </div>
+              </div>
+            )}
+          </div>
         </DialogContent>
       </Dialog>
+    </div>
+  );
+}
 
-      {/* FOOTER NOTE */}
-      <div className="flex items-center gap-3 mt-10 justify-center">
-        <InfoIcon className="text-blue-500" />
-        <p className="text-blue-600">
-          To view assignment’s full details, click an individual row!
-        </p>
-      </div>
+// Helper component for Dialog items to keep the code dry
+function DetailItem({ label, value, icon, color = "text-slate-900 dark:text-white" }) {
+  return (
+    <div className="flex flex-col space-y-1">
+      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1">
+        {icon} {label}
+      </span>
+      <span className={`font-bold text-sm ${color}`}>
+        {value || "N/A"}
+      </span>
     </div>
   );
 }

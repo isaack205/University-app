@@ -1,212 +1,243 @@
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/authContext";
 import { upcomingsService } from "@/services/upcomingSchedulerApi";
-import { CalendarDaysIcon, LoaderIcon, GraduationCapIcon, BookOpenIcon, ClockIcon, Calendar1Icon, MapPinIcon, PencilLineIcon } from "lucide-react";
+import { 
+  CalendarDays, GraduationCap, BookOpen, Clock, 
+  MapPin, PencilLine, FileText, ChevronRight, 
+  AlertCircle, LayoutDashboard, User
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from 'react-router-dom';
-import imageUrl from '@/assets/download.png';
+import { motion, AnimatePresence } from "framer-motion";
+
+// Assets
+import personWithLaptop from '@/assets/download.png';
+import classImage from '../assets/class 2.jpg';
+
+// UI Components
 import ColourfulText from "../components/ui/colourful-text";
 import { TextGenerateEffect } from "../components/ui/text-generate-effect";
 import { unitScheduleService } from "@/services/unitSchedulerApi";
-import { UserIcon } from "lucide-react";
-import { InfoIcon } from "lucide-react";
+import { fileUploadService } from "@/services/fileUploadApi";
+import Onboarding from "@/components/Onboarding";
 
-import Onboarding from "@/components/Onboarding"; // <-- new import
+const StatCard = ({ icon: Icon, label, value, subtext, onClick, colorClass }) => (
+  <motion.div 
+    whileHover={{ y: -4 }}
+    onClick={onClick}
+    className={`p-5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm flex flex-col gap-3 transition-all hover:shadow-md ${onClick ? 'cursor-pointer' : ''}`}
+  >
+    <div className={`p-2 w-fit rounded-lg ${colorClass}`}>
+      <Icon size={20} />
+    </div>
+    <div>
+      <p className="text-2xl font-bold text-slate-900 dark:text-white">{value}</p>
+      <p className="text-sm font-semibold text-slate-500 uppercase tracking-tight">{label}</p>
+      {subtext && <p className="text-xs italic text-slate-400 mt-1">{subtext}</p>}
+    </div>
+  </motion.div>
+);
 
-export default function Home () {
+export default function Home() {
+  const { user, loading: authLoading } = useAuth();
+  const [upcomings, setUpcomings] = useState([]);
+  const [units, setUnits] = useState([]);
+  const [generalFiles, setGeneralFiles] = useState([]);
+  const [cohortFiles, setCohortFiles] = useState([]);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const navigate = useNavigate();
 
-    const { user, loading } = useAuth();
+  const words = 'Track your classes, assignments, and weekly timetable in one centralized workspace.';
 
-    const [upcomings, setUpcomings] = useState([]);
-    const [units, setUnits] = useState([]);
-    const [showOnboarding, setShowOnboarding] = useState(false); // <-- new state
-    const navigate = useNavigate();
-    const words = 'Hello, this is a Learner management system which tracks upcoming classes, due assignements, fetches your weekly timetable and helps one plan adequately.';
-    
-    const handleViewTimetable = () => {
-        navigate('/schedule')
-    }
-
-    useEffect(() => {
-
-        const fetchUpcomingList = async () => {
-            try {
-                const upcomingData = await upcomingsService.getUpcomingItems();
-                setUpcomings(upcomingData);
-            } catch (error) {
-                console.log('Failed to load notifications:', error);
-            }
-        };
-
-        const fetchUnits = async () => {
-            try {
-                const unitsData = await unitScheduleService.getMyShedule();
-                setUnits(unitsData);
-            } catch (error) {
-                console.error('Error fetching units:', error)
-            }
-        }
-
-        fetchUnits();
-        fetchUpcomingList();
-    }, []);
-
-    // show onboarding on first login/register (local only)
-    useEffect(() => {
-      if (!loading && user) {
-        const seen = localStorage.getItem("isOnboarded");
-        if (!seen) setShowOnboarding(true);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [upcomingData, unitsData, genFiles, cohFiles] = await Promise.all([
+          upcomingsService.getUpcomingItems(),
+          unitScheduleService.getMyShedule(),
+          fileUploadService.getGeneralFiles(),
+          fileUploadService.getMyCohortsFiles()
+        ]);
+        setUpcomings(upcomingData);
+        setUnits(unitsData);
+        setGeneralFiles(genFiles);
+        setCohortFiles(cohFiles);
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
       }
-    }, [user, loading]);
+    };
+    fetchData();
+  }, []);
 
-    return(
-        <div className="">
-            <h3 className="text-3xl font-bold text-green-500 dark:text-white">Dashboard</h3>
-            <div className="flex flex-col gap-3 bg-purple-100 dark:bg-slate-800 shadow-xl rounded justify-between border rounded-xl items-center p-5 md:flex-row lg:flex-row">
-                <div className="flex flex-col sm:max-w-lg">
-                    <span className="flex gap-2 text-xl md:text-2xl lg:text-2xl mb-3 items-end">
-                        <h3 className="font-bold ">Welcome back, </h3>
-                        <p className="font-bold text-2xl md:text-3xl lg:text-3xl">
-                            <ColourfulText text={user ? (user.name || user.user.name) : ('User')} />
-                        </p>
-                    </span>
-                    <span className="">
-                        <TextGenerateEffect words={words}/>
-                    </span>
-                </div>
-                <div>
-                    <img src={imageUrl} alt="User with laptop" className="h-35 w-auto"/>
-                </div>
-            </div>
-            <div className="flex flex-col md:flex-row lg:flex-row gap-5 mt-10">
-                <div className="flex flex-col md:w-[50%] lg:w-[50%]">
-                    <div className=" rounded-xl bg-gray-200 dark:bg-slate-800">
-                        <span className="flex gap-3 pl-5 pt-5">
-                            <GraduationCapIcon />
-                            <h1 className="font-bold text-xl text-blue-600">Academic Overview</h1>
-                        </span>
-                        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-5 max-w-sm lg:max-w-[100%] p-4 rounded-xl justify-center">
-                            <div className="border w-[50%] w-full shadow-xl rounded-xl p-5 flex flex-col gap-1 bg-blue-100 dark:bg-slate-500">
-                                <GraduationCapIcon  className="text-red-500 h-10 w-10 p-1 rounded-lg bg-blue-300 mb-1"/>
-                                <p className="font-bold text-2xl">{units.length || '0'}</p>
-                                <h1 className="font-bold text-xl">Units</h1>
-                                <p className="text-sm italic">This semester</p>
-                            </div>
-                            <div className="border w-[50%] w-full shadow-xl rounded-xl p-5 flex flex-col gap-1 bg-blue-100 dark:bg-slate-500">
-                                <BookOpenIcon className="text-red-500 h-10 w-10 p-1 rounded-lg bg-blue-300 mb-1"/>
-                                <p className="font-bold text-2xl">{upcomings && upcomings.upcomingAssignments ? upcomings.upcomingAssignments.length : 0}</p>
-                                <h1 className="font-bold text-xl">Assignements</h1>
-                                <p className="text-sm italic">⚠️ Due in next 7 days?</p>
-                            </div>
-                            <div className="border w-[50%] w-full shadow-xl rounded-xl p-5 flex flex-col gap-1 bg-blue-100 dark:bg-slate-500 hover:cursor-pointer" onClick={() => navigate('/CAT')} title="Click me to view the CATs page" aria-label="Click to view CATs page" >
-                                <PencilLineIcon  className="text-red-500 h-10 w-10 p-1 rounded-lg bg-blue-300 mb-1"/>
-                                <p className="font-bold text-2xl">{upcomings && upcomings.upcomingCats ? upcomings.upcomingCats.length : '0'}</p>
-                                <h1 className="font-bold text-xl">CAT(S)</h1>
-                                <p className="text-sm italic">⚠️ Due in next 7 days?</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="mt-5 bg-gray-200 dark:bg-slate-800 rounded-xl p-5 h-60 overflow-x-auto">
-                        <span className="flex gap-3 mb-5">
-                            <Calendar1Icon />
-                            <h3 className="font-bold text-xl text-blue-600">Due Assignements</h3>
-                        </span>
-                        <div>
-                            {upcomings && upcomings?.upcomingAssignments?.length > 0 ? (
-                                upcomings.upcomingAssignments.map((upcoming) => (
-                                <div key={upcoming._id} className="border shadow-lg rounded-xl p-2 max-w-sm w-full lg:max-w-[100%] bg-blue-100 dark:bg-slate-500 hover:shadow-xl hover:-translate-y-1 transform easeinout duration-500 mb-5">
-                                    <h3 className="font-bold text-center">{upcoming.title || 'Assignement name'}</h3>
-                                    <hr className="border-green-500 mt-1 mb-1"/>
-                                    <span className="flex gap-3">
-                                        <p className="font-bold">Unit Name: </p>
-                                        {upcoming.unit.unitName}
-                                    </span>
-                                    <span className="flex gap-3">
-                                        <p className="font-bold">Cohort Name: </p>
-                                        {upcoming.cohort.name}
-                                    </span>
-                                    <span className="flex gap-3">
-                                        <p className="font-bold">Due date: </p>
-                                        <p className="text-red-500">{new Date(upcoming.dueDate).toLocaleString() || 'N/A'}</p>
-                                    </span>
-                                    <span className="flex gap-3 text-gray-500 text-sm justify-end mt-3">
-                                        {new Date(upcoming.createdAt).toLocaleString() || 'N/A'}
-                                    </span>
-                                </div>
-                            ))
-                            ) : (
-                                <div className="p-2 m-2 bg-green-100 dark:bg-slate-500 shadow-xl max-w-sm rounded-xl flex flex-col items-center">
-                                    <CalendarDaysIcon className="h-30 w-80"/>
-                                    <p className="text-gray-500">No upcoming assignements.</p>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-                <div className="bg-gray-200 dark:bg-slate-800 rounded-xl p-5 md:w-[50%] lg:w-[50%] h-130 md:h-190 lg:h-130  overflow-x-auto">
-                    <span className="flex gap-3 mb-8">
-                        <ClockIcon />
-                        <h3 className="font-bold text-xl text-blue-600">Upcoming Classes (in 24 hours)</h3>
-                    </span>
-                    <div className="flex flex-col gap-10">
-                        {upcomings && upcomings?.upcomingClasses?.length > 0 ? (
-                            upcomings.upcomingClasses.map((upcoming) => (
-                            <div key={upcoming._id} className="shadow-lg border p-2 max-w-sm rounded-xl bg-blue-100 dark:bg-slate-500 w-full lg:max-w-[100%] flex flex-col gap-1 hover:shadow-xl hover:-translate-y-1 transform easeinout duration-500">
-                                <h3 className="text-center font-bold">{upcoming.unitName || 'Unit'} ({upcoming.unitCode})</h3>
-                                <hr className="border-green-600"/>
-                                <span className="flex gap-3 items-center">
-                                    <ClockIcon className="text-red-500 h-5 w-5"/>
-                                    <p>{upcoming.dayOfWeek || 'Day of week'} • {upcoming.startTime} - {upcoming.endTime}</p>
-                                </span>
-                                <span className="flex gap-3 items-center">
-                                    <MapPinIcon className="text-red-500 h-5 w-5"/>
-                                    <p>{upcoming.venue || 'N/A'}</p>
-                                </span>
-                                <span className="flex gap-3 items-center">
-                                    <UserIcon className="text-red-500 h-5 w-5"/>
-                                    Mr/Mrs.{upcoming.lecturer || 'N/A'}
-                                </span>
-                                <div className="flex justify-end mt-3">
-                                    <Button className="bg-green-500 text-black font-bold hover:bg-green-600 hover:shadow-xl hover:shadow-blue-200 cursor-pointer" onClick={handleViewTimetable} disabled={loading}>
-                                        {loading ? (
-                                        <div>
-                                                <p>Wait a moment!</p>
-                                        </div> 
-                                        ) : (
-                                            <div>
-                                                <p>View full timetable</p>
-                                            </div>
-                                        )}
-                                    </Button>
-                                </div>
-                            </div>
-                        ))
-                        ) : (
-                            <div className="p-2 bg-green-100 dark:bg-slate-500 shadow-xl max-w-sm rounded-xl flex flex-col items-center">
-                                <CalendarDaysIcon className="h-30 w-80"/>
-                                <p className="text-gray-500">No upcoming classes.</p>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </div>
-            <div className="bg-gray-200 dark:bg-slate-800 rounded-xl p-5 flex flex-col items-center mt-10">
-                <div className="flex flex-row gap-3 items-center p-3">
-                    <CalendarDaysIcon className="md:w-10 lg:w-10 md:h-10 lg:h-10"/>
-                    <h3 className="font-bold text-2xl text-blue-600 md:text-4xl lg:text-4xl">Events</h3>
-                </div>
-                <div className="shadow-xl rounded-xl w-full flex flex-col items-center bg-green-100 dark:bg-slate-500 p-3">
-                    <div className="flex gap-3">
-                        <InfoIcon className="text-red-500"/>
-                        <p>Coming soon !</p>
-                    </div>
-                    <CalendarDaysIcon className="h-40 w-40"/>
-                </div>
-            </div>
+  useEffect(() => {
+    if (!authLoading && user) {
+      const seen = localStorage.getItem("isOnboarded");
+      if (!seen) setShowOnboarding(true);
+    }
+  }, [user, authLoading]);
 
-            {/* Onboarding modal */}
-            <Onboarding open={showOnboarding} onFinish={() => setShowOnboarding(false)} />
+  return (
+    <motion.div 
+      initial={{ opacity: 0 }} 
+      animate={{ opacity: 1 }} 
+      className="max-w-7xl mx-auto p-4 md:p-8 space-y-8 pb-20"
+    >
+      <header className="flex justify-between items-center px-1">
+        <h1 className="text-2xl font-bold flex items-center gap-2 text-slate-900 dark:text-white">
+          <LayoutDashboard className="text-blue-600" /> Dashboard
+        </h1>
+      </header>
 
+      {/* Hero Section with Integrated Person Image */}
+      <div className="relative overflow-hidden rounded-3xl bg-slate-900 shadow-2xl min-h-[20px] flex items-center">
+        {/* Background Image Overlay */}
+        <div 
+          className="absolute inset-0 opacity-20 bg-cover bg-center mix-blend-overlay"
+          style={{ backgroundImage: `url(${classImage})` }}
+        />
+        
+        <div className="relative z-10 w-full p-8 md:p-10 flex flex-col md:flex-row justify-between items-center gap-12">
+          {/* Text Content */}
+          <div className="max-w-xl space-y-6 text-center md:text-left">
+            <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight text-white leading-tight">
+              Welcome back, <br />
+              <ColourfulText text={user?.name || user?.user?.name || 'Scholar'} />
+            </h2>
+            <div className="text-slate-300 text-lg md:text-xl leading-relaxed max-w-md mx-auto md:mx-0">
+              <TextGenerateEffect words={words} />
+            </div>
+          </div>
+
+          {/* Revamped Person Image */}
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.8, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="relative"
+          >
+            {/* Soft Glow behind the person */}
+            <div className="absolute inset-0 bg-blue-500/20 blur-[100px] rounded-full" />
+            
+            <motion.img 
+              animate={{ y: [0, -15, 0] }}
+              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+              src={personWithLaptop} 
+              alt="Student working" 
+              className="relative w-48 sm:w-40 md:w-50 lg:w-[250px] h-auto drop-shadow-2xl object-contain"
+            />
+          </motion.div>
         </div>
-    )
+
+        {/* Decorative Elements */}
+        <div className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-blue-600/10 blur-3xl" />
+        <div className="absolute -bottom-24 -left-24 h-64 w-64 rounded-full bg-purple-600/10 blur-3xl" />
+      </div>
+
+      {/* Stats Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard 
+          icon={BookOpen} 
+          label="Active Units" 
+          value={units.length || '0'} 
+          colorClass="bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"
+        />
+        <StatCard 
+          icon={PencilLine} 
+          label="Due Assignments" 
+          value={upcomings?.upcomingAssignments?.length || '0'} 
+          subtext="Next 7 days"
+          colorClass="bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400"
+        />
+        <StatCard 
+          icon={AlertCircle} 
+          label="Upcoming CATs" 
+          value={upcomings?.upcomingCats?.length || '0'} 
+          onClick={() => navigate('/CAT')}
+          colorClass="bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400"
+        />
+        <StatCard 
+          icon={FileText} 
+          label="Resources" 
+          value={(generalFiles?.length || 0) + (cohortFiles?.length || 0)} 
+          subtext={`Gen: ${generalFiles?.length || 0} | Cohort: ${cohortFiles?.length || 0}`}
+          colorClass="bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400"
+        />
+      </div>
+
+      {/* Rest of the Dashboard Split Content... */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Assignments Column */}
+        <div className="lg:col-span-1 space-y-6">
+          <h3 className="font-bold text-lg flex items-center gap-2 px-2">
+            <CalendarDays className="text-blue-500" size={20} /> Deadlines
+          </h3>
+          <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+            {upcomings?.upcomingAssignments?.length > 0 ? (
+              upcomings.upcomingAssignments.map((task) => (
+                <div key={task._id} className="group p-4 rounded-xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-all">
+                  <div className="flex justify-between items-start mb-2">
+                    <h4 className="font-bold text-slate-800 dark:text-white line-clamp-1">{task.title}</h4>
+                    <span className="text-[10px] font-bold px-2 py-1 rounded bg-rose-100 text-rose-600 dark:bg-rose-900/40">URGENT</span>
+                  </div>
+                  <p className="text-xs text-slate-500 mb-3">{task.unit.unitName}</p>
+                  <div className="flex items-center gap-2 text-xs font-medium text-slate-400">
+                    <Clock size={14} />
+                    <span>Due: {new Date(task.dueDate).toLocaleDateString()}</span>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-10 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-700">
+                <p className="text-slate-400 text-sm">All caught up!</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Classes Column */}
+        <div className="lg:col-span-2 space-y-6">
+          <div className="flex items-center justify-between px-2">
+            <h3 className="font-bold text-lg flex items-center gap-2">
+              <Clock className="text-blue-500" size={20} /> Next 24 Hours
+            </h3>
+            <Button variant="ghost" size="sm" onClick={() => navigate('/schedule')} className="text-blue-600">
+              Full Timetable <ChevronRight size={16} />
+            </Button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {upcomings?.upcomingClasses?.length > 0 ? (
+              upcomings.upcomingClasses.map((item) => (
+                <div key={item._id} className="p-5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-1.5 h-full bg-blue-600" />
+                  <div className="space-y-4">
+                    <h4 className="font-bold text-lg text-slate-900 dark:text-white leading-tight">{item.unitName}</h4>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-3 text-sm text-slate-600 dark:text-slate-300">
+                        <Clock size={16} className="text-blue-500" />
+                        <span>{item.startTime} - {item.endTime}</span>
+                      </div>
+                      <div className="flex items-center gap-3 text-sm text-slate-600 dark:text-slate-300">
+                        <MapPin size={16} className="text-rose-500" />
+                        <span>{item.venue || 'TBA'}</span>
+                      </div>
+                      <div className="flex items-center gap-3 text-sm text-slate-600 dark:text-slate-300">
+                        <User size={16} className="text-emerald-500" />
+                        <span>Lec: {item.lecturer}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="col-span-full py-12 text-center bg-slate-50 dark:bg-slate-800/50 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-700">
+                <p className="text-slate-500">No classes in the next 24 hours.</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <Onboarding open={showOnboarding} onFinish={() => setShowOnboarding(false)} />
+    </motion.div>
+  );
 }
