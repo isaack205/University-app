@@ -20,7 +20,7 @@ const sendEmail = async (options) => {
     });
 
     const mailOptions = {
-        from: `Your App Name <${process.env.EMAIL_FROM}>`,
+        from: `Campus Hub <${process.env.EMAIL_FROM}>`,
         to: options.to,
         subject: options.subject,
         text: options.text,
@@ -36,3 +36,39 @@ const sendEmail = async (options) => {
 };
 
 module.exports = sendEmail;
+
+// // Imports
+// const FormData = require("form-data");
+// const Mailgun = require("mailgun.js");
+
+// /**
+//  * @desc Sends an email using Mailgun.
+//  * @param {Object} options - The email options.
+//  * @param {string} options.to - The recipient's email address.
+//  * @param {string} options.subject - The subject of the email.
+//  * @param {string} options.text - The plain text body of the email.
+//  */
+// const sendEmail = async (options) => {
+//     const mailgun = new Mailgun(FormData);
+//     const mg = mailgun.client({
+//         username: "api",
+//         key: process.env.MAILGUN_API_KEY,
+//     });
+
+//     const mailOptions = {
+//         from: `Campus Hub <${process.env.EMAIL_FROM}>`,
+//         to: options.to,
+//         subject: options.subject,
+//         text: options.text,
+//     };
+
+//     try {
+//         const response = await mg.messages.create(process.env.MAILGUN_DOMAIN, mailOptions);
+//         console.log(`✅ Email queued to ${options.to}`, response);
+//     } catch (error) {
+//         console.error(`❌ Error sending email to ${options.to}:`, error);
+//         throw new Error("Email could not be sent.");
+//     }
+// };
+
+// module.exports = sendEmail;
