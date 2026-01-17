@@ -15,13 +15,14 @@ import { UserRoundCogIcon } from "lucide-react";
 import { LogOutIcon } from "lucide-react";
 import { notificationService } from "@/services/notificationService";
 import ThemeToggle from "../themeToggle";
+import NotificationDialog from "@/pages/notificationPage";
 
 export default function Header () {
 
     const [ isSidebarOpen, setIsSidebarOpen ] = useState(false);
     const { isAuthenticated, user, logout, hasRole} = useAuth();
     const navigate = useNavigate();
-    const [notifications, setNotifications] = useState([]);
+    // const [notifications, setNotifications] = useState([]);
 
 
     const handleLogout = () => {
@@ -29,27 +30,27 @@ export default function Header () {
         navigate('/login')
     };
 
-    useEffect(() => {
+    // useEffect(() => {
     
-        if (!isAuthenticated) return;
+    //     if (!isAuthenticated) return;
 
-        const fetchNotifications = async () => {
-            try {
-                const notificationsData = await notificationService.getMyNotifications();
-                setNotifications(notificationsData);
-            } catch (error) {
-                console.error('Failed to load notifications:', error)
-            };
-        }
+    //     const fetchNotifications = async () => {
+    //         try {
+    //             const notificationsData = await notificationService.getMyNotifications();
+    //             setNotifications(notificationsData);
+    //         } catch (error) {
+    //             console.error('Failed to load notifications:', error)
+    //         };
+    //     }
 
-        fetchNotifications();
+    //     fetchNotifications();
 
-        // Interval that runs 30secs to check for new notifications
-        const interval = setInterval(fetchNotifications, 30000);
+    //     // Interval that runs 30secs to check for new notifications
+    //     const interval = setInterval(fetchNotifications, 30000);
 
-        // CleanUp
-        return () => clearInterval(interval);
-    }, [isAuthenticated]);
+    //     // CleanUp
+    //     return () => clearInterval(interval);
+    // }, [isAuthenticated]);
 
     const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
@@ -63,7 +64,9 @@ export default function Header () {
 
     };
 
-    const unreadCount = notifications.filter(n => !n.read).length
+    if (!isAuthenticated) return null;
+
+    // const unreadCount = notifications.filter(n => !n.read).length;
 
     return(
         <div>
@@ -76,12 +79,17 @@ export default function Header () {
                     </div>
                     <div className="flex items-center gap-6">
                         <ThemeToggle />
-                        {hasRole(['classRep', 'student']) && 
+                        {/* {hasRole(['classRep', 'student']) && 
                             <div className="flex flex-row relative">
                                 <BellIcon className="text-white hover:text-blue-700 cursor-pointer" onClick={() => navigate('/notifications')}/>
                                 {unreadCount > 0 ? (<p className="absolute -top-3 -right-4 text-[10px] bg-red-500 rounded-full py-0.5 px-1">{unreadCount}</p>) : ('') }
                             </div>
-                        }
+                        } */}
+
+                        {hasRole(['classRep', 'student']) && (
+                            <NotificationDialog />
+                        )}
+
                         <DropdownMenu>
                             <DropdownMenuTrigger>
                                 <CircleUserRoundIcon className="text-white hover:text-blue-700 cursor-pointer"/>

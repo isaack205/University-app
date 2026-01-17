@@ -66,7 +66,7 @@ export default function NotificationDialog() {
 
       {/* 2. Modern Dialog Content (Floating Panel style) */}
       <DialogContent className="sm:max-w-[420px] p-0 overflow-hidden border-none shadow-2xl dark:bg-slate-950">
-        <DialogHeader className="p-4 border-b bg-white dark:bg-slate-950 flex flex-row items-center justify-between space-y-0">
+        <DialogHeader className="p-4 border-b bg-white dark:bg-slate-950 flex flex-row items-center justify-between space-y-0 mt-2 ">
           <DialogTitle className="text-lg font-black flex items-center gap-2">
             Notifications
             {unreadCount > 0 && (
