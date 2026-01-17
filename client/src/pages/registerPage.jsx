@@ -231,7 +231,7 @@ export default function RegisterPage() {
             
             <div className="w-full md:w-[50%] lg:w-[50%] flex justify-center p-2  md:m-5">
                 <Card className="w-full shadow-2xl border-none bg-no">
-                    <CardHeader className="text-center flex flex-row md:flex-col items-center justify-center">
+                    <CardHeader className="text-center flex flex-col md:flex-col items-center justify-center">
                         <CardTitle className="flex justify-center">
                             <img src={logo} className="h-15 md:h-20 w-auto rounded-[50px]"/>
                         </CardTitle>

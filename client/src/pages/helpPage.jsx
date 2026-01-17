@@ -122,7 +122,7 @@ export default function HelpPage() {
             <ArrowLeftCircleIcon />
             {user && <Link to='/home'>Back to Home</Link> || <Link to='/login'>Back to Login</Link> }
         </div>
-        <h1 className="text-3xl md:text-5xl font-bold text-blue-900 mb-3 underline text-center">
+        <h1 className="text-3xl md:text-5xl font-bold text-blue-900 mb-3  text-center">
           Help & Support
         </h1>
         <p className="text-gray-600 text-lg">
@@ -141,7 +141,7 @@ export default function HelpPage() {
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`px-6 py-3 rounded-lg font-semibold transition-all ${
+            className={`px-1 md:px-6 py-3 rounded-lg font-semibold transition-all text-sm md:text-xl ${
               activeTab === tab.id
                 ? "bg-blue-600 text-white shadow-lg"
                 : "bg-white text-gray-700 hover:bg-gray-100 shadow"

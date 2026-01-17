@@ -67,7 +67,7 @@ export default function LoginPage() {
                 <img src={registerPhoto2} alt="" className="w-full h-full object-cover"/>
             </div>
                         
-            <div className="w-full md:w-[50%] lg:w-[50%] flex justify-center p-2  md:m-5">
+            <div className="w-full md:w-[50%] lg:w-[50%] flex justify-center p-2 m-5 md:m-5">
                 <Card className="w-full shadow-2xl border-none bg-no">
                     <CardHeader className="text-center">
                         <CardTitle className="flex justify-center">

@@ -150,14 +150,15 @@ export function CohortFiles() {
       const fileDetails = await fileUploadService.getFileById(id);
       setSelectedFile(fileDetails);
     } catch (error) {
-      setErrors("Failed to fetch details.");
+      const message = error.response?.data?.message || error.message || "Failed to fetch file details.";
+      setErrors(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
   };
 
   const handleDownload = async (file) => {
-    // ... logic remains same as provided ...
     try {
         const res = await fetch(file.fileUrl);
         const blob = await res.blob();
@@ -189,18 +190,27 @@ export function CohortFiles() {
         </div>
       </div>
 
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {cohortFiles.map(file => (
-          <FileCard 
-            key={file._id} 
-            file={file} 
-            onFileClick={handleFileClick} 
-            onDownload={handleDownload}
-            loading={loading}
-            selectedFile={selectedFile}
-            errors={errors}
-          />
-        ))}
+        {cohortFiles.length > 0 ? (
+          cohortFiles.map(file => (
+            <FileCard 
+              key={file._id} 
+              file={file} 
+              onFileClick={handleFileClick} 
+              onDownload={handleDownload}
+              loading={loading}
+              selectedFile={selectedFile}
+              errors={errors}
+            />
+          ))
+        ) : (
+          <div className="col-span-full py-12 flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-800/50 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-700">
+            <FileIcon className="h-10 w-10 text-slate-300 mb-3" />
+            <p className="text-slate-500 font-bold">No cohort files found</p>
+            <p className="text-xs text-slate-400">Resources uploaded for your cohort will appear here.</p>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -222,7 +232,6 @@ export function GeneralFiles() {
   };
 
   const handleDownload = async (file) => {
-    // ... logic remains same as provided ...
      try {
         const res = await fetch(file.fileUrl);
         const blob = await res.blob();
@@ -250,17 +259,25 @@ export function GeneralFiles() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {generalFiles.map(file => (
-          <FileCard 
-            key={file._id} 
-            file={file} 
-            onFileClick={handleFileClick} 
-            onDownload={handleDownload}
-            loading={loading}
-            selectedFile={selectedFile}
-            errors={errors}
-          />
-        ))}
+        {generalFiles.length > 0 ? (
+          generalFiles.map(file => (
+            <FileCard 
+              key={file._id} 
+              file={file} 
+              onFileClick={handleFileClick} 
+              onDownload={handleDownload}
+              loading={loading}
+              selectedFile={selectedFile}
+              errors={errors}
+            />
+          ))
+        ) : (
+          <div className="col-span-full py-12 flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-800/50 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-700">
+            <FileIcon className="h-10 w-10 text-slate-300 mb-3" />
+            <p className="text-slate-500 font-bold">The library is empty</p>
+            <p className="text-xs text-slate-400">There are currently no general files available.</p>
+          </div>
+        )}
       </div>
     </div>
   );

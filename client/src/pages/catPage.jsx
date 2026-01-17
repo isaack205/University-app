@@ -22,6 +22,8 @@ import {
 } from "@/components/ui/dialog";
 import { motion } from "framer-motion";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { FileIcon } from "lucide-react";
+import { FilePenIcon } from "lucide-react";
 
 export default function CATPage() {
   const [CATS, setCATS] = useState([]);
@@ -84,7 +86,10 @@ export default function CATPage() {
 
   return (
     <div className="p-4">
-      <h3 className="text-3xl font-bold text-green-600 underline mb-6">My CATs'</h3>
+      <h3 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2 mb-6">
+          <FilePenIcon className="text-blue-500" />
+          My CATs'
+      </h3>
 
       {error && <p className="text-end text-red-500 text-xl">{error}</p>}
 
