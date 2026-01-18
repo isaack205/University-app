@@ -55,7 +55,7 @@ export default function NotificationDialog() {
       {/* 1. Trigger (The Bell Icon for your Navbar) */}
       <DialogTrigger asChild>
         <button className="relative p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-          <BellIcon className="h-6 w-6 text-slate-600 dark:text-slate-300" />
+          <BellIcon className="h-6 w-6 text-white hover:text-black dark:text-slate-300" />
           {unreadCount > 0 && (
             <span className="absolute top-1.5 right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white border-2 border-white dark:border-slate-900">
               {unreadCount}

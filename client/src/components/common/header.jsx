@@ -16,6 +16,7 @@ import { LogOutIcon } from "lucide-react";
 import { notificationService } from "@/services/notificationService";
 import ThemeToggle from "../themeToggle";
 import NotificationDialog from "@/pages/notificationPage";
+import LogoutDialog from "./logoutDialog";
 
 export default function Header () {
 
@@ -99,7 +100,8 @@ export default function Header () {
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem onClick={() => navigate('/profile')} className="cursor-pointer"><UserRoundCogIcon /> Profile</DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => navigate('/settings')} className="cursor-pointer"><SettingsIcon /> Settings</DropdownMenuItem>
-                                <DropdownMenuItem onClick={handleLogout} className="flex justify-between cursor-pointer">Log Out <LogOutIcon /> </DropdownMenuItem>
+                                
+                                <LogoutDialog /> 
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </div>
