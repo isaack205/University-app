@@ -2,7 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const { protect, authorize } = require('../middlewares/auth');
-const { registerUser, loginUser, getOwnProfile, updateProfile, changePassword, forgotPassword, resetPassword, deleteUser, getAllUsers } = require('../controllers/userController');
+const { registerUser, loginUser, getOwnProfile, updateProfile, changePassword, forgotPassword, resetPassword, deleteUser, getAllUsers, getUsersByCohort, updateUserRole } = require('../controllers/userController');
 
 router.post('/register', registerUser);
 router.post('/login', loginUser);
@@ -14,10 +14,13 @@ router.post('/reset-password', resetPassword);
 router.delete('/me', protect, deleteUser);
 
 // Admin get all users
-router.get('/users', protect, authorize(['classRep']), getAllUsers);
+router.get('/users', protect, authorize(['admin']), getAllUsers);
+
+router.get('/cohort/:cohortId', protect, authorize(['admin']), getUsersByCohort);
+router.patch('/update-role/:userId', protect, authorize(['admin']), updateUserRole);
 
 // Admin delete user
-router.delete('/users/:id', protect, authorize(['classRep']), deleteUser);
+router.delete('/users/:id', protect, authorize(['admin']), deleteUser);
 
 // Export
 module.exports = router;

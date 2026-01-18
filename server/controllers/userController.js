@@ -4,6 +4,8 @@ const JWT = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const sendEmail = require('../utils/sendEmail');
+const { sendAppNotification } = require('../services/notificationService');
+const { sendSMS } = require('../services/smsService');
 
 // Load env variables
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -270,5 +272,74 @@ exports.getAllUsers = async (req, res) => {
         res.status(200).json({ users });
     } catch (error) {
         res.status(500).json({ message: 'Error fetching users', error: error.message });
+    }
+};
+
+// Get users filtered by cohort
+exports.getUsersByCohort = async (req, res) => {
+    try {
+        // Find all users belonging to this specific cohort
+        const users = await User.find({ cohort: req.params.cohortId })
+                                .select('-password')
+                                .sort({ name: 1 }); // Alphabetically
+
+        if (!users) return res.status(404).json({ message: 'No users for specific cohort found'});
+
+        res.status(200).json({count: users.length, users });
+    } catch (error) {
+        res.status(500).json({ message: "Error fetching cohort users", error: error.message });
+    }
+};
+
+// Update user role
+exports.updateUserRole = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const { newRole } = req.body;
+
+        // Ensure the role is valid
+        const validRoles = ['student', 'classRep', 'admin'];
+        if (!validRoles.includes(newRole)) {
+            return res.status(400).json({ message: "Invalid role specified" });
+        }
+
+        // Prevent Self-Admin-Demotion
+        if (req.user.id === userId && req.user.role === 'admin' && newRole !== 'admin') {
+            return res.status(403).json({ message: "Admins cannot demote themselves for security reasons" });
+        }
+
+        // Find and update the user
+        const user = await User.findByIdAndUpdate(
+            userId, 
+            { role: newRole }, 
+            { new: true, runValidators: true }
+        ).select('-password');
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        // Send email to the user about their new status
+        // await sendEmail({
+        //     to: user.email,
+        //     subject: "Account Role Updated",
+        //     text: `Hi ${user.name},\n\nYour account role has been updated to: ${newRole}.\n\nPlease log out and log back in to see the changes reflected in your dashboard.`
+        // }).catch(() => { /* silent fail if email provider is down */ });
+
+        await sendAppNotification(
+            user._id, 
+            `Hi ${user.name},\n\nYour account role has been updated to: ${newRole}.\n\nPlease log out and log back in to see the changes reflected.`, 
+            'role_update', 
+            req.user.id, 
+        );
+
+        // await sendSMS(user._id, user.phoneNumber, `Hi ${user.name},\n\nYour account role has been updated to: ${newRole}.\n\nPlease log out and log back in to see the changes reflected.`, 'role_update');
+
+        res.status(200).json({ 
+            message: `User role successfully updated to ${newRole}`, 
+            user 
+        });
+    } catch (error) {
+        res.status(500).json({ message: "Error updating user role", error: error.message });
     }
 };
