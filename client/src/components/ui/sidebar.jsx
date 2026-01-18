@@ -93,6 +93,22 @@ export const Sidebar =  ({ isOpen, toggleSidebar }) => {
                     </div>
                 </div>
             }
+
+            <div className="mt-auto mb-10 p-4 border-t border-slate-100 dark:border-slate-800">
+                <div className="flex flex-col gap-1">
+                    <div className="flex items-center gap-2">
+                        <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                            System Operational
+                        </span>
+                    </div>
+                    <p className="text-[9px] font-medium text-balck">
+                        CampusHub v0.1.0 • Chuka Build
+                    </p>
+                </div>
+            </div>
+            
+
         </div>
     )
 }
