@@ -120,7 +120,13 @@ export default function HelpPage() {
       <div className="mb-12">
         <div className="flex items-center gap-1 hover:underline hover:text-blue-500">
             <ArrowLeftCircleIcon />
-            {user && <Link to='/home'>Back to Home</Link> || <Link to='/login'>Back to Login</Link> }
+            {user && user.role === 'admin' ? (
+              <Link to='/admin/dashboard'>Back to Home</Link>
+            ) : user && (user.role === 'classRep' || user.role === 'student') ? (
+              <Link to='/home'>Back to home</Link>
+            ) : (
+              <Link to='/login'>Back to Login</Link>
+            )}
         </div>
         <h1 className="text-3xl md:text-5xl font-bold text-blue-900 mb-3  text-center">
           Help & Support
