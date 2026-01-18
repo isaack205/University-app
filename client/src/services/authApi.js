@@ -113,5 +113,28 @@ export const authService = {
             console.error('Error fetching all users:', error.response?.data || error.message);
             throw error;
         }
-    }
+    },
+
+    // Fetch users by Cohort
+    getUsersByCohort: async (cohortId, usersData) => {
+        try {
+            const res = await API.get(`/auth/cohort/${cohortId}`, usersData);
+            return res.data;
+        } catch (error) {
+            console.error('Error fetching users per cohort:', error.response?.data || error.message);
+            throw error;
+        }
+    },
+
+    // Update a users role
+    updateUserRole: async (userId, userData) => {
+        try {
+            const res = await API.patch(`/auth/update-role/${userId}`, userData);
+            return res.data;
+        } catch (error) {
+            console.error('Error updating user role:', error.response?.data || error.message);
+            throw error;
+        }
+    },
+
 }

@@ -268,7 +268,7 @@ exports.deleteUser = async (req, res) => {
 // Get all users (admin only)
 exports.getAllUsers = async (req, res) => {
     try {
-        const users = await User.find().select('-password');
+        const users = await User.find().select('-password').populate([{ path: 'course', select: 'name'}, {path: 'cohort', select: 'name'}])
         res.status(200).json({ users });
     } catch (error) {
         res.status(500).json({ message: 'Error fetching users', error: error.message });
@@ -281,6 +281,7 @@ exports.getUsersByCohort = async (req, res) => {
         // Find all users belonging to this specific cohort
         const users = await User.find({ cohort: req.params.cohortId })
                                 .select('-password')
+                                .populate([{ path: 'course', select: 'name'}, {path: 'cohort', select: 'name'}])
                                 .sort({ name: 1 }); // Alphabetically
 
         if (!users) return res.status(404).json({ message: 'No users for specific cohort found'});

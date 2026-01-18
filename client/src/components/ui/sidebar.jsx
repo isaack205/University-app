@@ -7,6 +7,7 @@ import { GraduationCapIcon } from "lucide-react";
 import { useAuth } from "@/contexts/authContext";
 import { SchoolIcon } from "lucide-react";
 import FileMenu from "../fileMenu";
+import { User2Icon } from "lucide-react";
 
 export const Sidebar =  ({ isOpen, toggleSidebar }) => {
 
@@ -75,15 +76,15 @@ export const Sidebar =  ({ isOpen, toggleSidebar }) => {
                     <div className="mt-4">
                         <h3 className="font-bold text-xl"></h3>
                         <div className="flex flex-col items-start">
-                            {/* <Button className="bg-no mb-5 text-blue-500 font-bold md:text-xl lg:text-2xl cursor-pointer shadow-lg hover:shadow-xl hover:underline hover:bg-no hover:-translate-y-2 transform easeinout duration-500" onClick={() => { navigate('/auth/users'); if (window.innerWidth < 1024) toggleSidebar(); }}>
+                            <Button className="bg-no mb-5 text-blue-500 font-bold md:text-xl lg:text-2xl cursor-pointer shadow-lg hover:shadow-xl hover:underline hover:bg-no hover:-translate-y-2 transform easeinout duration-500" onClick={() => { navigate('/admin/users'); if (window.innerWidth < 1024) toggleSidebar(); }}>
                                 <User2Icon /> 
                                 Manage Users
-                            </Button> */}
-                            <Button className="bg-no mb-5 text-blue-500 font-bold md:text-xl lg:text-2xl cursor-pointer shadow-lg hover:shadow-xl hover:underline hover:bg-no hover:-translate-y-2 transform easeinout duration-500" onClick={() => { navigate('/course'); if (window.innerWidth < 1024) toggleSidebar(); }}>
+                            </Button>
+                            <Button className="bg-no mb-5 text-blue-500 font-bold md:text-xl lg:text-2xl cursor-pointer shadow-lg hover:shadow-xl hover:underline hover:bg-no hover:-translate-y-2 transform easeinout duration-500" onClick={() => { navigate('/admin/course'); if (window.innerWidth < 1024) toggleSidebar(); }}>
                                 <GraduationCapIcon /> 
                                 Manage Courses
                             </Button>
-                            <Button className="bg-no mb-5 text-blue-500 font-bold md:text-xl lg:text-2xl cursor-pointer shadow-lg hover:shadow-xl hover:underline hover:bg-no hover:-translate-y-2 transform easeinout duration-500" onClick={() => { navigate('/cohort'); if (window.innerWidth < 1024) toggleSidebar(); }}>
+                            <Button className="bg-no mb-5 text-blue-500 font-bold md:text-xl lg:text-2xl cursor-pointer shadow-lg hover:shadow-xl hover:underline hover:bg-no hover:-translate-y-2 transform easeinout duration-500" onClick={() => { navigate('/admin/cohort'); if (window.innerWidth < 1024) toggleSidebar(); }}>
                                 <SchoolIcon /> 
                                 Manage Cohorts
                             </Button>

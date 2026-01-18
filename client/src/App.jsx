@@ -26,6 +26,7 @@ import CATPage from "./pages/catPage";
 import { GeneralFiles,CohortFiles } from "./pages/filePages";
 import HelpPage from "./pages/helpPage";
 import FloatingActionButtons from "./components/common/floatingActionButtons";
+import UsersEditPage from "./components/dashboard/adminDashboard/usersPage";
 
 export default function App () {
   return (
@@ -70,8 +71,9 @@ export default function App () {
 
           <Route element={<ProtectedRoute allowedRoles={['admin']} />}  >
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
-            <Route path="/course" element={<CoursePage />} />
-            <Route path="/cohort" element={<CohortPage />} />
+            <Route path="/admin/course" element={<CoursePage />} />
+            <Route path="/admin/cohort" element={<CohortPage />} />
+            <Route path="/admin/users" element={<UsersEditPage />} />
           </Route>
 
         </Route>
