@@ -103,7 +103,7 @@ export const Sidebar =  ({ isOpen, toggleSidebar }) => {
                         </span>
                     </div>
                     <p className="text-[9px] font-medium text-balck">
-                        CampusHub v0.1.0 • Chuka Build
+                        CampusHub v0.1.1 • Chuka Build
                     </p>
                 </div>
             </div>

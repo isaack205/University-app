@@ -27,6 +27,7 @@ import { GeneralFiles,CohortFiles } from "./pages/filePages";
 import HelpPage from "./pages/helpPage";
 import FloatingActionButtons from "./components/common/floatingActionButtons";
 import UsersEditPage from "./components/dashboard/adminDashboard/usersPage";
+import ManageFiles from "./components/dashboard/classRepDashboard/manageFiles";
 
 export default function App () {
   return (
@@ -66,6 +67,7 @@ export default function App () {
               <Route path='schedule' element={<ManageUnitSchedule />} />
               <Route path="assignment" element={<ManageAssignment /> }/>
               <Route path="CAT" element={<ManageCat />} />
+              <Route path="file" element={<ManageFiles />} />
             </Route>
           </Route>
 

@@ -67,7 +67,7 @@ const FileCard = ({ file, onFileClick, onDownload, loading, selectedFile, errors
               <DetailRow label="File Name" value={selectedFile.fileName} />
               <div className="flex justify-between items-center">
                 <DetailRow label="Category" value={selectedFile.fileType} isBadge badgeClass={getBadgeClass(selectedFile.fileType)} />
-                <DetailRow label="Size" value="Direct Link" />
+                <DetailRow label="Size(kb)" value={((selectedFile?.fileSize)/1024).toFixed(2)}/>
               </div>
               <DetailRow label="Description" value={selectedFile.fileDescription || 'No description provided'} />
               <div className="grid grid-cols-2 gap-4 pt-2 border-t border-slate-100 dark:border-slate-800">

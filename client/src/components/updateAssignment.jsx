@@ -26,6 +26,7 @@ import { useAuth } from "@/contexts/authContext";
 import { toast } from "sonner";
 import { unitScheduleService } from "@/services/unitSchedulerApi";
 import { assignmentService } from "@/services/assignementApi";
+import { Textarea } from "./ui/textarea";
 
 export default function UpdateAssignment({ assignment, refreshAssignment }) {
 
@@ -168,7 +169,7 @@ export default function UpdateAssignment({ assignment, refreshAssignment }) {
 
                         <span>
                             <Label htmlFor="description" className="text-lg md:text-2xl lg:text-2xl text-blue-600">Description</Label>
-                            <Input 
+                            <Textarea 
                                 id="description"
                                 name="description"
                                 value={description}

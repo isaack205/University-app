@@ -49,7 +49,7 @@ export const fileUploadService = {
     },
 
     // Update file
-    updateFile: async (fileData, fileId) => {
+    updateFile: async (fileId, fileData) => {
         try {
             const res = await API.put(`/upload/${fileId}`, fileData);
             return res.data;

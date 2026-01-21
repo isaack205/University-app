@@ -41,7 +41,7 @@ exports.createFile = async (req, res) => {
     }
 
     const result = await cloudinary.uploader.upload(req.file.path, {
-      folder: 'campus_files',
+      folder: process.env.CLOUDINARY_FOLDER,
       resource_type: 'auto',
     });
 
@@ -50,6 +50,7 @@ exports.createFile = async (req, res) => {
         fileDescription: req.body.fileDescription || '',
         fileUrl: result.secure_url,
         fileType: providedType,
+        fileSize: result.bytes,
         course: req.body.course || null,
         cohort: req.body.cohort || null,
         uploadedBy: req.user._id,
@@ -181,9 +182,16 @@ exports.updateFile = async (req, res) => {
 
     // If a new file binary is provided, upload and include URL in update object
     if (req.file) {
-      const result = await cloudinary.uploader.upload(req.file.path, { folder: 'campus_files', resource_type: 'auto' });
+      if (file.fileUrl) { 
+        const publicId = file.fileUrl.split('/').slice(-2).join('/').split('.')[0];
+        await cloudinary.uploader.destroy(publicId, { resource_type: 'raw' }); 
+      };
+      const result = await cloudinary.uploader.upload(req.file.path, { folder: process.env.CLOUDINARY_FOLDER, resource_type: 'raw' });
+
       updateObj.fileUrl = result.secure_url;
-      updateObj.fileName = req.file.originalname
+      updateObj.fileName = req.file.originalname;
+      updateObj.fileSize = result.bytes;
+
       try { if (req.file && req.file.path) fs.unlink(req.file.path, () => {}); } catch (e) { console.warn('temp cleanup failed', e.message || e); }
     }
 

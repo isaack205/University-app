@@ -7,6 +7,7 @@ const fileUploadSchema = new mongoose.Schema({
   fileDescription: { type: String, max: 50},
   fileUrl: { type: String, required: true },   // Cloudinary secure_url
   fileType: { type: String, enum: ['General', 'Event', 'Assignment', 'Notes', 'CAT'], required: true},
+  fileSize: { type: String },
   course: { type: mongoose.Schema.Types.ObjectId, ref: 'Course' },
   cohort: { type: mongoose.Schema.Types.ObjectId, ref: 'Cohort' },
   uploadedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },                // optional: lecturer/student name

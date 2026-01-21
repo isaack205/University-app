@@ -33,6 +33,7 @@ import { unitScheduleService } from "@/services/unitSchedulerApi";
 import { toast } from "sonner";
 import { assignmentService } from "@/services/assignementApi";
 import UpdateAssignment from "@/components/updateAssignment";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function ManageAssignment() {
 
@@ -186,11 +187,11 @@ export default function ManageAssignment() {
 
                         <span>
                             <Label htmlFor="description" className="text-lg md:text-2xl lg:text-2xl text-blue-600">Description</Label>
-                            <Input 
+                            <Textarea 
                                 id="description"
                                 name="description"
                                 value={description}
-                                type="text"
+                                type="textarea"
                                 onChange={(e) => setDescription(e.target.value)}
                                 className='border border-green-500'
                                 placeholder="Description (Optional)"
