@@ -214,7 +214,7 @@ export default function Home() {
                     <div className="space-y-2">
                       <div className="flex items-center gap-3 text-sm text-slate-600 dark:text-slate-300">
                         <Clock size={16} className="text-blue-500" />
-                        <span>{item.startTime} - {item.endTime}</span>
+                        <span>{item.dayOfWeek}: {item.startTime} - {item.endTime}</span>
                       </div>
                       <div className="flex items-center gap-3 text-sm text-slate-600 dark:text-slate-300">
                         <MapPin size={16} className="text-rose-500" />

@@ -90,7 +90,7 @@ exports.updateSchedule = async (req, res) => {
 
                 await sendAppNotification(
                     student._id, 
-                    `⚠️ ${updatedSchedule.unitName} schedule updated: ${updatedSchedule.startTime} at ${updatedSchedule.venue}`,
+                    `⚠️ ${updatedSchedule.unitName} schedule updated: ${updatedSchedule.dayOfWeek} - ${updatedSchedule.startTime} at ${updatedSchedule.venue}`,
                     'schedule', 
                     updatedSchedule._id, 
                 );

@@ -222,7 +222,7 @@ export default function AssignmentPage() {
                   <DetailItem label="Title" value={selectedAssignment.title} icon={<ClipboardCheckIcon size={14}/>} color="text-blue-600" />
                   <DetailItem label="Unit Name" value={selectedAssignment.unit.unitName} icon={<BookOpenIcon size={14}/>} />
                   <DetailItem label="Unit Code" value={selectedAssignment.unit.unitCode.toUpperCase()} icon={<HashIcon size={14}/>} />
-                  <DetailItem label="Lecturer" value={`Mr/Mrs. ${selectedAssignment.unit.lecturer}`} icon={<UserIcon size={14}/>} />
+                  <DetailItem label="Lecturer" value={`${selectedAssignment.unit.lecturer}`} icon={<UserIcon size={14}/>} />
                   <DetailItem label="Cohort" value={selectedAssignment.cohort.name} icon={<UserIcon size={14}/>} />
                   <DetailItem label="Due Date" value={new Date(selectedAssignment.dueDate).toLocaleString()} icon={<CalendarIcon size={14}/>} color="text-red-500" />
                 </div>

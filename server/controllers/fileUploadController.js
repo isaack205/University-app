@@ -42,7 +42,7 @@ exports.createFile = async (req, res) => {
 
     const result = await cloudinary.uploader.upload(req.file.path, {
       folder: process.env.CLOUDINARY_FOLDER,
-      resource_type: 'auto',
+      resource_type: 'raw',
     });
 
     const fileUpload = await FileUpload.create({

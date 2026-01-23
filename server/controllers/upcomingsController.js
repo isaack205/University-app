@@ -21,7 +21,7 @@ exports.getUpcomingItems = async (req, res) => {
 
         const schedules = await UnitSchedule.find({
             cohort: user.cohort,
-            dayOfWeek: { $in: [today, tomorrow] }
+            dayOfWeek: today
         });
 
         const dayOrder = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
