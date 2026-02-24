@@ -37,6 +37,7 @@ exports.getMyShedule = async (req, res) => {
         const schedules = await UnitSchedule.find({ cohort: user.cohort })
                                             .populate([
                                                 { path: 'cohort', select: 'name year'},
+                                                { path: 'lecturer', select: 'name phoneNumber email'},
                                             ]);
         res.status(200).json(schedules);
     } catch (err) {
@@ -47,7 +48,7 @@ exports.getMyShedule = async (req, res) => {
 // Get a single schedule
 exports.getScheduleById = async (req, res) => {
     try {
-        const schedule = await UnitSchedule.findById(req.params.id);
+        const schedule = await UnitSchedule.findById(req.params.id).populate('lecturer');
         if (!schedule) return res.status(404).json({ message: 'Schedule not found' });
         res.status(200).json(schedule);
     } catch (err) {
