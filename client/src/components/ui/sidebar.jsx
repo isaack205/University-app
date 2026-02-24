@@ -85,7 +85,7 @@ export const Sidebar =  ({ isOpen, toggleSidebar }) => {
                                 </div>
 
                                 <Button 
-                                    className="bg-yellow-200 hover:bg-no text-blue-500 font-bold md:text-xl lg:text-2xl cursor-pointer shadow-lg hover:shadow-2xl hover:underline hover:-translate-y-2 transform transition-all duration-500 flex items-center gap-3 px-6 py-6 rounded-2xl" 
+                                    className="bg-yellow-200 hover:bg-no text-blue-500 font-bold md:text-xl lg:text-2xl cursor-pointer shadow-lg hover:shadow-2xl hover:-translate-y-2 transform transition-all duration-500 flex items-center gap-3 px-6 py-6 rounded-2xl" 
                                     onClick={handleLecturerClick}
                                 >
                                     <User2Icon className="w-6 h-6" /> 
