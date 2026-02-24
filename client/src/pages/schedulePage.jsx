@@ -168,7 +168,7 @@ export default function SchedulePage() {
               <div className="space-y-2.5 pt-4 border-t border-slate-100 dark:border-slate-800">
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-slate-500 flex items-center gap-1.5 font-medium"><UserIcon size={14}/> Lecturer</span>
-                  <span className="text-slate-900 dark:text-white font-bold tracking-tight">{schedule.lecturer}</span>
+                  <span className="text-slate-900 dark:text-white font-bold tracking-tight">{schedule.lecturer?.name}</span>
                 </div>
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-slate-500 flex items-center gap-1.5 font-medium"><MapPinIcon size={14}/> Venue</span>

@@ -26,12 +26,13 @@ import {
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/authContext";
 import { SquarePenIcon } from "lucide-react";
+import { lecturerService } from "@/services/lecturerApi";
 
-export default function UpdateUnit({ unit, refreshUnits }) { // Unit as props
+export default function UpdateUnit({ unit, refreshUnits, lecturers }) { // Unit as props
 
     const [unitName, setUnitName] = useState(unit?.unitName || '');
     const [unitCode, setUnitCode] = useState(unit?.unitCode || '');
-    const [lecturer, setLecturer] = useState(unit?.lecturer || '');
+    const [selectedLecturer, setSelectedLecturer] = useState(unit?.lecturer?._id);
     const [venue, setVenue] = useState(unit?.venue || '');
     const [dayOfWeek, setDayOfWeek] = useState(unit?.dayOfWeek || '');
     const [startTime, setStartTime] = useState(unit?.startTime || '');
@@ -63,8 +64,8 @@ export default function UpdateUnit({ unit, refreshUnits }) { // Unit as props
             isValid = false;
         }
 
-        if (!lecturer.trim()) {
-            errors.lecturer = 'Lecturer name is required.'
+        if (!selectedLecturer.trim()) {
+            errors.selectedLecturer = 'Lecturer name is required.'
             isValid = false;
         }
 
@@ -101,7 +102,7 @@ export default function UpdateUnit({ unit, refreshUnits }) { // Unit as props
         }
 
         const payload = {
-            _id: unit?._id, unitName, unitCode, lecturer, venue, dayOfWeek, startTime, endTime, cohort
+            _id: unit?._id, unitName, unitCode, lecturer: selectedLecturer, venue, dayOfWeek, startTime, endTime, cohort
         }
 
         try {
@@ -166,19 +167,25 @@ export default function UpdateUnit({ unit, refreshUnits }) { // Unit as props
 
                         <span>
                             <Label htmlFor="lecturer" className="text-lg md:text-2xl lg:text-2xl text-blue-600">Lecturer:</Label>
-                            <Input
+                            <Select
+                                onValueChange={(value) => setSelectedLecturer(value)}
                                 id="lecturer"
-                                name="lecturer"
-                                type="text"
-                                value={lecturer}
-                                onChange={(e) => setLecturer(e.target.value)}
-                                className={`border ${formDataError.lecturer ? 'border-2 border-red-500 shadow shadow-red-500' : 'border-green-500'}`}
+                                value={selectedLecturer}
                                 disabled={loading}
-                                required
-                                placeholder="John doe"
-                            />
+                            >
+                                <SelectTrigger className="w-[180px] w-full">
+                                    <SelectValue placeholder="Select lecturer" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {lecturers.map(lecturer => (
+                                        <SelectItem value={lecturer._id} key={lecturer._id}>
+                                            {lecturer.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </span>
-                        {formDataError.lecturer && <p className="mt-1 font-bold text-red-600">{formDataError.lecturer}</p>}
+                        {formDataError.selectedLecturer && <p className="mt-1 font-bold text-red-600">{formDataError.selectedLecturer}</p>}
 
                         <span>
                             <Label htmlFor="venue" className="text-lg md:text-2xl lg:text-2xl text-blue-600">Venue:</Label>

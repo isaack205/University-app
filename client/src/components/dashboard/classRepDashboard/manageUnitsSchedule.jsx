@@ -35,12 +35,14 @@ import {
   TableRow,
 } from "@/components/ui/table2";
 import UpdateUnit from "@/components/updateUnits";
+import { lecturerService } from "@/services/lecturerApi";
 
 export default function ManageUnitSchedule() {
 
     const [unitName, setUnitName] = useState('');
     const [unitCode, setUnitCode] = useState('');
-    const [lecturer, setLecturer] = useState('');
+    const [lecturers, setLecturers] = useState({ currentSemester: []})
+    const [selectedLecturer, setSelectedLecturer] = useState('');
     const [venue, setVenue] = useState('');
     const [dayOfWeek, setDayOfWeek] = useState('');
     const [startTime, setStartTime] = useState('');
@@ -57,7 +59,7 @@ export default function ManageUnitSchedule() {
     const resetForm = () => {
         setUnitName('');
         setUnitCode('');
-        setLecturer('');
+        setSelectedLecturer('');
         setVenue('');
         setDayOfWeek('');
         setStartTime('');
@@ -65,6 +67,16 @@ export default function ManageUnitSchedule() {
         setCohort('');
         setFormDataError('');
     };
+
+    const fetchLecturers = async () => {
+        try {
+            const lecturersData = await lecturerService.getLecturersByCohort(user?.cohort?._id);
+            setLecturers(lecturersData);
+        } catch (error) {
+            const message = error.response?.data?.message || error.message || "Failed to fetch lecturers";
+            console.error(message);
+        }
+    }
 
     const fetchUnitSchedules = async () => {
         setLoadingUnits(true);
@@ -103,8 +115,8 @@ export default function ManageUnitSchedule() {
             isValid = false;
         }
 
-        if (!lecturer.trim()) {
-            errors.lecturer = 'Lecturer name is required.'
+        if (!selectedLecturer.trim()) {
+            errors.selectedLecturer = 'Lecturer name is required.'
             isValid = false;
         }
 
@@ -141,7 +153,7 @@ export default function ManageUnitSchedule() {
         }
 
         const payload = {
-            unitName, unitCode, lecturer, venue, dayOfWeek, startTime, endTime, cohort
+            unitName, unitCode, lecturer: selectedLecturer, venue, dayOfWeek, startTime, endTime, cohort
         }
 
         try {
@@ -162,7 +174,8 @@ export default function ManageUnitSchedule() {
 
     useEffect(() => {
 
-        refreshUnits: fetchUnitSchedules();
+        fetchUnitSchedules();
+        fetchLecturers();
     }, []);
 
     return (
@@ -210,19 +223,25 @@ export default function ManageUnitSchedule() {
 
                         <span>
                             <Label htmlFor="lecturer" className="text-lg md:text-2xl lg:text-2xl text-blue-600">Lecturer:</Label>
-                            <Input
+                            <Select
+                                onValueChange={(value) => setSelectedLecturer(value)}
                                 id="lecturer"
-                                name="lecturer"
-                                type="text"
-                                value={lecturer}
-                                onChange={(e) => setLecturer(e.target.value)}
-                                className={`border ${formDataError.lecturer ? 'border-2 border-red-500 shadow shadow-red-500' : 'border-green-500'}`}
+                                value={selectedLecturer}
                                 disabled={loading}
-                                required
-                                placeholder="John doe"
-                            />
+                            >
+                                <SelectTrigger className="w-[180px] w-full">
+                                    <SelectValue placeholder="Select lecturer" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {lecturers.currentSemester.map(lecturer => (
+                                        <SelectItem value={lecturer._id} key={lecturer._id}>
+                                            {lecturer.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </span>
-                        {formDataError.lecturer && <p className="mt-1 font-bold text-red-600">{formDataError.lecturer}</p>}
+                        {formDataError.selectedLecturer && <p className="mt-1 font-bold text-red-600">{formDataError.selectedLecturer}</p>}
 
                         <span>
                             <Label htmlFor="venue" className="text-lg md:text-2xl lg:text-2xl text-blue-600">Venue:</Label>
@@ -388,7 +407,7 @@ export default function ManageUnitSchedule() {
                                     <TableCell>{unit.dayOfWeek} : {unit.startTime} - {unit.endTime}</TableCell>
                                     <TableCell className="">{unit.venue}</TableCell>
                                     <TableCell className="text-right">
-                                        <UpdateUnit unit={unit} refreshUnits={fetchUnitSchedules}/>
+                                        <UpdateUnit unit={unit} refreshUnits={fetchUnitSchedules} lecturers={lecturers.currentSemester}/>
                                     </TableCell>
                                 </TableRow>
                             ))}

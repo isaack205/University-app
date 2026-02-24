@@ -198,7 +198,7 @@ export default function Home() {
         <div className="lg:col-span-2 space-y-6">
           <div className="flex items-center justify-between px-2">
             <h3 className="font-bold text-lg flex items-center gap-2">
-              <Clock className="text-blue-500" size={20} /> Next 24 Hours
+              <Clock className="text-blue-500" size={20} /> Today's Classes
             </h3>
             <Button variant="ghost" size="sm" onClick={() => navigate('/schedule')} className="text-blue-600">
               Full Timetable <ChevronRight size={16} />
@@ -230,7 +230,7 @@ export default function Home() {
               ))
             ) : (
               <div className="col-span-full py-12 text-center bg-slate-50 dark:bg-slate-800/50 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-700">
-                <p className="text-slate-500">No classes in the next 24 hours.</p>
+                <p className="text-slate-500">No classes today.</p>
               </div>
             )}
           </div>

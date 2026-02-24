@@ -1,6 +1,6 @@
 import React from "react";
 import { Button } from "./button";
-import { CircleXIcon } from "lucide-react";
+import { CircleXIcon, Crown } from "lucide-react";
 import { useNavigate } from 'react-router-dom'
 import { LayoutDashboardIcon, CalendarDaysIcon, NotebookPenIcon, PencilLineIcon } from "lucide-react";
 import { GraduationCapIcon } from "lucide-react";
@@ -8,11 +8,35 @@ import { useAuth } from "@/contexts/authContext";
 import { SchoolIcon } from "lucide-react";
 import FileMenu from "../fileMenu";
 import { User2Icon } from "lucide-react";
+import confetti from "canvas-confetti";
+import { BrainCircuitIcon } from "lucide-react";
 
 export const Sidebar =  ({ isOpen, toggleSidebar }) => {
 
     const navigate = useNavigate();
     const {hasRole} = useAuth();
+
+    const handleLecturerClick = () => {
+    // 1. Check if they've seen the "New Feature" celebration before
+    const hasSeenCelebration = localStorage.getItem('hasSeenLecturerFeature');
+
+    if (!hasSeenCelebration) {
+        // 2. Trigger the Confetti!
+        confetti({
+        particleCount: 150,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ['#3b82f6', '#f59e0b', '#10b981'] // Blue, Gold, and Green
+        });
+
+        // 3. Save to localStorage so it doesn't repeat
+        localStorage.setItem('hasSeenLecturerFeature', 'true');
+    }
+
+    // 4. Run your existing navigation logic
+    navigate('/lecturers'); 
+    if (window.innerWidth < 1024) toggleSidebar();
+    };
 
     return (
         <div className={`min-h-screen border-to-r border-purple-400 flex flex-col p-5 fixed top-15 left-0 h-full w-[60%] md:w-[30%] lg:w-90 z-[999] rounded-r-2xl backdrop-blur-lg border ${ isOpen ? 'translate-x-0' : '-translate-x-full'} lg:transform-none lg:translate-x-0 transition-transform easeinout duration-700`}>
@@ -49,6 +73,43 @@ export const Sidebar =  ({ isOpen, toggleSidebar }) => {
                                 CAT(S)
                             </Button>
                             <FileMenu isOpen={isOpen} toggleSidebar={toggleSidebar} />
+                            {/* <Button className="bg-no mb-5 text-blue-500 font-bold md:text-xl lg:text-2xl cursor-pointer shadow-lg hover:shadow-xl hover:underline hover:bg-no hover:-translate-y-2 transform easeinout duration-500" onClick={() => { navigate('/lecturers'); if (window.innerWidth < 1024) toggleSidebar(); }}>
+                                <User2Icon />
+                                Lecturer(S)
+                            </Button> */}
+                            <div className="relative inline-block mb-5 group animate-pulse">
+
+                                <div className="absolute -top-3 -right-2 z-10 animate-bounce transition-transform group-hover:scale-125 flex gap-2">
+                                    <p className="text-yellow-500 font-bold">NEW</p>
+                                    <Crown className="w-5 h-5 text-amber-500 fill-amber-400 drop-shadow-md" />
+                                </div>
+
+                                <Button 
+                                    className="bg-yellow-200 hover:bg-no text-blue-500 font-bold md:text-xl lg:text-2xl cursor-pointer shadow-lg hover:shadow-2xl hover:underline hover:-translate-y-2 transform transition-all duration-500 flex items-center gap-3 px-6 py-6 rounded-2xl" 
+                                    onClick={handleLecturerClick}
+                                >
+                                    <User2Icon className="w-6 h-6" /> 
+                                    <span>Lecturers Directory</span>
+                                </Button>
+                            </div>
+                            <div className="relative inline-block mb-5 group cursor-not-allowed opacity-70 ">
+                                <Button 
+                                    className="bg-no hover:bg-no text-blue-500 font-bold md:text-xl lg:text-2xl cursor-pointe shadow-lg hover:shadow-2xl hover:underline hover:-translate-y-2 transform transition-all duration-500 flex items-center gap-3 px-6 py-6 rounded-2xl" 
+                                    onClick={handleLecturerClick}
+                                    disabled
+                                >
+                                    <BrainCircuitIcon className="w-6 h-6" /> 
+                                    <div>
+                                        <span>Exam TT</span>
+                                        <span className="absolute right-1 top-1/2 -translate-y-6 px-1.5 py-0.5 rounded text-[8px] font-bold bg-amber-100 text-amber-600 border border-amber-200 uppercase tracking-tighter">
+                                            Soon
+                                        </span>
+                                    </div>
+                                </Button>
+                                <div className="absolute hidden group-hover:block bottom-full mb-2 left-1/2 -translate-x-1/2 px-2 py-1 bg-slate-800 text-white text-[10px] rounded whitespace-nowrap">
+                                    Coming in v0.2.0! 🚀
+                                </div>
+                            </div>
                             <hr className="border-black mb-2 w-full rounded-xl"/>
                             {hasRole('classRep')  && 
                                 <Button className="bg-no text-blue-500 font-bold md:text-xl lg:text-2xl cursor-pointer shadow-lg hover:shadow-xl hover:underline hover:bg-no hover:-translate-y-2 transform easeinout duration-500" onClick={() => { navigate('/dashboard'); if (window.innerWidth < 1024) toggleSidebar(); }}>
@@ -103,7 +164,7 @@ export const Sidebar =  ({ isOpen, toggleSidebar }) => {
                         </span>
                     </div>
                     <p className="text-[9px] font-medium text-balck">
-                        CampusHub v0.1.1 • Chuka Build
+                        CampusHub v0.1.3 • Chuka Build
                     </p>
                 </div>
             </div>

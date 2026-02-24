@@ -28,6 +28,8 @@ import HelpPage from "./pages/helpPage";
 import FloatingActionButtons from "./components/common/floatingActionButtons";
 import UsersEditPage from "./components/dashboard/adminDashboard/usersPage";
 import ManageFiles from "./components/dashboard/classRepDashboard/manageFiles";
+import LecturersPage from "./pages/lecturerPage";
+import ManageLecturers from "./components/dashboard/classRepDashboard/manageLecturer";
 
 export default function App () {
   return (
@@ -55,6 +57,7 @@ export default function App () {
             <Route path="/assignment/assignments" element={<AssignmentPage /> } />
             <Route path="/CAT" element={<CATPage /> } />
             <Route path="/upload/general" element={<GeneralFiles />} />
+            <Route path="/lecturers" element={<LecturersPage />} />
           </Route>
 
           <Route element={<ProtectedRoute allowedRoles={['student', 'classRep', 'admin']} />}>
@@ -68,6 +71,7 @@ export default function App () {
               <Route path="assignment" element={<ManageAssignment /> }/>
               <Route path="CAT" element={<ManageCat />} />
               <Route path="file" element={<ManageFiles />} />
+              <Route path="lecturers" element={<ManageLecturers />} />
             </Route>
           </Route>
 
