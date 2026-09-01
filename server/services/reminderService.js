@@ -1,6 +1,6 @@
 const Assignment = require('../models/assignement');
 const UnitSchedule = require('../models/unit');
-const User = require('../models/user');
+const { User } = require('../models/user');
 const { sendAppNotification } = require('./notificationService');
 const { sendSMS } = require('./smsService');
 

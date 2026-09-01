@@ -116,159 +116,157 @@ export default function UpdateFile({ fileInfo, refreshFiles }) {
     return(
         <div>
             <Dialog>
-                <DialogTrigger className="">
-                    <SquarePenIcon className="text-green-500 cursor-pointer hover:-translate-y-1 transition-all duration-500 "/>
+                <DialogTrigger asChild>
+                    <Button variant="ghost" size="icon" aria-label="Edit file">
+                        <SquarePenIcon className="text-green-600"/>
+                    </Button>
                 </DialogTrigger>
-                <DialogContent className="bg-gray-300 dark:bg-slate-800">
+                <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
                     <DialogHeader>
-                        <DialogTitle className="text-2xl font-bold text-green-500 text-center ">Update file</DialogTitle>
-                        <DialogDescription className="text-red-500">* All fields are required</DialogDescription>
+                        <DialogTitle>Update file</DialogTitle>
+                        <DialogDescription>* All fields are required</DialogDescription>
                     </DialogHeader>
 
                     <form onSubmit={handleSubmit}>
-                        <span>
-                            <Label htmlFor="filename" className="text-lg md:text-2xl lg:text-2xl text-blue-600">File Name:</Label>
-                            <Input
-                                id="filename"
-                                name="fileName"
-                                type="text"
-                                value={fileName}
-                                onChange={(e) => setFileName(e.target.value)}
-                                className={`border ${formDataError.fileName ? 'border-2 border-red-500 shadow shadow-red-500' : 'border-green-500'}`}
-                                disabled={loading}
-                                required
-                                placeholder="Word Docs"
-                            />
-                        </span>
-                        {formDataError.fileName && <p className="mt-1 font-bold text-red-600">{formDataError.fileName}</p>}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <Label htmlFor="filename">File Name</Label>
+                                <Input
+                                    id="filename"
+                                    name="fileName"
+                                    type="text"
+                                    value={fileName}
+                                    onChange={(e) => setFileName(e.target.value)}
+                                    className={`mt-1.5 ${formDataError.fileName ? 'border-destructive' : ''}`}
+                                    disabled={loading}
+                                    required
+                                    placeholder="Word Docs"
+                                />
+                                {formDataError.fileName && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.fileName}</p>}
+                            </div>
 
-                        <span>
-                            <Label htmlFor="filedescription" className="text-lg md:text-2xl lg:text-2xl text-blue-600">File Description:</Label>
-                            <Input
-                                id="filedescription"
-                                name="fileDescription"
-                                type="text"
-                                value={fileDescription}
-                                onChange={(e) => setFileDescription(e.target.value)}
-                                className={`border ${formDataError.fileDescription ? 'border-2 border-red-500 shadow shadow-red-500' : 'border-green-500'}`}
-                                disabled={loading}
-                                required
-                                placeholder="description"
-                            />
-                        </span>
-                        {formDataError.fileDescription && <p className="mt-1 font-bold text-red-600">{formDataError.fileDescription}</p>}
+                            <div>
+                                <Label htmlFor="filedescription">File Description</Label>
+                                <Input
+                                    id="filedescription"
+                                    name="fileDescription"
+                                    type="text"
+                                    value={fileDescription}
+                                    onChange={(e) => setFileDescription(e.target.value)}
+                                    className={`mt-1.5 ${formDataError.fileDescription ? 'border-destructive' : ''}`}
+                                    disabled={loading}
+                                    required
+                                    placeholder="description"
+                                />
+                                {formDataError.fileDescription && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.fileDescription}</p>}
+                            </div>
 
-                        <span>
-                            <Label
-                                htmlFor="file"
-                                className="text-lg md:text-2xl lg:text-2xl text-blue-600"
-                            >
-                                Select File:
-                            </Label>
-                            <Input
-                                id="file"
-                                name="file"
-                                type="file"
-                                accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.jpg,.png"
-                                onChange={(e) => setFile(e.target.files[0])}
-                                className={`border ${
-                                formDataError.file ? "border-2 border-red-500 shadow shadow-red-500" : "border-green-500"
-                                }`}
-                                disabled={loading}
-                                required
-                            />
-                        </span>
-                        {formDataError.file && (<p className="mt-1 font-bold text-red-600">{formDataError.file}</p>)}
+                            <div className="sm:col-span-2">
+                                <Label htmlFor="file">Select File</Label>
+                                <Input
+                                    id="file"
+                                    name="file"
+                                    type="file"
+                                    accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.jpg,.png"
+                                    onChange={(e) => setFile(e.target.files[0])}
+                                    className={`mt-1.5 ${formDataError.file ? 'border-destructive' : ''}`}
+                                    disabled={loading}
+                                    required
+                                />
+                                {formDataError.file && (<p className="mt-1 text-sm font-medium text-destructive">{formDataError.file}</p>)}
+                            </div>
 
+                            <div>
+                                <Label htmlFor="filetype">File Type</Label>
+                                <Select
+                                    id="filetype"
+                                    value={fileType}
+                                    onValueChange={(value) => setFileType(value)}
+                                    disabled={loading}
+                                >
+                                    <SelectTrigger className="w-full mt-1.5">
+                                        <SelectValue placeholder="Select file type" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectGroup>
+                                            <SelectItem value="Assignment">Assignment</SelectItem>
+                                            <SelectItem value="Notes">Notes</SelectItem>
+                                            <SelectItem value="CAT">CAT</SelectItem>
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                                {formDataError.fileType && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.fileType}</p>}
+                            </div>
 
-                        <span>
-                            <Label htmlFor="filetype" className="text-lg md:text-2xl lg:text-2xl text-blue-600">File Type:</Label>
-                            <Select
-                                id="filetype"
-                                value={fileType}
-                                onValueChange={(value) => setFileType(value)}
-                                disabled={loading}
-                            >
-                                <SelectTrigger className="w-[180px] w-full">
-                                    <SelectValue placeholder="Select file type" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectGroup>
-                                        <SelectItem value="Assignment">Assignment</SelectItem>
-                                        <SelectItem value="Notes">Notes</SelectItem>
-                                        <SelectItem value="CAT">CAT</SelectItem>
-                                    </SelectGroup>
-                                </SelectContent>
-                            </Select>
-                        </span>
-                        {formDataError.fileType && <p className="mt-1 font-bold text-red-600">{formDataError.fileType}</p>}
+                            <div>
+                                <Label htmlFor="course">Course</Label>
+                                <Select
+                                    id="course"
+                                    value={course}
+                                    onValueChange={(value) => setCourse(value)}
+                                    required
+                                    defaultValue={user.course._id}
+                                    disabled={loading}
+                                >
+                                    <SelectTrigger className="w-full mt-1.5">
+                                        <SelectValue placeholder="Select your course" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectGroup>
+                                            <SelectItem value={user.course._id} key={user.course._id}>
+                                                {user.course.name}
+                                            </SelectItem>
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                                {formDataError.course && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.course}</p>}
+                            </div>
 
-                        <span>
-                            <Label htmlFor="course" className="text-lg md:text-2xl lg:text-2xl text-blue-600">Course:</Label>
-                            <Select
-                                id="course"
-                                value={course}
-                                onValueChange={(value) => setCourse(value)}
-                                required
-                                defaultValue={user.course._id}
-                                disabled={loading}
-                            >
-                                <SelectTrigger className="w-[180px] w-full">
-                                    <SelectValue placeholder="Select your course" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectGroup>
-                                        <SelectItem value={user.course._id} key={user.course._id}>
-                                            {user.course.name}
-                                        </SelectItem>
-                                    </SelectGroup>
-                                </SelectContent>
-                            </Select>
-                        </span>
-                        {formDataError.course && <p className="mt-1 font-bold text-red-600">{formDataError.course}</p>}
+                            <div>
+                                <Label htmlFor="cohort">Cohort</Label>
+                                <Select
+                                    id="cohort"
+                                    value={cohort}
+                                    onValueChange={(value) => setCohort(value)}
+                                    required
+                                    defaultValue={user.cohort._id}
+                                    disabled={loading}
+                                >
+                                    <SelectTrigger className="w-full mt-1.5">
+                                        <SelectValue placeholder="Select your group/cohort" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectGroup>
+                                            <SelectItem value={user.cohort._id} key={user.cohort._id}>
+                                                {user.cohort.name}
+                                            </SelectItem>
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                                {formDataError.cohort && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.cohort}</p>}
+                            </div>
+                        </div>
 
-                        <span>
-                            <Label htmlFor="cohort" className="text-lg md:text-2xl lg:text-2xl text-blue-600">Cohort:</Label>
-                            <Select
-                                id="cohort"
-                                value={cohort}
-                                onValueChange={(value) => setCohort(value)}
-                                required
-                                defaultValue={user.cohort._id}
-                                disabled={loading}
-                            >
-                                <SelectTrigger className="w-[180px] w-full">
-                                    <SelectValue placeholder="Select your group/cohort" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectGroup>
-                                        <SelectItem value={user.cohort._id} key={user.cohort._id}>
-                                            {user.cohort.name}
-                                        </SelectItem>
-                                    </SelectGroup>
-                                </SelectContent>
-                            </Select>
-                        </span>
-                        {formDataError.cohort && <p className="mt-1 font-bold text-red-600">{formDataError.cohort}</p>}
-
-                        <Button className="bg-white text-black font-bold shadow-md hover:shadow-green-500 hover:shadow-xl hover:bg-white border md:text-lg lg:text-xl hover:-translate-y-1 transform easeinout duration-500 mt-5 w-full" disabled={loading} type="submit">
-                            { loading ? (
-                                <div className="flex gap-3 items-center">
-                                    Saving
-                                    <LoaderIcon className="animate-spin"/>
-                                </div> 
-                                ) : (
-                                <div className="flex gap-3 items-center">
-                                    Save changes
-                                    <SendHorizonalIcon />
-                                </div> 
-                                ) 
-                            }
-                        </Button>
+                        <DialogFooter className="mt-5">
+                            <DialogClose asChild>
+                                <Button type="button" variant="outline">Cancel</Button>
+                            </DialogClose>
+                            <Button className="bg-blue-600 hover:bg-blue-700 text-white" disabled={loading} type="submit">
+                                { loading ? (
+                                    <>
+                                        Saving
+                                        <LoaderIcon className="animate-spin"/>
+                                    </>
+                                    ) : (
+                                    <>
+                                        Save changes
+                                        <SendHorizonalIcon />
+                                    </>
+                                    )
+                                }
+                            </Button>
+                        </DialogFooter>
                     </form>
-
-                    <DialogFooter className="sm:justify-start">
-                    </DialogFooter>
                 </DialogContent>
             </Dialog>
         </div>

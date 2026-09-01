@@ -23,7 +23,7 @@ import { PathTracker, StartupRedirect } from "./components/common/routerTracker"
 import SettingsPage from "./pages/settingsPage";
 import ManageCat from "./components/dashboard/classRepDashboard/manageCAT";
 import CATPage from "./pages/catPage";
-import { GeneralFiles,CohortFiles } from "./pages/filePages";
+import FilesPage, { GeneralFiles, CohortFiles } from "./pages/filePages";
 import HelpPage from "./pages/helpPage";
 import FloatingActionButtons from "./components/common/floatingActionButtons";
 import UsersEditPage from "./components/dashboard/adminDashboard/usersPage";
@@ -49,20 +49,20 @@ export default function App () {
         <Route path="/help" element={<HelpPage />} />
 
         <Route element={<Layout />}>
-          <Route element={<ProtectedRoute allowedRoles={['student', 'classRep']} />}>
+          <Route element={<ProtectedRoute allowedRoles={['student', 'classRep', 'admin']} />}>
             <Route path="/home" element={<Home />} />
             <Route path='/profile' element={<ProfilePage />} />
             <Route path="/notifications" element={<NotificationPage /> }/>
             <Route path="/schedule" element={<SchedulePage />} />
             <Route path="/assignment/assignments" element={<AssignmentPage /> } />
             <Route path="/CAT" element={<CATPage /> } />
-            <Route path="/upload/general" element={<GeneralFiles />} />
+            <Route path="/upload/general" element={<FilesPage />} />
             <Route path="/lecturers" element={<LecturersPage />} />
           </Route>
 
           <Route element={<ProtectedRoute allowedRoles={['student', 'classRep', 'admin']} />}>
-            <Route path="/upload" element={<GeneralFiles />} />
-            <Route path="/upload/uploads" element={<CohortFiles />} />
+            <Route path="/upload" element={<FilesPage />} />
+            <Route path="/upload/uploads" element={<FilesPage />} />
           </Route>
 
           <Route element={<ProtectedRoute allowedRoles={['classRep', 'admin']} />}>

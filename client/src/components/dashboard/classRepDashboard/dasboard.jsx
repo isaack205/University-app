@@ -1,57 +1,56 @@
 // Imports
-import React, {useState, useEffect} from "react";
+import React from "react";
 import { NavLink, Outlet } from 'react-router-dom';
-import imageUrl from '@/assets/manage.webp';
-import { toast } from "sonner";
+import { Separator } from "@/components/ui/separator";
+import {
+    CalendarClockIcon,
+    ClipboardListIcon,
+    NotebookPenIcon,
+    FolderIcon,
+    UsersIcon,
+} from "lucide-react";
+
+const manageLinks = [
+    { to: '/dashboard/schedule', label: 'Units', icon: CalendarClockIcon },
+    { to: '/dashboard/assignment', label: 'Assignments', icon: ClipboardListIcon },
+    { to: '/dashboard/CAT', label: 'CAT(s)', icon: NotebookPenIcon },
+    { to: '/dashboard/file', label: 'Files', icon: FolderIcon },
+    { to: '/dashboard/lecturers', label: 'Lecturers', icon: UsersIcon },
+];
 
 export default function Dashboard() {
 
     return(
         <div>
-            <div className="flex flex-col md:flex-row lg:flex-row gap-5 items-center justify-between shadow-xl p-5 border rounded-xl w-[100%] bg-purple-100 dark:bg-slate-800">
-                <div className="flex flex-col md:w-[80%] md:w-[80%] lg:w-[80%]">
-                    <h3 className="text-[17px] md:text-2xl lg:text-2xl font-bold">✨ Welcome to your Class Rep Dashboard, </h3>
-                    <p className="text-[15px] md:text-xl lg:text-xl italic text-green-500">This is your space to keep the class running smoothly. Post assignments, update unit schedules, and make quick changes whenever things shift around.</p>
-                    <p className="text-[15px] md:text-xl lg:text-xl italic text-green-500">Think of it as your backstage pass to keeping the class on point.</p>
-                    <p className="text-[10px] md:text-lg lg:text-lg italic text-gray-500 mt-4 text-end md:text-start lg:text-start">"Your class, your flow — all in one place." 🎓✨</p>
-                </div>
-                <img src={imageUrl} alt="Edit icon" className="h-35 w-auto hidden md:block lg:block"/>
-            </div>
-            <hr className="border-green-500 mt-5"/>
-            <nav className="m-5">
-                <ul className="flex gap-2 md:gap-5 lg:gap-5 flex-row items-center justify-center w-[100%]">
-                    <li className="bg-green-300 hover:bg-green-400 dark:bg-slate-800 p-2 rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-1 transition easeinout duration-500 cursor-pointer w-[30%] md:w-50 lg:w-70">
-                        <NavLink to='/dashboard/schedule'> 
-                            <p className="text-sm md:text-lg lg:text-xl">Manage Units </p>
-                        </NavLink>
-                    </li>
-                    <li className="bg-green-300 hover:bg-green-400 dark:bg-slate-800 p-2 rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-1 transition easeinout duration-500 cursor-pointer w-[30%] md:w-50 lg:w-70">
-                        <NavLink to='/dashboard/assignment'> 
-                            <p className="text-sm md:text-lg lg:text-xl">Manage assignments</p>
-                        </NavLink>
-                    </li>
-                    <li className="bg-green-300 hover:bg-green-400 dark:bg-slate-800 p-2 rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-1 transition easeinout duration-500 cursor-pointer w-[30%] md:w-50 lg:w-70">
-                        <NavLink to='/dashboard/CAT'> 
-                            <p className="text-sm md:text-lg lg:text-xl">Manage CAT (s)</p>
-                        </NavLink>
-                    </li>
-                    <li className="bg-green-300 hover:bg-green-400 dark:bg-slate-800 p-2 rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-1 transition easeinout duration-500 cursor-pointer w-[30%] md:w-50 lg:w-70">
-                        <NavLink to='/dashboard/file'> 
-                            <p className="text-sm md:text-lg lg:text-xl">Manage files</p>
-                        </NavLink>
-                    </li>
-                    <li className="bg-green-300 hover:bg-green-400 dark:bg-slate-800 p-2 rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-1 transition easeinout duration-500 cursor-pointer w-[30%] md:w-50 lg:w-70">
-                        <NavLink to='/dashboard/lecturers'> 
-                            <p className="text-sm md:text-lg lg:text-xl">Manage Lecturers</p>
-                        </NavLink>
-                    </li>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-green-600 mb-1">Class Rep Tools</p>
+            <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Class Rep Dashboard</h1>
+            <p className="text-sm text-slate-500 mt-1 mb-5">Post assignments, update unit schedules, and manage your class in one place. 🎓</p>
+
+            <nav className="overflow-x-auto">
+                <ul className="bg-muted text-muted-foreground inline-flex w-fit items-center gap-1 rounded-lg p-1">
+                    {manageLinks.map(({ to, label, icon: Icon }) => (
+                        <li key={to}>
+                            <NavLink
+                                to={to}
+                                className={({ isActive }) =>
+                                    `inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium whitespace-nowrap transition-colors ${
+                                        isActive
+                                            ? 'bg-background text-green-700 dark:text-green-400 shadow-sm'
+                                            : 'text-muted-foreground hover:text-foreground'
+                                    }`
+                                }
+                            >
+                                <Icon className="size-4" />
+                                {label}
+                            </NavLink>
+                        </li>
+                    ))}
                 </ul>
             </nav>
-            <hr className="border-green-500 mt-5"/>
-            <div className="">
-                <p className="text-center text-gray-400">Manage like a pro! By clicking the buttons above.</p>
-                <Outlet />
-            </div>
+
+            <Separator className="my-5"/>
+
+            <Outlet />
         </div>
     )
 }

@@ -1,5 +1,5 @@
 // Imports
-const User = require('../models/user');
+const { User, Student, Admin } = require('../models/user');
 const JWT = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
@@ -16,6 +16,11 @@ exports.registerUser = async (req, res) => {
     const { name, studentId, email, phoneNumber, password, role, course, cohort } = req.body;
 
     try {
+        // Prevent admin registration through standard user route
+        if (role === 'admin') {
+            return res.status(403).json({ message: "Admin registration is not allowed via this endpoint" });
+        }
+
         // Check if studentId exists
         const studentIdExist =  await User.findOne({ studentId })
                                         .populate([
@@ -36,7 +41,7 @@ exports.registerUser = async (req, res) => {
 
         // Hash password into 10 string
         const hashedPassword = await bcrypt.hash(password, 10);
-        const user = await User.create({ ...req.body, password: hashedPassword });
+        const user = await Student.create({ ...req.body, role: role || 'student', password: hashedPassword });
         
         const token = JWT.sign(
             { id: user._id, role: user.role },
@@ -53,21 +58,29 @@ exports.registerUser = async (req, res) => {
 
 exports.loginUser = async (req, res) => {
 
-    const { studentId, password } = req.body;
+    const { studentId, email, password } = req.body;
 
     try {
-        const user = await User.findOne({ studentId })
-                                .populate([
-                                    { path: 'course', select: 'name code' }, 
-                                    { path: 'cohort', select: 'name year' }
-                                ]);
+        const identifier = studentId || email;
+        const query = identifier?.includes('@') 
+            ? { email: identifier }
+            : { $or: [{ studentId: identifier }, { adminId: identifier }, { email: identifier }] };
+
+        const user = await User.findOne(query);
         if (!user) {
             return res.status(400).json({message: "User not found!"})
         };
 
+        if (user.role !== 'admin') {
+            await user.populate([
+                { path: 'course', select: 'name code' }, 
+                { path: 'cohort', select: 'name year' }
+            ]);
+        }
+
         const isMatch = await bcrypt.compare(password, user.password);
         if(!isMatch) {
-            return res.status(400).json({message: "Invalid studentId or password"})
+            return res.status(400).json({message: "Invalid credentials"})
         }
         
         const token = JWT.sign(
@@ -75,6 +88,10 @@ exports.loginUser = async (req, res) => {
             JWT_SECRET,
             { expiresIn: '1d' }
         )
+
+        // Track last login time for activity feed
+        user.lastLoginAt = new Date();
+        await user.save({ validateBeforeSave: false });
 
         res.status(200).json({message: "User logged in successfully", user, token});
     } catch (error) {
@@ -87,14 +104,17 @@ exports.getOwnProfile = async (req, res) => {
     const { id } = req.user;
 
     try {
-        const user = await User.findById(id).select('-password')
-                                            .populate([
-                                                { path: 'course', select: 'name code' }, 
-                                                { path: 'cohort', select: 'name year' }
-                                            ]);
+        const user = await User.findById(id).select('-password');
         if (!user) {
             return res.status(404).json({message: "User not found"})
         };
+
+        if (user.role !== 'admin') {
+            await user.populate([
+                { path: 'course', select: 'name code' }, 
+                { path: 'cohort', select: 'name year' }
+            ]);
+        }
 
         res.status(200).json({message: "Profile found", user});
     } catch (error) {
@@ -268,7 +288,10 @@ exports.deleteUser = async (req, res) => {
 // Get all users (admin only)
 exports.getAllUsers = async (req, res) => {
     try {
-        const users = await User.find().select('-password').populate([{ path: 'course', select: 'name'}, {path: 'cohort', select: 'name'}])
+        const users = await User.find().select('-password').populate([
+            { path: 'course', select: 'name' }, 
+            { path: 'cohort', select: 'name' }
+        ]);
         res.status(200).json({ users });
     } catch (error) {
         res.status(500).json({ message: 'Error fetching users', error: error.message });

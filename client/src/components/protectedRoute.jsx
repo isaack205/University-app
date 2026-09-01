@@ -21,7 +21,8 @@ function ProtectedRoute({ allowedRoles }) { // 'allowedRoles' is the key prop
     const message = `Access Denied: User ${user.email} (Role: ${user.role}) attempted to access restricted area.`
     console.warn(message);
     toast.error(message);
-    return <Navigate to="/home" replace />; // Redirect to home or an access denied page
+    const redirectPath = user.role === 'admin' ? '/admin/dashboard' : '/home';
+    return <Navigate to={redirectPath} replace />;
   }
 
   // If logged in AND has allowed role (or no specific roles required), render content

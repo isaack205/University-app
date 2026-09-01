@@ -219,287 +219,295 @@ export default function UpdateCat({ cat, refreshCats }) {
     return(
         <div>
             <Dialog>
-                <DialogTrigger>
-                    <SquarePenIcon className="text-green-500 cursor-pointer hover:-translate-y-1 transition-all duration-500 "/>
+                <DialogTrigger asChild>
+                    <Button variant="ghost" size="icon" aria-label="Edit CAT">
+                        <SquarePenIcon className="text-green-600"/>
+                    </Button>
                 </DialogTrigger>
-                <DialogContent className="bg-gray-300 dark:bg-slate-800">
+                <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
                     <DialogHeader>
-                        <DialogTitle className="text-2xl font-bold text-green-500 text-center ">Update CAT</DialogTitle>
-                        <DialogDescription className="text-red-500">
+                        <DialogTitle>Update CAT</DialogTitle>
+                        <DialogDescription>
                             * All fields are required.
                         </DialogDescription>
                     </DialogHeader>
 
-                    {errors && <p className="mt-1 font-bold text-red-600 text-right">{errors}</p>}
+                    {errors && <p className="mt-1 font-bold text-destructive text-right">{errors}</p>}
 
                     <form onSubmit={handleSubmit}>
-                        <span>
-                            <Label htmlFor="title" className="text-lg md:text-2xl lg:text-2xl text-blue-600">Title</Label>
-                            <Input 
-                                id="title"
-                                name="title"
-                                value={title}
-                                type="text"
-                                onChange={(e) => setTitle(e.target.value)}
-                                className={`border ${formDataError.title ? 'border-2 border-red-500 shadow shadow-red-500' : 'border-green-500'}`}
-                                placeholder="e.g Operating System"
-                                disabled={loading}
-                                required
-                            />
-                        </span>
-                        {formDataError.title && <p className="mt-1 font-bold text-red-600">{formDataError.title}</p>}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <Label htmlFor="title">Title</Label>
+                                <Input
+                                    id="title"
+                                    name="title"
+                                    value={title}
+                                    type="text"
+                                    onChange={(e) => setTitle(e.target.value)}
+                                    className={`mt-1.5 ${formDataError.title ? 'border-destructive' : ''}`}
+                                    placeholder="e.g Operating System"
+                                    disabled={loading}
+                                    required
+                                />
+                                {formDataError.title && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.title}</p>}
+                            </div>
 
-                        <span>
-                            <Label htmlFor="description" className="text-lg md:text-2xl lg:text-2xl text-blue-600">Description</Label>
-                            <Input 
-                                id="description"
-                                name="description"
-                                value={description}
-                                type="text"
-                                onChange={(e) => setDescription(e.target.value)}
-                                className='border border-green-500'
-                                placeholder="Description (Optional)"
-                                disabled={loading}
-                            />
-                        </span>
+                            <div>
+                                <Label htmlFor="selectedUnit">Unit Code</Label>
+                                <Select
+                                    onValueChange={value => setSelectedUnit(value)}
+                                    disabled={loading}
+                                    value={selectedUnit}
+                                    id="selectedUnit"
+                                    required
+                                >
+                                    <SelectTrigger className="w-full mt-1.5">
+                                        <SelectValue placeholder="Select unit" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {units.map(unit => (
+                                            <SelectItem value={unit._id} key={unit._id}>
+                                                {unit.unitCode}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                {formDataError.selectedUnit && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.selectedUnit}</p>}
+                            </div>
 
-                        <div>
-                            <Label htmlFor="selectedUnit" className="text-lg md:text-2xl lg:text-2xl text-blue-600">Unit Code</Label>
-                            <Select
-                                onValueChange={value => setSelectedUnit(value)}
-                                disabled={loading}
-                                value={selectedUnit}
-                                id="selectedUnit"
-                                required
-                            >
-                                <SelectTrigger className="w-[180px] w-full ">
-                                    <SelectValue placeholder="Select unit" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {units.map(unit => (
-                                        <SelectItem value={unit._id} key={unit._id}>
-                                            {unit.unitCode}
+                            <div>
+                                <Label htmlFor="cohort">Cohort</Label>
+                                <Select
+                                    onValueChange={value => setCohort(value)}
+                                    disabled={loading}
+                                    value={cohort}
+                                    id="cohort"
+                                    required
+                                >
+                                    <SelectTrigger className="w-full mt-1.5">
+                                        <SelectValue placeholder="Select your cohort:" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value={user.cohort._id} key={user.cohort._id}>
+                                            {user?.cohort.name}
                                         </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                                    </SelectContent>
+                                </Select>
+                                {formDataError.cohort && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.cohort}</p>}
+                            </div>
+
+                            <div>
+                                <Label htmlFor="type">Type</Label>
+                                <Select
+                                    id="type"
+                                    value={type}
+                                    onValueChange={(value) => setType(value)}
+                                    disabled={loading}
+                                >
+                                    <SelectTrigger className="w-full mt-1.5">
+                                        <SelectValue placeholder="Select CAT type" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectGroup>
+                                            <SelectItem value="takeaway">Take-away CAT</SelectItem>
+                                            <SelectItem value="sitting">Sitting CAT</SelectItem>
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                                {formDataError.type && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.type}</p>}
+                            </div>
+
+                            <div>
+                                <Label htmlFor="catNumber">Cat Number</Label>
+                                <Select
+                                    id="catNumber"
+                                    value={catNumber}
+                                    onValueChange={(value) => setCatNumber(value)}
+                                    disabled={loading}
+                                >
+                                    <SelectTrigger className="w-full mt-1.5">
+                                        <SelectValue placeholder="Select CAT Number" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectGroup>
+                                            <SelectItem value="CAT 1">CAT 1</SelectItem>
+                                            <SelectItem value="CAT 2">CAT 2</SelectItem>
+                                            <SelectItem value="CAT 3">CAT 3</SelectItem>
+                                            <SelectItem value="CAT 4">CAT 4</SelectItem>
+                                            <SelectItem value="CAT 5">CAT 5</SelectItem>
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                                {formDataError.catNumber && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.catNumber}</p>}
+                            </div>
+
+                            <div className="sm:col-span-2">
+                                <Label htmlFor="description">Description</Label>
+                                <Input
+                                    id="description"
+                                    name="description"
+                                    value={description}
+                                    type="text"
+                                    onChange={(e) => setDescription(e.target.value)}
+                                    className="mt-1.5"
+                                    placeholder="Description (Optional)"
+                                    disabled={loading}
+                                />
+                            </div>
+
+                            {/* Conditional fields */}
+                            {type === 'takeaway' && (
+                                <>
+                                    <div>
+                                        <Label htmlFor="submissionDate">Submission Date</Label>
+                                        <Input
+                                            id="submissionDate"
+                                            name="submissionDate"
+                                            value={submissionDate}
+                                            type="datetime-local"
+                                            onChange={(e) => setSubmissionDate(e.target.value)}
+                                            className={`mt-1.5 ${formDataError.submissionDate ? 'border-destructive' : ''}`}
+                                            placeholder="Enter date"
+                                            disabled={loading}
+                                        />
+                                        {formDataError.submissionDate && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.submissionDate}</p>}
+                                    </div>
+
+                                    <div>
+                                        <Label htmlFor="submissionFormat">Submission Format</Label>
+                                        <Input
+                                            id="submissionFormat"
+                                            name="submissionFormat"
+                                            value={submissionFormat}
+                                            type="text"
+                                            onChange={(e) => setSubmissionFormat(e.target.value)}
+                                            className={`mt-1.5 ${formDataError.submissionFormat ? 'border-destructive' : ''}`}
+                                            placeholder="e.g Email / Handwritten / Typed"
+                                            disabled={loading}
+                                        />
+                                        {formDataError.submissionFormat && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.submissionFormat}</p>}
+                                    </div>
+                                </>
+                            )}
+
+                            {type === 'sitting' && (
+                                <>
+                                    <div>
+                                        <Label htmlFor="sittingDate">Sitting Date</Label>
+                                        <Input
+                                            id="sittingDate"
+                                            name="sittingDate"
+                                            value={sittingDate}
+                                            type="datetime-local"
+                                            onChange={(e) => setSittingDate(e.target.value)}
+                                            className={`mt-1.5 ${formDataError.sittingDate ? 'border-destructive' : ''}`}
+                                            placeholder="Enter date"
+                                            disabled={loading}
+                                        />
+                                        {formDataError.sittingDate && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.sittingDate}</p>}
+                                    </div>
+
+                                    <div>
+                                        <Label htmlFor="sittingDay">Sitting Day</Label>
+                                        <Select
+                                            id="sittingDay"
+                                            value={sittingDay}
+                                            onValueChange={(value) => setSittingDay(value)}
+                                            disabled={loading}
+                                        >
+                                            <SelectTrigger className="w-full mt-1.5">
+                                                <SelectValue placeholder="Select Day" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectGroup>
+                                                    <SelectItem value="Monday">Monday</SelectItem>
+                                                    <SelectItem value="Tuesday">Tuesday</SelectItem>
+                                                    <SelectItem value="Wednesday">Wednesday</SelectItem>
+                                                    <SelectItem value="Thursday">Thursday</SelectItem>
+                                                    <SelectItem value="Friday">Friday</SelectItem>
+                                                </SelectGroup>
+                                            </SelectContent>
+                                        </Select>
+                                        {formDataError.sittingDay && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.sittingDay}</p>}
+                                    </div>
+
+                                    <div>
+                                        <Label htmlFor="sittingTime">Sitting Time</Label>
+                                        <Input
+                                            id="sittingTime"
+                                            name="sittingTime"
+                                            value={sittingTime}
+                                            type="time"
+                                            onChange={(e) => setSittingTime(e.target.value)}
+                                            className={`mt-1.5 ${formDataError.sittingTime ? 'border-destructive' : ''}`}
+                                            placeholder="Enter starting time"
+                                            disabled={loading}
+                                        />
+                                        {formDataError.sittingTime && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.sittingTime}</p>}
+                                    </div>
+
+                                    <div>
+                                        <Label htmlFor="venue">Venue</Label>
+                                        <Input
+                                            id="venue"
+                                            name="venue"
+                                            value={venue}
+                                            type="text"
+                                            onChange={(e) => setVenue(e.target.value)}
+                                            className={`mt-1.5 ${formDataError.venue ? 'border-destructive' : ''}`}
+                                            placeholder="e.g Hall A"
+                                            disabled={loading}
+                                        />
+                                        {formDataError.venue && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.venue}</p>}
+                                    </div>
+
+                                    <div className="sm:col-span-2">
+                                        <Label htmlFor="requiredItems">Required Items (comma separated)</Label>
+                                        <Input
+                                            id="requiredItems"
+                                            name="requiredItems"
+                                            value={requiredItems}
+                                            type="text"
+                                            onChange={(e) => setRequiredItems(e.target.value)}
+                                            className={`mt-1.5 ${formDataError.requiredItems ? 'border-destructive' : ''}`}
+                                            placeholder="Calculator, Fullscaps, ..."
+                                            disabled={loading}
+                                        />
+                                        {formDataError.requiredItems && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.requiredItems}</p>}
+                                    </div>
+                                </>
+                            )}
+
+                            <div className="sm:col-span-2 flex items-center gap-2">
+                                <Checkbox
+                                    id="isPublished"
+                                    checked={isPublished}
+                                    onCheckedChange={(checked) => setIsPublished(!!checked)}
+                                    disabled={loading}
+                                />
+                                <Label htmlFor="isPublished">Publish CAT</Label>
+                            </div>
                         </div>
-                        {formDataError.selectedUnit && <p className="mt-1 font-bold text-red-600">{formDataError.selectedUnit}</p>}
 
-                        <div>
-                            <Label htmlFor="cohort" className="text-lg md:text-2xl lg:text-2xl text-blue-600">Cohort</Label>
-                            <Select
-                                onValueChange={value => setCohort(value)}
-                                disabled={loading}
-                                value={cohort}
-                                id="cohort"
-                                required
-                            >
-                                <SelectTrigger className="w-[180px] w-full ">
-                                    <SelectValue placeholder="Select your cohort:" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value={user.cohort._id} key={user.cohort._id}>
-                                        {user?.cohort.name}
-                                    </SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        {formDataError.cohort && <p className="mt-1 font-bold text-red-600">{formDataError.cohort}</p>}
-                        
-                        <span>
-                            <Label htmlFor="type" className="text-lg md:text-2xl lg:text-2xl text-blue-600">Type: </Label>
-                            <Select
-                                id="type"
-                                value={type}
-                                onValueChange={(value) => setType(value)}
-                                disabled={loading}
-                            >
-                                <SelectTrigger className="w-[180px] w-full">
-                                    <SelectValue placeholder="Select CAT type" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectGroup>
-                                        <SelectItem value="takeaway">Take-away CAT</SelectItem>
-                                        <SelectItem value="sitting">Sitting CAT</SelectItem>
-                                    </SelectGroup>
-                                </SelectContent>
-                            </Select>
-                        </span>
-                        {formDataError.type && <p className="mt-1 font-bold text-red-600">{formDataError.type}</p>}
-
-                        <span>
-                            <Label htmlFor="catNumber" className="text-lg md:text-2xl lg:text-2xl text-blue-600">Cat Number: </Label>
-                            <Select
-                                id="catNumber"
-                                value={catNumber}
-                                onValueChange={(value) => setCatNumber(value)}
-                                disabled={loading}
-                            >
-                                <SelectTrigger className="w-[180px] w-full">
-                                    <SelectValue placeholder="Select CAT Number" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectGroup>
-                                        <SelectItem value="CAT 1">CAT 1</SelectItem>
-                                        <SelectItem value="CAT 2">CAT 2</SelectItem>
-                                        <SelectItem value="CAT 3">CAT 3</SelectItem>
-                                        <SelectItem value="CAT 4">CAT 4</SelectItem>
-                                        <SelectItem value="CAT 5">CAT 5</SelectItem>
-                                    </SelectGroup>
-                                </SelectContent>
-                            </Select>
-                        </span>
-                        {formDataError.catNumber && <p className="mt-1 font-bold text-red-600">{formDataError.catNumber}</p>}
-
-                        {/* Conditional fields */}
-                        {type === 'takeaway' && (
-                            <>
-                                <span>
-                                    <Label htmlFor="submissionDate" className="text-lg md:text-2xl lg:text-2xl text-blue-600">Submission Date</Label>
-                                    <Input 
-                                        id="submissionDate"
-                                        name="submissionDate"
-                                        value={submissionDate}
-                                        type="datetime-local"
-                                        onChange={(e) => setSubmissionDate(e.target.value)}
-                                        className={`border ${formDataError.submissionDate ? 'border-2 border-red-500 shadow shadow-red-500' : 'border-green-500'}`}
-                                        placeholder="Enter date"
-                                        disabled={loading}
-                                    />
-                                </span>
-                                {formDataError.submissionDate && <p className="mt-1 font-bold text-red-600">{formDataError.submissionDate}</p>}
-
-                                <span>
-                                    <Label htmlFor="submissionFormat" className="text-lg md:text-2xl lg:text-2xl text-blue-600">Submission Format</Label>
-                                    <Input 
-                                        id="submissionFormat"
-                                        name="submissionFormat"
-                                        value={submissionFormat}
-                                        type="text"
-                                        onChange={(e) => setSubmissionFormat(e.target.value)}
-                                        className={`border ${formDataError.submissionFormat ? 'border-2 border-red-500 shadow shadow-red-500' : 'border-green-500'}`}
-                                        placeholder="e.g Email / Handwritten / Typed"
-                                        disabled={loading}
-                                    />
-                                </span>
-                                {formDataError.submissionFormat && <p className="mt-1 font-bold text-red-600">{formDataError.submissionFormat}</p>}
-                            </>
-                        )}
-
-                        {type === 'sitting' && (
-                            <>
-                                <span>
-                                    <Label htmlFor="sittingDate" className="text-lg md:text-2xl lg:text-2xl text-blue-600">Sitting Date</Label>
-                                    <Input 
-                                        id="sittingDate"
-                                        name="sittingDate"
-                                        value={sittingDate}
-                                        type="datetime-local"
-                                        onChange={(e) => setSittingDate(e.target.value)}
-                                        className={`border ${formDataError.sittingDate ? 'border-2 border-red-500 shadow shadow-red-500' : 'border-green-500'}`}
-                                        placeholder="Enter date"
-                                        disabled={loading}
-                                    />
-                                </span>
-                                {formDataError.sittingDate && <p className="mt-1 font-bold text-red-600">{formDataError.sittingDate}</p>}
-
-                                <span>
-                                    <Label htmlFor="sittingDay" className="text-lg md:text-2xl lg:text-2xl text-blue-600">Sitting Day: </Label>
-                                    <Select
-                                        id="sittingDay"
-                                        value={sittingDay}
-                                        onValueChange={(value) => setSittingDay(value)}
-                                        disabled={loading}
-                                    >
-                                        <SelectTrigger className="w-[180px] w-full">
-                                            <SelectValue placeholder="Select Day" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectGroup>
-                                                <SelectItem value="Monday">Monday</SelectItem>
-                                                <SelectItem value="Tuesday">Tuesday</SelectItem>
-                                                <SelectItem value="Wednesday">Wednesday</SelectItem>
-                                                <SelectItem value="Thursday">Thursday</SelectItem>
-                                                <SelectItem value="Friday">Friday</SelectItem>
-                                            </SelectGroup>
-                                        </SelectContent>
-                                    </Select>
-                                </span>
-                                {formDataError.sittingDay && <p className="mt-1 font-bold text-red-600">{formDataError.sittingDay}</p>}
-
-                                <span>
-                                    <Label htmlFor="sittingTime" className="text-lg md:text-2xl lg:text-2xl text-blue-600">Sitting Time</Label>
-                                    <Input 
-                                        id="sittingTime"
-                                        name="sittingTime"
-                                        value={sittingTime}
-                                        type="time"
-                                        onChange={(e) => setSittingTime(e.target.value)}
-                                        className={`border ${formDataError.sittingTime ? 'border-2 border-red-500 shadow shadow-red-500' : 'border-green-500'}`}
-                                        placeholder="Enter starting time"
-                                        disabled={loading}
-                                    />
-                                </span>
-                                {formDataError.sittingTime && <p className="mt-1 font-bold text-red-600">{formDataError.sittingTime}</p>}
-
-                                <span>
-                                    <Label htmlFor="venue" className="text-lg md:text-2xl lg:text-2xl text-blue-600">Venue</Label>
-                                    <Input 
-                                        id="venue"
-                                        name="venue"
-                                        value={venue}
-                                        type="text"
-                                        onChange={(e) => setVenue(e.target.value)}
-                                        className={`border ${formDataError.venue ? 'border-2 border-red-500 shadow shadow-red-500' : 'border-green-500'}`}
-                                        placeholder="e.g Hall A"
-                                        disabled={loading}
-                                    />
-                                </span>
-                                {formDataError.venue && <p className="mt-1 font-bold text-red-600">{formDataError.venue}</p>}
-
-                                <span>
-                                    <Label htmlFor="requiredItems" className="text-lg md:text-2xl lg:text-2xl text-blue-600">Required Items (comma separated)</Label>
-                                    <Input 
-                                        id="requiredItems"
-                                        name="requiredItems"
-                                        value={requiredItems}
-                                        type="text"
-                                        onChange={(e) => setRequiredItems(e.target.value)}
-                                        className={`border ${formDataError.requiredItems ? 'border-2 border-red-500 shadow shadow-red-500' : 'border-green-500'}`}
-                                        placeholder="Calculator, Fullscaps, ..."
-                                        disabled={loading}
-                                    />
-                                </span>
-                                {formDataError.requiredItems && <p className="mt-1 font-bold text-red-600">{formDataError.requiredItems}</p>}
-                            </>
-                        )}
-
-                        <span className="flex items-center gap-2 mt-3">
-                            <Label htmlFor="isPublished" className="text-lg md:text-2xl lg:text-2xl text-blue-600">Publish CAT:</Label>
-                            <Checkbox 
-                                id="isPublished"
-                                checked={isPublished}
-                                onCheckedChange={(checked) => setIsPublished(!!checked)}
-                                disabled={loading}
-                                className={'border-black'}
-                            />
-                        </span>
-
-                        <Button className="bg-white text-black font-bold shadow-md hover:shadow-green-500 hover:shadow-xl hover:bg-white border md:text-lg lg:text-xl hover:-translate-y-1 transform easeinout duration-500 mt-5 w-full" disabled={loading} type="submit">
-                            { loading ? (
-                                <div className="flex gap-3 items-center">
-                                    Saving
-                                    <LoaderIcon className="animate-spin"/>
-                                </div> 
-                                ) : (
-                                <div className="flex gap-3 items-center">
-                                    Save Changes
-                                    <SendHorizonalIcon />
-                                </div> 
-                                ) 
-                            }
-                        </Button>
+                        <DialogFooter className="mt-5">
+                            <DialogClose asChild>
+                                <Button type="button" variant="outline">Cancel</Button>
+                            </DialogClose>
+                            <Button className="bg-blue-600 hover:bg-blue-700 text-white" disabled={loading} type="submit">
+                                { loading ? (
+                                    <>
+                                        Saving
+                                        <LoaderIcon className="animate-spin"/>
+                                    </>
+                                    ) : (
+                                    <>
+                                        Save Changes
+                                        <SendHorizonalIcon />
+                                    </>
+                                    )
+                                }
+                            </Button>
+                        </DialogFooter>
                     </form>
 
                 </DialogContent>

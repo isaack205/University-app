@@ -58,9 +58,11 @@ export default function RegisterPage() {
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
 
-    const {register, error} = useAuth();
+    const {register, error, clearError} = useAuth();
 
     useEffect(() => {
+        if (clearError) clearError();
+        
         const fetchCourses = async () => {
             try {
                 const courseData = await courseService.getAllCourses();
@@ -246,7 +248,7 @@ export default function RegisterPage() {
                                         name="name"
                                         type="text"
                                         value={formData.name}
-                                        className={`pl-10 text-black border ${formDataError.name || error ? 'border-red-700 shadow-md shadow-red-400' : 'border-black shadow-xl '}`}
+                                        className={`pl-10 text-black border ${formDataError.name ? 'border-red-700 shadow-md shadow-red-400' : 'border-black shadow-xl '}`}
                                         onChange={handleChange}
                                         placeholder="Name"
                                         required
@@ -262,7 +264,7 @@ export default function RegisterPage() {
                                         name="studentId"
                                         type="text"
                                         value={formData.studentId}
-                                        className={`pl-10 text-black border ${formDataError.studentId || error ? 'border-red-700 shadow-md shadow-red-400' : 'border-black shadow-xl '}`}
+                                        className={`pl-10 text-black border ${formDataError.studentId ? 'border-red-700 shadow-md shadow-red-400' : 'border-black shadow-xl '}`}
                                         onChange={handleChange}
                                         placeholder="Student Reg N.o"
                                         required
@@ -278,7 +280,7 @@ export default function RegisterPage() {
                                         name="email"
                                         type="email"
                                         value={formData.email}
-                                        className={`pl-10 text-black border ${formDataError.email || error ? 'border-red-700 shadow-md shadow-red-400' : 'border-black shadow-xl '}`}
+                                        className={`pl-10 text-black border ${formDataError.email ? 'border-red-700 shadow-md shadow-red-400' : 'border-black shadow-xl '}`}
                                         onChange={handleChange}
                                         placeholder="example@gmail.com"
                                         required
@@ -294,7 +296,7 @@ export default function RegisterPage() {
                                         name="phoneNumber"
                                         type="text"
                                         value={formData.phoneNumber}
-                                        className={`pl-10 text-black border ${formDataError.phoneNumber || error ? 'border-red-700 shadow-md shadow-red-400' : 'border-black shadow-xl '}`}
+                                        className={`pl-10 text-black border ${formDataError.phoneNumber ? 'border-red-700 shadow-md shadow-red-400' : 'border-black shadow-xl '}`}
                                         onChange={handleChange}
                                         placeholder="+254712345678"
                                         required
@@ -310,7 +312,7 @@ export default function RegisterPage() {
                                         name="password"
                                         type={showPassword ? 'text' : 'password'}
                                         value={password}
-                                        className={`pl-10 border text-black ${passwordError || error ? 'border-red-700 shadow-md shadow-red-400' : 'border-black shadow-xl'}`}
+                                        className={`pl-10 border text-black ${passwordError ? 'border-red-700 shadow-md shadow-red-400' : 'border-black shadow-xl'}`}
                                         onChange={handlePasswordChange}
                                         placeholder="Enter your password"
                                         required
@@ -349,7 +351,7 @@ export default function RegisterPage() {
                                         name="confirmPassword"
                                         type={showPassword ? 'text' : 'password'}
                                         value={formData.confirmPassword}
-                                        className={`pl-10 border text-black ${formDataError.confirmPassword || error ? 'border-red-700 shadow-md shadow-red-400' : 'border-black shadow-xl'}`}
+                                        className={`pl-10 border text-black ${formDataError.confirmPassword ? 'border-red-700 shadow-md shadow-red-400' : 'border-black shadow-xl'}`}
                                         onChange={handleChange}
                                         placeholder="Re-enter Password"
                                         required

@@ -66,9 +66,12 @@ exports.validateUserRegistration = [
 
 // Validation rules for login
 exports.validateUserLogin = [
-  body('studentId')
-    .trim()
-    .notEmpty().withMessage('StudentId is required for login'),
+  body().custom((value, { req }) => {
+    if (!req.body.studentId && !req.body.email) {
+      throw new Error('StudentId or Email is required for login');
+    }
+    return true;
+  }),
 
   body('password')
     .notEmpty().withMessage('Password is required for login'),

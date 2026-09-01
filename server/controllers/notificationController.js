@@ -2,7 +2,7 @@
 const { runReminders } = require('../services/reminderService');
 const Notification = require('../models/notification');
 const Subscription = require("../models/subscription");
-const User = require("../models/user");
+const { User } = require('../models/user');
 const webpush = require("../config/webPush");
 
 exports.triggerRemindersManually = async (req, res) => {

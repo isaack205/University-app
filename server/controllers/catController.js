@@ -1,7 +1,7 @@
 //Imports
 const Cat = require('../models/cat');
 const { sendAppNotification } = require('../services/notificationService');
-const User = require('../models/user');
+const { User } = require('../models/user');
 const sendSMS = require('../services/smsService');
 
 // Create CAT
@@ -103,7 +103,7 @@ exports.getCATById = async (req, res) => {
     try {
         const cat = await Cat.findById(req.params.id)
             .populate([
-                { path: 'unit', select: 'unitCode lecturer' },
+                { path: 'unit', select: 'unitName unitCode lecturer' },
                 { path: 'cohort', select: 'name' }
             ])
             .populate("createdBy", "name");

@@ -73,11 +73,11 @@ export const Sidebar =  ({ isOpen, toggleSidebar }) => {
                                 CAT(S)
                             </Button>
                             <FileMenu isOpen={isOpen} toggleSidebar={toggleSidebar} />
-                            {/* <Button className="bg-no mb-5 text-blue-500 font-bold md:text-xl lg:text-2xl cursor-pointer shadow-lg hover:shadow-xl hover:underline hover:bg-no hover:-translate-y-2 transform easeinout duration-500" onClick={() => { navigate('/lecturers'); if (window.innerWidth < 1024) toggleSidebar(); }}>
+                            <Button className="bg-no mb-5 text-blue-500 font-bold md:text-xl lg:text-2xl cursor-pointer shadow-lg hover:shadow-xl hover:underline hover:bg-no hover:-translate-y-2 transform easeinout duration-500" onClick={() => { navigate('/lecturers'); if (window.innerWidth < 1024) toggleSidebar(); }}>
                                 <User2Icon />
-                                Lecturer(S)
-                            </Button> */}
-                            <div className="relative inline-block mb-5 group animate-pulse">
+                                Lecturers Directory
+                            </Button>
+                            {/* <div className="relative inline-block mb-5 group animate-pulse">
 
                                 <div className="absolute -top-3 -right-2 z-10 animate-bounce transition-transform group-hover:scale-125 flex gap-2">
                                     <p className="text-yellow-500 font-bold">NEW</p>
@@ -91,7 +91,7 @@ export const Sidebar =  ({ isOpen, toggleSidebar }) => {
                                     <User2Icon className="w-6 h-6" /> 
                                     <span>Lecturers Directory</span>
                                 </Button>
-                            </div>
+                            </div> */}
                             <div className="relative inline-block mb-5 group cursor-not-allowed opacity-70 ">
                                 <Button 
                                     className="bg-no hover:bg-no text-blue-500 font-bold md:text-xl lg:text-2xl cursor-pointe shadow-lg hover:shadow-2xl hover:underline hover:-translate-y-2 transform transition-all duration-500 flex items-center gap-3 px-6 py-6 rounded-2xl" 
@@ -107,7 +107,7 @@ export const Sidebar =  ({ isOpen, toggleSidebar }) => {
                                     </div>
                                 </Button>
                                 <div className="absolute hidden group-hover:block bottom-full mb-2 left-1/2 -translate-x-1/2 px-2 py-1 bg-slate-800 text-white text-[10px] rounded whitespace-nowrap">
-                                    Coming in v0.2.0! 🚀
+                                    Coming soon! 🚀
                                 </div>
                             </div>
                             <hr className="border-black mb-2 w-full rounded-xl"/>

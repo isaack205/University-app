@@ -2,7 +2,7 @@
 const UnitSchedule = require('../models/unit');
 const { sendAppNotification } = require('../services/notificationService');
 const { sendSMS } = require('../services/smsService');
-const User = require('../models/user');
+const { User } = require('../models/user');
 const Notification = require('../models/notification')
 
 // Create a new schedule

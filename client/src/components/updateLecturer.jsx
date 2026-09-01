@@ -24,9 +24,7 @@ import {
 } from "@/components/ui/dialog";
 import { useAuth } from "@/contexts/authContext";
 import { toast } from "sonner";
-import { unitScheduleService } from "@/services/unitSchedulerApi";
 import { lecturerService } from "@/services/lecturerApi";
-import { Textarea } from "./ui/textarea";
 
 export default function UpdateLecturer({ lecturer, refreshLecturers }) {
 
@@ -118,103 +116,112 @@ export default function UpdateLecturer({ lecturer, refreshLecturers }) {
     return(
         <div>
             <Dialog>
-                <DialogTrigger>
-                    <SquarePenIcon className="text-green-500 cursor-pointer hover:-translate-y-1 transition-all duration-500 "/>
+                <DialogTrigger asChild>
+                    <Button variant="ghost" size="icon" aria-label="Edit lecturer">
+                        <SquarePenIcon className="text-green-600"/>
+                    </Button>
                 </DialogTrigger>
-                <DialogContent className="bg-gray-300 dark:bg-slate-800">
+                <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
                     <DialogHeader>
-                        <DialogTitle className="text-2xl font-bold text-green-500 text-center ">Update Lecturer Info</DialogTitle>
-                        <DialogDescription className="text-red-500">
+                        <DialogTitle>Update Lecturer Info</DialogTitle>
+                        <DialogDescription>
                             * All fields are required.
                         </DialogDescription>
                     </DialogHeader>
 
-                    {errors && <p className="mt-1 font-bold text-red-600 text-right">{errors}</p>}
+                    {errors && <p className="mt-1 font-bold text-destructive text-right">{errors}</p>}
 
                     <form onSubmit={handleSubmit}>
-                        <span>
-                            <Label htmlFor="name" className="text-lg md:text-2xl lg:text-2xl text-blue-600">Name</Label>
-                            <Input 
-                                id="name"
-                                name="name"
-                                value={name}
-                                type="text"
-                                onChange={(e) => setName(e.target.value)}
-                                className={`border ${formDataError.name ? 'border-2 border-red-500 shadow shadow-red-500' : 'border-green-500'}`}
-                                placeholder="Dr. John Doe"
-                                disabled={loading}
-                                required
-                            />
-                        </span>
-                        {formDataError.name && <p className="mt-1 font-bold text-red-600">{formDataError.name}</p>}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <Label htmlFor="name">Name</Label>
+                                <Input
+                                    id="name"
+                                    name="name"
+                                    value={name}
+                                    type="text"
+                                    onChange={(e) => setName(e.target.value)}
+                                    className={`mt-1.5 ${formDataError.name ? 'border-destructive' : ''}`}
+                                    placeholder="Dr. John Doe"
+                                    disabled={loading}
+                                    required
+                                />
+                                {formDataError.name && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.name}</p>}
+                            </div>
 
-                        <span>
-                            <Label htmlFor="phoneNumber" className="text-lg md:text-2xl lg:text-2xl text-blue-600">Phone Number</Label>
-                            <Input 
-                                id="phoneNumber"
-                                name="phoneNumber"
-                                value={phoneNumber}
-                                type="text"
-                                onChange={(e) => setPhoneNumber(e.target.value)}
-                                className={`border ${formDataError.phoneNumber ? 'border-2 border-red-500 shadow shadow-red-500' : 'border-green-500'}`}
-                                placeholder="+254123456789"
-                                disabled={loading}
-                                required
-                            />
-                        </span>
-                        {formDataError.phoneNumber && <p className="mt-1 font-bold text-red-600">{formDataError.phoneNumber}</p>}
+                            <div>
+                                <Label htmlFor="phoneNumber">Phone Number</Label>
+                                <Input
+                                    id="phoneNumber"
+                                    name="phoneNumber"
+                                    value={phoneNumber}
+                                    type="text"
+                                    onChange={(e) => setPhoneNumber(e.target.value)}
+                                    className={`mt-1.5 ${formDataError.phoneNumber ? 'border-destructive' : ''}`}
+                                    placeholder="+254123456789"
+                                    disabled={loading}
+                                    required
+                                />
+                                {formDataError.phoneNumber && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.phoneNumber}</p>}
+                            </div>
 
-                        <span>
-                            <Label htmlFor="email" className="text-lg md:text-2xl lg:text-2xl text-blue-600">E-mail</Label>
-                            <Input 
-                                id="email"
-                                name="email"
-                                value={email}
-                                type="email"
-                                onChange={(e) => setEmail(e.target.value)}
-                                className={`border ${formDataError.email ? 'border-2 border-red-500 shadow shadow-red-500' : 'border-green-500'}`}
-                                placeholder="johndoe@example.com"
-                                disabled={loading}
-                                required
-                            />
-                        </span>
-                        {formDataError.email && <p className="mt-1 font-bold text-red-600">{formDataError.dueDemailate}</p>}
+                            <div>
+                                <Label htmlFor="email">E-mail</Label>
+                                <Input
+                                    id="email"
+                                    name="email"
+                                    value={email}
+                                    type="email"
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    className={`mt-1.5 ${formDataError.email ? 'border-destructive' : ''}`}
+                                    placeholder="johndoe@example.com"
+                                    disabled={loading}
+                                    required
+                                />
+                                {formDataError.email && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.email}</p>}
+                            </div>
 
-                        <div>
-                            <Label htmlFor="cohort" className="text-lg md:text-2xl lg:text-2xl text-blue-600">Cohort</Label>
-                            <Select
-                                onValueChange={value => setCohort(value)}
-                                disabled={loading}
-                                value={cohort}
-                                id="cohort"
-                                required
-                            >
-                                <SelectTrigger className="w-[180px] w-full ">
-                                    <SelectValue placeholder="Select your cohort:" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value={user.cohort._id} key={user.cohort._id}>
-                                        {user?.cohort.name}
-                                    </SelectItem>
-                                </SelectContent>
-                            </Select>
+                            <div>
+                                <Label htmlFor="cohort">Cohort</Label>
+                                <Select
+                                    onValueChange={value => setCohort(value)}
+                                    disabled={loading}
+                                    value={cohort}
+                                    id="cohort"
+                                    required
+                                >
+                                    <SelectTrigger className="w-full mt-1.5">
+                                        <SelectValue placeholder="Select your cohort:" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value={user.cohort._id} key={user.cohort._id}>
+                                            {user?.cohort.name}
+                                        </SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                {formDataError.cohort && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.cohort}</p>}
+                            </div>
                         </div>
-                        {formDataError.cohort && <p className="mt-1 font-bold text-red-600">{formDataError.cohort}</p>}
 
-                        <Button className="bg-white text-black font-bold shadow-md hover:shadow-green-500 hover:shadow-xl hover:bg-white border md:text-lg lg:text-xl hover:-translate-y-1 transform easeinout duration-500 mt-5 w-full" disabled={loading} type="submit">
-                            { loading ? (
-                                <div className="flex gap-3 items-center">
-                                    Saving
-                                    <LoaderIcon className="animate-spin"/>
-                                </div> 
-                                ) : (
-                                <div className="flex gap-3 items-center">
-                                    Save Changes
-                                    <SendHorizonalIcon />
-                                </div> 
-                                ) 
-                            }
-                        </Button>
+                        <DialogFooter className="mt-5">
+                            <DialogClose asChild>
+                                <Button type="button" variant="outline">Cancel</Button>
+                            </DialogClose>
+                            <Button className="bg-blue-600 hover:bg-blue-700 text-white" disabled={loading} type="submit">
+                                { loading ? (
+                                    <>
+                                        Saving
+                                        <LoaderIcon className="animate-spin"/>
+                                    </>
+                                    ) : (
+                                    <>
+                                        Save Changes
+                                        <SendHorizonalIcon />
+                                    </>
+                                    )
+                                }
+                            </Button>
+                        </DialogFooter>
                     </form>
 
                 </DialogContent>

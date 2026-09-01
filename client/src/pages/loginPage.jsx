@@ -1,5 +1,4 @@
-// Imports
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/authContext";
 import { Link } from 'react-router-dom';
 import { BackgroundGradient } from "@/components/ui/background-gradient";
@@ -27,7 +26,11 @@ export default function LoginPage() {
     const [showPassword, setShowPassword] = useState(false)
     const [loading, setLoading] = useState(false);
     
-    const { login, error } = useAuth();
+    const { login, error, clearError } = useAuth();
+
+    useEffect(() => {
+        if (clearError) clearError();
+    }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -84,9 +87,9 @@ export default function LoginPage() {
                                         name="studentId"
                                         type="text"
                                         value={studentId}
-                                        className={`pl-10 text-black border ${studentIdError || error ? 'border-red-700 shadow-md shadow-red-400' : 'border-black shadow-xl '}`}
-                                        onChange={(e) => setStudentId(e.target.value.toUpperCase())}
-                                        placeholder="Student Reg N.o"
+                                        className={`pl-10 text-black border ${studentIdError ? 'border-red-700 shadow-md shadow-red-400' : 'border-black shadow-xl '}`}
+                                        onChange={(e) => setStudentId(e.target.value)}
+                                        placeholder="Email / Student Reg N.o"
                                         required
                                         disabled={loading}
                                     />
@@ -100,7 +103,7 @@ export default function LoginPage() {
                                         name="password"
                                         type={showPassword ? 'text' : 'password'}
                                         value={password}
-                                        className={`pl-10 border text-black ${passwordError || error ? 'border-red-700 shadow-md shadow-red-400' : 'border-black shadow-xl'}`}
+                                        className={`pl-10 border text-black ${passwordError ? 'border-red-700 shadow-md shadow-red-400' : 'border-black shadow-xl'}`}
                                         onChange={(e) => setPassword(e.target.value)}
                                         placeholder="Password"
                                         required

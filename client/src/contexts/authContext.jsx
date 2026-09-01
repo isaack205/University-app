@@ -119,10 +119,15 @@ export const AuthProvider = ({ children }) => {
         setUser(null);
     }
 
+    const clearError = () => {
+        setError('');
+    }
+
     const value = {
         user,
         loading,
         error,
+        clearError,
         isAuthenticated: !!user,
         refreshUser: checkAuthStatus,
         hasRole: (roles) => {

@@ -1,6 +1,6 @@
 // Imports
 const JWT = require('jsonwebtoken');
-const User = require('../models/user');
+const { User } = require('../models/user');
 
 // Load env variables
 const JWT_SECRET = process.env.JWT_SECRET

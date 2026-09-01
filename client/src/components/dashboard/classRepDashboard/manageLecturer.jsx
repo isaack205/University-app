@@ -1,26 +1,20 @@
 // Imports
 import React, {useState, useEffect} from "react";
-import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table2";
-import { SendHorizonalIcon, LoaderIcon } from "lucide-react";
+import { SendHorizonalIcon, LoaderIcon, Trash2Icon, UsersIcon, PhoneIcon, MailIcon } from "lucide-react";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Label } from "@radix-ui/react-dropdown-menu";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -29,13 +23,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useAuth } from "@/contexts/authContext";
-import { unitScheduleService } from "@/services/unitSchedulerApi";
 import { toast } from "sonner";
-import LecturerPage from "@/pages/lecturerPage";
 import UpdateLecturer from "@/components/updateLecturer";
-import { Textarea } from "@/components/ui/textarea";
 import { lecturerService } from "@/services/lecturerApi";
-import { LucideScissorsSquareDashedBottom } from "lucide-react";
+import DeleteConfirmDialog from "@/components/deleteConfirmDialog";
 
 export default function ManageLecturers() {
 
@@ -45,6 +36,7 @@ export default function ManageLecturers() {
     const [cohort, setCohort] = useState('');
     const [loading, setLoading] = useState(false);
     const [lecturerLoading, setLecturerLoading] = useState(false);
+    const [deletingId, setDeletingId] = useState(null);
     const [lecturers, setLecturers] = useState({ currentSemester: [], pastSemester: []})
     const [formDataError, setFormDataError] = useState({});
     const [errors, setErrors] = useState(null);
@@ -145,163 +137,222 @@ export default function ManageLecturers() {
         }
     }
 
+    const handleDelete = async (lecturer) => {
+        setDeletingId(lecturer._id);
+        try {
+            await lecturerService.deleteLecturer(lecturer._id);
+            toast.success(`"${lecturer.name}" deleted successfully.`);
+            fetchLecturers();
+        } catch (error) {
+            const errorMessage = error.response?.data?.message || error.message || 'Failed to delete lecturer.';
+            toast.error(errorMessage);
+        } finally {
+            setDeletingId(null);
+        }
+    };
+
     return(
         <div>
             <Dialog>
-                <DialogTrigger className="rounded-xl shadow-xl p-1 mt-10 bg-blue-300 cursor-pointer hover:shadow-blue-200 dark:bg-slate-800 text-white transition-all duration-400 text-black">Create Lecturer</DialogTrigger>
-                <DialogContent className="bg-gray-300 dark:bg-slate-800">
+                <DialogTrigger asChild>
+                    <Button className="mt-2 bg-blue-600 hover:bg-blue-700 text-white">Create Lecturer</Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
                     <DialogHeader>
-                        <DialogTitle className="text-2xl font-bold text-green-500 text-center ">Register a Lecturer</DialogTitle>
-                        <DialogDescription className="text-red-500">
+                        <DialogTitle>Register a Lecturer</DialogTitle>
+                        <DialogDescription>
                             * All fields are required.
                         </DialogDescription>
                     </DialogHeader>
 
-                    {errors && <p className="mt-1 font-bold text-red-600 text-right">{errors}</p>}
+                    {errors && <p className="mt-1 font-bold text-destructive text-right">{errors}</p>}
 
                     <form onSubmit={handleSubmit}>
-                        <span>
-                            <Label htmlFor="name" className="text-lg md:text-2xl lg:text-2xl text-blue-600">Name</Label>
-                            <Input 
-                                id="name"
-                                name="name"
-                                value={name}
-                                type="text"
-                                onChange={(e) => setName(e.target.value)}
-                                className={`border ${formDataError.name ? 'border-2 border-red-500 shadow shadow-red-500' : 'border-green-500'}`}
-                                placeholder="Dr. John Doe"
-                                disabled={loading}
-                                required
-                            />
-                        </span>
-                        {formDataError.name && <p className="mt-1 font-bold text-red-600">{formDataError.name}</p>}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <Label htmlFor="name">Name</Label>
+                                <Input
+                                    id="name"
+                                    name="name"
+                                    value={name}
+                                    type="text"
+                                    onChange={(e) => setName(e.target.value)}
+                                    className={`mt-1.5 ${formDataError.name ? 'border-destructive' : ''}`}
+                                    placeholder="Dr. John Doe"
+                                    disabled={loading}
+                                    required
+                                />
+                                {formDataError.name && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.name}</p>}
+                            </div>
 
-                        <span>
-                            <Label htmlFor="phoneNumber" className="text-lg md:text-2xl lg:text-2xl text-blue-600">Phone Number</Label>
-                            <Input 
-                                id="phoneNumber"
-                                name="phoneNumber"
-                                value={phoneNumber}
-                                type="text"
-                                onChange={(e) => setPhoneNumber(e.target.value)}
-                                className={`border ${formDataError.phoneNumber ? 'border-2 border-red-500 shadow shadow-red-500' : 'border-green-500'}`}
-                                placeholder="+254123456789"
-                                disabled={loading}
-                                required
-                            />
-                        </span>
-                        {formDataError.phoneNumber && <p className="mt-1 font-bold text-red-600">{formDataError.phoneNumber}</p>}
+                            <div>
+                                <Label htmlFor="phoneNumber">Phone Number</Label>
+                                <Input
+                                    id="phoneNumber"
+                                    name="phoneNumber"
+                                    value={phoneNumber}
+                                    type="text"
+                                    onChange={(e) => setPhoneNumber(e.target.value)}
+                                    className={`mt-1.5 ${formDataError.phoneNumber ? 'border-destructive' : ''}`}
+                                    placeholder="+254123456789"
+                                    disabled={loading}
+                                    required
+                                />
+                                {formDataError.phoneNumber && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.phoneNumber}</p>}
+                            </div>
 
-                        <span>
-                            <Label htmlFor="email" className="text-lg md:text-2xl lg:text-2xl text-blue-600">E-mail</Label>
-                            <Input 
-                                id="email"
-                                name="email"
-                                value={email}
-                                type="email"
-                                onChange={(e) => setEmail(e.target.value)}
-                                className={`border ${formDataError.email ? 'border-2 border-red-500 shadow shadow-red-500' : 'border-green-500'}`}
-                                placeholder="johndoe@example.com"
-                                disabled={loading}
-                                required
-                            />
-                        </span>
-                        {formDataError.email && <p className="mt-1 font-bold text-red-600">{formDataError.dueDemailate}</p>}
+                            <div>
+                                <Label htmlFor="email">E-mail</Label>
+                                <Input
+                                    id="email"
+                                    name="email"
+                                    value={email}
+                                    type="email"
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    className={`mt-1.5 ${formDataError.email ? 'border-destructive' : ''}`}
+                                    placeholder="johndoe@example.com"
+                                    disabled={loading}
+                                    required
+                                />
+                                {formDataError.email && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.email}</p>}
+                            </div>
 
-                        <div>
-                            <Label htmlFor="cohort" className="text-lg md:text-2xl lg:text-2xl text-blue-600">Cohort</Label>
-                            <Select
-                                onValueChange={value => setCohort(value)}
-                                disabled={loading}
-                                value={cohort}
-                                id="cohort"
-                                required
-                            >
-                                <SelectTrigger className="w-[180px] w-full ">
-                                    <SelectValue placeholder="Select your cohort:" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value={user.cohort._id} key={user.cohort._id}>
-                                        {user?.cohort.name}
-                                    </SelectItem>
-                                </SelectContent>
-                            </Select>
+                            <div>
+                                <Label htmlFor="cohort">Cohort</Label>
+                                <Select
+                                    onValueChange={value => setCohort(value)}
+                                    disabled={loading}
+                                    value={cohort}
+                                    id="cohort"
+                                    required
+                                >
+                                    <SelectTrigger className="w-full mt-1.5">
+                                        <SelectValue placeholder="Select your cohort:" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value={user.cohort._id} key={user.cohort._id}>
+                                            {user?.cohort.name}
+                                        </SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                {formDataError.cohort && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.cohort}</p>}
+                            </div>
                         </div>
-                        {formDataError.cohort && <p className="mt-1 font-bold text-red-600">{formDataError.cohort}</p>}
 
-                        
-
-                        <Button className="bg-white text-black font-bold shadow-md hover:shadow-green-500 hover:shadow-xl hover:bg-white border md:text-lg lg:text-xl hover:-translate-y-1 transform easeinout duration-500 mt-5 w-full" disabled={loading} type="submit">
-                            { loading ? (
-                                <div className="flex gap-3 items-center">
-                                    Creating
-                                    <LoaderIcon className="animate-spin"/>
-                                </div> 
-                                ) : (
-                                <div className="flex gap-3 items-center">
-                                    Create Lecturer
-                                    <SendHorizonalIcon />
-                                </div> 
-                                ) 
-                            }
-                        </Button>
+                        <DialogFooter className="mt-5">
+                            <DialogClose asChild>
+                                <Button type="button" variant="outline">Cancel</Button>
+                            </DialogClose>
+                            <Button className="bg-blue-600 hover:bg-blue-700 text-white" disabled={loading} type="submit">
+                                { loading ? (
+                                    <>
+                                        Creating
+                                        <LoaderIcon className="animate-spin"/>
+                                    </>
+                                    ) : (
+                                    <>
+                                        Create Lecturer
+                                        <SendHorizonalIcon />
+                                    </>
+                                    )
+                                }
+                            </Button>
+                        </DialogFooter>
                     </form>
 
                 </DialogContent>
             </Dialog>
-            
-            <div className="border rounded-xl p-5 mt-10 bg-blue-100 dark:bg-slate-800">
-                <Table>
-                    <TableCaption>Lecturer manager.</TableCaption>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead className="w-[100px]">Name</TableHead>
-                            <TableHead>PhoneNumber</TableHead>
-                            <TableHead>Email</TableHead>
-                            <TableHead className="text-right">Action</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    {lecturerLoading ? (
-                        <TableBody>
-                            <TableRow>
-                                <TableCell colSpan={4} className="text-center">
-                                    <div className="flex flex-row items-center justify-center gap-2">
-                                        <LoaderIcon className="animate-spin h-6 w-6 text-green-500" />
-                                        <p className="text-green-500 font-bold text-md lg:text-xl">Loading Lecturers' data.</p>
-                                    </div>
-                                </TableCell>
-                            </TableRow>
-                        </TableBody>
-                        ) : (
-                        <TableBody>
-                            {/* Current Semesters */}
-                            {lecturers.currentSemester?.map(lecturer => (
-                                <TableRow key={lecturer._id}>
-                                    <TableCell className="font-medium">{lecturer.name} (Current)</TableCell>
-                                    <TableCell>{lecturer.phoneNumber}</TableCell>
-                                    <TableCell>{lecturer.email}</TableCell>
-                                    <TableCell className="text-right">
-                                        <UpdateLecturer lecturer={lecturer} refreshLecturers={fetchLecturers}/>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
 
-                            {/* Past Semesters */}
-                            {lecturers.pastSemester?.map(lecturer => (
-                                <TableRow key={lecturer._id}>
-                                    <TableCell className="font-medium">{lecturer.name} (Past)</TableCell>
-                                    <TableCell>{lecturer.phoneNumber}</TableCell>
-                                    <TableCell>{lecturer.email}</TableCell>
-                                    <TableCell className="text-right">
-                                        <UpdateLecturer lecturer={lecturer} refreshLecturers={fetchLecturers}/>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    )}
-                </Table>
+            {/* Cards List */}
+            <div className="mt-6 space-y-3">
+                {lecturerLoading ? (
+                    <div className="flex items-center justify-center gap-2 py-10 text-muted-foreground">
+                        <LoaderIcon className="animate-spin h-5 w-5" />
+                        <span className="font-medium">Loading lecturers…</span>
+                    </div>
+                ) : lecturers.currentSemester?.length === 0 && lecturers.pastSemester?.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-14 text-center text-muted-foreground gap-2">
+                        <UsersIcon className="h-10 w-10 opacity-30" />
+                        <p className="text-sm italic">No lecturers yet. Create one above.</p>
+                    </div>
+                ) : (
+                    <>
+                        {lecturers.currentSemester?.map(lecturer => (
+                            <div
+                                key={lecturer._id}
+                                className="group flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl border bg-card px-5 py-4 shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
+                            >
+                                <div className="flex flex-col gap-1.5 min-w-0">
+                                    <div className="flex items-center gap-2">
+                                        <p className="font-semibold text-foreground truncate">{lecturer.name}</p>
+                                        <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">Current</Badge>
+                                    </div>
+                                    <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                                        {lecturer.phoneNumber && (
+                                            <span className="inline-flex items-center gap-1">
+                                                <PhoneIcon className="h-3 w-3" />
+                                                {lecturer.phoneNumber}
+                                            </span>
+                                        )}
+                                        {lecturer.email && (
+                                            <span className="inline-flex items-center gap-1">
+                                                <MailIcon className="h-3 w-3" />
+                                                {lecturer.email}
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-2 shrink-0">
+                                    <UpdateLecturer lecturer={lecturer} refreshLecturers={fetchLecturers}/>
+                                    <DeleteConfirmDialog
+                                        title="Delete Lecturer"
+                                        description={`Are you sure you want to delete "${lecturer.name}"? This action cannot be undone.`}
+                                        onConfirm={() => handleDelete(lecturer)}
+                                        loading={deletingId === lecturer._id}
+                                    />
+                                </div>
+                            </div>
+                        ))}
+                        {lecturers.pastSemester?.map(lecturer => (
+                            <div
+                                key={lecturer._id}
+                                className="group flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl border bg-card px-5 py-4 shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 opacity-80"
+                            >
+                                <div className="flex flex-col gap-1.5 min-w-0">
+                                    <div className="flex items-center gap-2">
+                                        <p className="font-semibold text-foreground truncate">{lecturer.name}</p>
+                                        <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">Past</Badge>
+                                    </div>
+                                    <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                                        {lecturer.phoneNumber && (
+                                            <span className="inline-flex items-center gap-1">
+                                                <PhoneIcon className="h-3 w-3" />
+                                                {lecturer.phoneNumber}
+                                            </span>
+                                        )}
+                                        {lecturer.email && (
+                                            <span className="inline-flex items-center gap-1">
+                                                <MailIcon className="h-3 w-3" />
+                                                {lecturer.email}
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-2 shrink-0">
+                                    <UpdateLecturer lecturer={lecturer} refreshLecturers={fetchLecturers}/>
+                                    <DeleteConfirmDialog
+                                        title="Delete Lecturer"
+                                        description={`Are you sure you want to delete "${lecturer.name}"? This action cannot be undone.`}
+                                        onConfirm={() => handleDelete(lecturer)}
+                                        loading={deletingId === lecturer._id}
+                                    />
+                                </div>
+                            </div>
+                        ))}
+                    </>
+                )}
             </div>
-            
+
         </div>
     )
-};
+}

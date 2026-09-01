@@ -116,9 +116,9 @@ export const authService = {
     },
 
     // Fetch users by Cohort
-    getUsersByCohort: async (cohortId, usersData) => {
+    getUsersByCohort: async (cohortId) => {
         try {
-            const res = await API.get(`/auth/cohort/${cohortId}`, usersData);
+            const res = await API.get(`/auth/cohort/${cohortId}`);
             return res.data;
         } catch (error) {
             console.error('Error fetching users per cohort:', error.response?.data || error.message);

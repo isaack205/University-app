@@ -2,7 +2,7 @@
 const cron = require('node-cron');
 const Assignment = require('../models/assignement');
 const UnitSchedule = require('../models/unit');
-const User = require('../models/user');
+const { User } = require('../models/user');
 const Notification = require('../models/notification');
 const { sendAppNotification } = require('./notificationService');
 const { sendSMS } = require('./smsService');

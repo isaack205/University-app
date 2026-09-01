@@ -3,7 +3,7 @@ const { sendAppNotification } = require('../services/notificationService.js');
 const { sendSMS } = require('../services/smsService.js');
 const cloudinary = require('../config/cloudinaryConfig.js');
 const FileUpload = require('../models/fileUpload.js');
-const User = require('../models/user.js');
+const { User } = require('../models/user.js');
 const fs = require('fs');
 
 // Create a new file record
