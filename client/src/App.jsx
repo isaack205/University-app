@@ -16,9 +16,12 @@ import ManageAssignment from "./components/dashboard/classRepDashboard/manageAss
 import ManageEmergencies from "./components/dashboard/classRepDashboard/manageEmergencies";
 import ForgotPasswordPage from "./pages/forgotPassword";
 import ResetPasswordPage from "./pages/resetPassword";
+import VerifyEmailPage from "./pages/verifyEmail";
 import AdminDashboard from "./components/dashboard/adminDashboard/adminDashboard";
 import CoursePage from "./components/dashboard/adminDashboard/coursePage";
 import CohortPage from "./components/dashboard/adminDashboard/cohortPage";
+import AdminFeedback from "./components/dashboard/adminDashboard/adminFeedback";
+import AdminManageFiles from "./components/dashboard/adminDashboard/adminManageFiles";
 import { PathTracker, StartupRedirect } from "./components/common/routerTracker";
 import SettingsPage from "./pages/settingsPage";
 import ManageCat from "./components/dashboard/classRepDashboard/manageCAT";
@@ -45,6 +48,7 @@ export default function App () {
         <Route path='/register' element={<RegisterPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/verify-email" element={<VerifyEmailPage />} />
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/help" element={<HelpPage />} />
 
@@ -80,6 +84,8 @@ export default function App () {
             <Route path="/admin/course" element={<CoursePage />} />
             <Route path="/admin/cohort" element={<CohortPage />} />
             <Route path="/admin/users" element={<UsersEditPage />} />
+            <Route path="/admin/files" element={<AdminManageFiles />} />
+            <Route path="/admin/feedback" element={<AdminFeedback />} />
           </Route>
 
         </Route>

@@ -15,10 +15,13 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true },
   preferences: {
     smsNotifications: { type: Boolean, default: false },
+    emailNotifications: { type: Boolean, default: true },
     offlineMode: { type: Boolean, default: false }
   },
   notificationsEnabled: { type: Boolean, default: false },
   lastLoginAt: { type: Date, default: null },
+  isVerified: { type: Boolean, default: false },
+  verificationToken: String,
   resetPasswordToken: String,
   resetPasswordExpire: Date,
 }, options);

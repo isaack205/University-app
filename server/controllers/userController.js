@@ -39,18 +39,55 @@ exports.registerUser = async (req, res) => {
             return res.status(400).json({message: "User with email already exists"})
         };
 
+        // Generate Verification Token
+        const verificationToken = crypto.randomBytes(20).toString('hex');
+        const hashedVerificationToken = crypto.createHash('sha256').update(verificationToken).digest('hex');
+
         // Hash password into 10 string
         const hashedPassword = await bcrypt.hash(password, 10);
-        const user = await Student.create({ ...req.body, role: role || 'student', password: hashedPassword });
+        const user = await Student.create({ 
+            ...req.body, 
+            role: role || 'student', 
+            password: hashedPassword,
+            verificationToken: hashedVerificationToken
+        });
         
-        const token = JWT.sign(
-            { id: user._id, role: user.role },
-            JWT_SECRET,
-            { expiresIn: '1d' }
-        )
+        // Send Verification Email
+        const verifyURL = `${process.env.FRONTEND_URL}/verify-email?token=${verificationToken}`;
+        const emailHtml = `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 10px; background-color: #ffffff;">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <h1 style="color: #4f46e5; margin: 0;">Welcome to CampusHub! 🎓</h1>
+                </div>
+                <div style="color: #334155; font-size: 16px; line-height: 1.6;">
+                    <p>Hi <strong>${user.name}</strong>,</p>
+                    <p>Thanks for registering on CampusHub! We're excited to have you on board.</p>
+                    <p>Before you can access your dashboard and stay updated with your classes, we just need to verify your email address.</p>
+                    <div style="text-align: center; margin: 30px 0;">
+                        <a href="${verifyURL}" style="background-color: #4f46e5; color: #ffffff; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px; display: inline-block;">Verify My Email</a>
+                    </div>
+                    <p>If the button above doesn't work, you can copy and paste the following link into your browser:</p>
+                    <p style="word-break: break-all; color: #64748b; font-size: 14px;">${verifyURL}</p>
+                    <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 30px 0;" />
+                    <p style="font-size: 14px; color: #94a3b8;">If you did not create an account, no further action is required.</p>
+                </div>
+            </div>
+        `;
 
-        // Return token and user
-        res.status(201).json({ message: "User created successfully", user, token });
+        try {
+            await sendEmail({
+                to: user.email,
+                subject: "🎓 Verify your CampusHub Account",
+                html: emailHtml
+            });
+        } catch (emailError) {
+            // Rollback user creation if email fails so they can try again later
+            await User.findByIdAndDelete(user._id);
+            return res.status(500).json({message: "Registration failed: Could not send verification email. Please check email configuration."});
+        }
+
+        // Return user without token
+        res.status(201).json({ message: "Registration successful. Please check your email to verify your account." });
     } catch (error) {
         res.status(500).json({message: "Error creating user", error: error.message});
     }
@@ -82,6 +119,13 @@ exports.loginUser = async (req, res) => {
         if(!isMatch) {
             return res.status(400).json({message: "Invalid credentials"})
         }
+
+        if (!user.isVerified) {
+            return res.status(403).json({ 
+                message: "Please check your inbox and verify your email address before logging in.", 
+                isVerified: false 
+            });
+        }
         
         const token = JWT.sign(
             { id: user._id, role: user.role },
@@ -93,9 +137,42 @@ exports.loginUser = async (req, res) => {
         user.lastLoginAt = new Date();
         await user.save({ validateBeforeSave: false });
 
-        res.status(200).json({message: "User logged in successfully", user, token});
+        // Strip sensitive fields before sending to client
+        const safeUser = user.toObject();
+        delete safeUser.password;
+        delete safeUser.resetPasswordToken;
+        delete safeUser.resetPasswordExpire;
+        delete safeUser.verificationToken;
+
+        res.status(200).json({message: "User logged in successfully", user: safeUser, token});
     } catch (error) {
         res.status(500).json({message: "Error loggin in user", error: error.message});
+    }
+};
+
+exports.verifyEmail = async (req, res) => {
+    try {
+        const { token } = req.body;
+        
+        if (!token) {
+            return res.status(400).json({ message: "Verification token is required" });
+        }
+
+        const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
+        const user = await User.findOne({ verificationToken: hashedToken });
+
+        if (!user) {
+            return res.status(400).json({ message: "Invalid or expired verification token." });
+        }
+
+        user.isVerified = true;
+        user.verificationToken = undefined;
+        await user.save();
+
+        res.status(200).json({ message: "Email verified successfully!" });
+    } catch (error) {
+        res.status(500).json({ message: "Error verifying email", error: error.message });
     }
 };
 

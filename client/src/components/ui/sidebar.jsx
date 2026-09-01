@@ -2,7 +2,7 @@ import React from "react";
 import { Button } from "./button";
 import { CircleXIcon, Crown } from "lucide-react";
 import { useNavigate } from 'react-router-dom'
-import { LayoutDashboardIcon, CalendarDaysIcon, NotebookPenIcon, PencilLineIcon } from "lucide-react";
+import { LayoutDashboardIcon, CalendarDaysIcon, NotebookPenIcon, PencilLineIcon, FileArchiveIcon, MessageSquareIcon } from "lucide-react";
 import { GraduationCapIcon } from "lucide-react";
 import { useAuth } from "@/contexts/authContext";
 import { SchoolIcon } from "lucide-react";
@@ -148,6 +148,14 @@ export const Sidebar =  ({ isOpen, toggleSidebar }) => {
                             <Button className="bg-no mb-5 text-blue-500 font-bold md:text-xl lg:text-2xl cursor-pointer shadow-lg hover:shadow-xl hover:underline hover:bg-no hover:-translate-y-2 transform easeinout duration-500" onClick={() => { navigate('/admin/cohort'); if (window.innerWidth < 1024) toggleSidebar(); }}>
                                 <SchoolIcon /> 
                                 Manage Cohorts
+                            </Button>
+                            <Button className="bg-no mb-5 text-blue-500 font-bold md:text-xl lg:text-2xl cursor-pointer shadow-lg hover:shadow-xl hover:underline hover:bg-no hover:-translate-y-2 transform easeinout duration-500" onClick={() => { navigate('/admin/files'); if (window.innerWidth < 1024) toggleSidebar(); }}>
+                                <FileArchiveIcon /> 
+                                Manage Files
+                            </Button>
+                            <Button className="bg-no mb-5 text-blue-500 font-bold md:text-xl lg:text-2xl cursor-pointer shadow-lg hover:shadow-xl hover:underline hover:bg-no hover:-translate-y-2 transform easeinout duration-500" onClick={() => { navigate('/admin/feedback'); if (window.innerWidth < 1024) toggleSidebar(); }}>
+                                <MessageSquareIcon /> 
+                                Manage Feedback
                             </Button>
                             <hr className="border-black mb-2 w-full rounded-xl"/>
                         </div>

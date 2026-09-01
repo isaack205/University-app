@@ -10,7 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { KeyRoundIcon, EyeOffIcon, IdCardIcon, EyeIcon, SendHorizonalIcon, LoaderIcon} from 'lucide-react';
+import { KeyRoundIcon, EyeOffIcon, IdCardIcon, EyeIcon, SendHorizonalIcon, LoaderIcon, MailWarningIcon } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import registerPhoto from '../assets/university.png';
@@ -117,9 +117,16 @@ export default function LoginPage() {
                                 </div>
                                 {passwordError && <p className="mt-1 font-bold text-red-600">{passwordError}</p>}
                             </div>
-                            {error && <p className="text-red-500 mt-1 font-bold">{error}</p> }
+
+                            {error && (
+                                <div className={`mt-4 p-3 rounded-md flex items-start gap-3 ${error.includes('verify') ? 'bg-amber-50 border border-amber-200 text-amber-800' : 'bg-red-50 border border-red-200 text-red-700'}`}>
+                                    {error.includes('verify') ? <MailWarningIcon className="w-5 h-5 mt-0.5 shrink-0" /> : <p className="font-bold shrink-0">!</p>}
+                                    <p className="text-sm font-medium">{error}</p>
+                                </div>
+                            )}
+
                             <div>
-                                <Button className="mt-8 cursor-pointer w-full bg-green-500 hover:bg-green-600 text-lg font-bold border text-black border-black" disabled={loading} type="submit">
+                                <Button className="mt-3 md:mt-8 cursor-pointer w-full bg-blue-500 hover:bg-blue-600 text-lg font-bold border text-white border-blue-500 shadow-xl" disabled={loading} type="submit">
                                     {loading ? (
                                                 <div className="flex items-center gap-3">
                                                     <p>Signing In</p>
@@ -143,9 +150,14 @@ export default function LoginPage() {
                                 Sign Up
                             </Link>
                         </p>
-                        <Link to='/forgot-password' className="flex justify-end pr-4"> 
-                            <p className="text-blue-700 hover:text-blue-900 hover:underline">Forgot Password?</p>
-                        </Link>
+                        <div className="flex justify-between w-full mt-4 text-sm px-2">
+                            <Link to='/forgot-password' className="text-blue-700 hover:text-blue-900 hover:underline font-medium"> 
+                                Forgot Password?
+                            </Link>
+                            <Link to='/help' className="text-blue-700 hover:text-blue-900 hover:underline font-medium"> 
+                                Help & Support
+                            </Link>
+                        </div>
                     </CardFooter>
                 </Card>
             </div>

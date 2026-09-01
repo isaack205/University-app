@@ -57,8 +57,11 @@ export default function RegisterPage() {
     const [formDataError, setFormDataError] = useState({});
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [isRegistered, setIsRegistered] = useState(false);
 
     const {register, error, clearError} = useAuth();
+
+    const navigate = useNavigate();
 
     useEffect(() => {
         if (clearError) clearError();
@@ -214,7 +217,10 @@ export default function RegisterPage() {
         };
 
         try {
-            await register(payload);
+            const result = await register(payload);
+            if (result && result.success) {
+                setIsRegistered(true);
+            }
         } catch (error) {
             const message = error.message || 'An unexpected error occured';
             toast.error(message);
@@ -239,8 +245,23 @@ export default function RegisterPage() {
                         </CardTitle>
                         <CardDescription className="text-black md:text-2xl font-bold">Register to CampusHub App !</CardDescription>
                     </CardHeader>
-                    <CardContent className="ml-2 mr-2 p-2 rounded-md">
-                        <form onSubmit={handleSubmit}>
+                    <CardContent>
+                        {isRegistered ? (
+                            <div className="flex flex-col items-center justify-center p-8 text-center space-y-6">
+                                <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center">
+                                    <MailIcon className="w-10 h-10" />
+                                </div>
+                                <h3 className="text-2xl font-bold text-slate-800">Check Your Email</h3>
+                                <p className="text-slate-600 text-lg">
+                                    We've sent a verification link to <strong>{formData.email}</strong>. 
+                                    Please verify your email address to activate your account.
+                                </p>
+                                <Button className="w-full bg-blue-600 hover:bg-blue-700 mt-6" onClick={() => navigate('/login')}>
+                                    Go to Login
+                                </Button>
+                            </div>
+                        ) : (
+                            <form onSubmit={handleSubmit}>
                             <div className="">
                                 <div className="relative">
                                     <UserIcon className="absolute top-1/2 -translate-y-1/2 ml-2"/>
@@ -422,16 +443,15 @@ export default function RegisterPage() {
                                     }
                                 </Button>
                             </div>
-                        </form>
+                            </form>
+                        )}
                     </CardContent>
-                    <CardFooter className="flex gap-2 justify-center items-center">
-                        <p className="font-bold">
-                            I already have an account ? {" "}
-                            <Link to='/login' className="text-blue-700 hover:text-blue-900 hover:underline font-bold">
-                                Sign In
-                            </Link>
-                        </p>
-                    </CardFooter>
+                    {!isRegistered && (
+                        <CardFooter className="flex flex-col md:flex-col justify-center items-center w-full gap-2">
+                            <h3 className="text-black flex gap-5">Already have an account? <Link to='/login' className="text-blue-500 font-bold hover:underline">Login here</Link> </h3>
+                            <Link to='/help' className="text-blue-700 hover:text-blue-900 hover:underline font-medium text-sm">Help & Support</Link>
+                        </CardFooter>
+                    )}
                 </Card>
             </div>
         </div>

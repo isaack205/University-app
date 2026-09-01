@@ -9,6 +9,7 @@ const {
     getGeneralFiles,
 	updateFile,
 	deleteFile,
+	getAllFiles,
 } = require('../controllers/fileUploadController.js');
 const router = express.Router();
 const upload = multer({ dest: 'uploads/' });
@@ -18,6 +19,9 @@ router.post('/', upload.single('file'), protect, authorize(['classRep', 'admin']
 
 // GET my cohorts files
 router.get('/uploads', protect, getMyCohortsFiles);
+
+// GET all files (Admin only)
+router.get('/all', protect, authorize(['admin']), getAllFiles);
 
 // GET /uploads/:id - read one
 router.get('/:id', protect,  getFileById);

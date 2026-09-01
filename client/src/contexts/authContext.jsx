@@ -63,17 +63,7 @@ export const AuthProvider = ({ children }) => {
 
         try {
             const response = await authService.registerUser(userData);
-            localStorage.setItem('userToken', response.token);
-            toast.success('User registered successfully!');
-
-            // Navigate based on role
-            if (response.user.role === "admin") {
-                navigate('/admin/dashboard');
-            } else {
-                navigate('/home');
-            }
-
-            setUser(response.user);
+            toast.success(response.message || 'Registration successful! Please check your email for activation link.');
             return { success: true }
         } catch (error) {
             const message = error.response?.data?.message || error.message || 'User registration failed';

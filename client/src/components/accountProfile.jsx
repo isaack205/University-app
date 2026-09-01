@@ -91,10 +91,10 @@ export default function AccountProfile() {
     return (
         <div>
             <form onSubmit={handleSubmit}>
-                <Card className="shadow-xl border border-gray-300 backdrop-blur-lg bg-white/80 dark:bg-slate-800/70">
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2 text-xl">
-                            <UserIcon /> Account Settings
+                <Card className="border-none shadow-sm rounded-2xl bg-white dark:bg-slate-900 overflow-hidden">
+                    <CardHeader className="bg-slate-50/50 dark:bg-slate-800/20 border-b border-slate-100 dark:border-slate-800 pb-4">
+                        <CardTitle className="flex items-center gap-2 text-lg text-slate-800 dark:text-slate-200">
+                            <UserIcon className="w-5 h-5 text-purple-500" /> Account Settings
                         </CardTitle>
                     </CardHeader>
                     {generalError && <p className="font-bold text-red-500 text-end text-lg">{generalError}</p> }

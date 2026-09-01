@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from "react";
-import { MenuIcon, SettingsIcon, CircleUserRoundIcon, MoonIcon, SunIcon, BellIcon } from "lucide-react";
+import { MenuIcon, SettingsIcon, CircleUserRoundIcon, MoonIcon, SunIcon, BellIcon, HelpCircleIcon } from "lucide-react";
 import { Sidebar } from '@/components/ui/sidebar';
 import { useAuth } from "@/contexts/authContext";
 import { useNavigate } from 'react-router-dom';
@@ -100,6 +100,7 @@ export default function Header () {
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem onClick={() => navigate('/profile')} className="cursor-pointer"><UserRoundCogIcon /> Profile</DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => navigate('/settings')} className="cursor-pointer"><SettingsIcon /> Settings</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => navigate('/help')} className="cursor-pointer"><HelpCircleIcon /> Help & Support</DropdownMenuItem>
                                 
                                 <LogoutDialog /> 
                             </DropdownMenuContent>

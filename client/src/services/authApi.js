@@ -82,7 +82,18 @@ export const authService = {
         }
     },
 
-    // Delete user profile
+    // Verify email
+    verifyEmail: async (token) => {
+        try {
+            const res = await API.post('/auth/verify-email', { token });
+            return res.data;
+        } catch (error) {
+            console.error('Error verifying email:', error.response?.data || error.message);
+            throw error;
+        }
+    },
+
+    // Delete profile
     deleteProfile: async () => {
         try {
             const res = await API.delete('/auth/me');

@@ -17,7 +17,7 @@ export default function FloatingActionButtons() {
   };
 
   return (
-    <div className="fixed bottom-8 right-8 flex flex-col gap-4 z-50">
+    <div className="fixed bottom-8 right-8 flex-col gap-4 z-50 hidden md:flex">
       {/* AI Button - Only for authenticated users */}
       {isAuthenticated && (
         <button

@@ -114,6 +114,24 @@ exports.getFileById = async (req, res) => {
   }
 };
 
+// Get all files (Admin only)
+exports.getAllFiles = async (req, res) => {
+  try {
+    const files = await FileUpload.find({})
+      .sort({ uploadedAt: -1 })
+      .populate('course')
+      .populate('cohort')
+      .populate([ {
+        path: 'uploadedBy',
+        select: 'name email phoneNumber'
+      }]);
+
+    return res.status(200).json(files);
+  } catch (err) {
+    return res.status(500).json({ message: 'Failed to fetch all files', error: err.message});
+  }
+};
+
 // Get files for the caller's cohort
 exports.getMyCohortsFiles = async (req, res) => {
   try {

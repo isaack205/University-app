@@ -1,6 +1,7 @@
 //Imports
 const Cat = require('../models/cat');
 const { sendAppNotification } = require('../services/notificationService');
+const sendEmail = require('../utils/sendEmail');
 const { User } = require('../models/user');
 const sendSMS = require('../services/smsService');
 
@@ -201,9 +202,47 @@ exports.updateCAT = async (req, res) => {
             }
         }
 
-        // Send notifications only when important fields changed
+        // Send notifications and emails only when important fields changed
         if (message && cat.isPublished) {
             const students = await User.find({ cohort: cat.cohort });
+            
+            // Prepare the email HTML
+            const emailHtml = `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 10px; background-color: #ffffff;">
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <h1 style="color: #e11d48; margin: 0;">🚨 URGENT: CAT Updated!</h1>
+                    </div>
+                    <div style="color: #334155; font-size: 16px; line-height: 1.6;">
+                        <p>Hi Student,</p>
+                        <p>An important update has been made to a CAT for your cohort.</p>
+                        <div style="background-color: #f1f5f9; padding: 15px; border-left: 4px solid #e11d48; margin: 20px 0; border-radius: 4px;">
+                            <p style="margin: 0; font-weight: bold; font-size: 18px;">${cat.title} (${cat.catNumber})</p>
+                            <p style="margin: 10px 0 0 0;">${message.replace(/\n/g, '<br/>')}</p>
+                        </div>
+                        <p>Please log in to your dashboard immediately to check the new details, including venue, date, or submission instructions.</p>
+                        <div style="text-align: center; margin: 30px 0;">
+                            <a href="${process.env.FRONTEND_URL}/home" style="background-color: #e11d48; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">View in Dashboard</a>
+                        </div>
+                        <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 30px 0;" />
+                        <p style="font-size: 14px; color: #94a3b8;">This is an automated academic alert from CampusHub. Please do not ignore it.</p>
+                    </div>
+                </div>
+            `;
+
+            // Collect all email addresses for BCC to send in one go (respecting preferences)
+            const bccEmails = students
+                .filter(s => s.preferences?.emailNotifications !== false)
+                .map(s => s.email);
+
+            if (bccEmails.length > 0) {
+                // Send single email with all students in BCC
+                sendEmail({
+                    to: process.env.EMAIL_USER || 'no-reply@campushub.com', // fallback to something generic
+                    bcc: bccEmails.join(','),
+                    subject: `🚨 URGENT: CAT Rescheduled - ${cat.title}`,
+                    html: emailHtml
+                }).catch(err => console.error("Error sending CAT update email:", err));
+            }
 
             for (const student of students) {
                 await sendAppNotification(student._id, message, "CAT", cat._id);
