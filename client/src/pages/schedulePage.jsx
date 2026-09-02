@@ -8,7 +8,7 @@ import { useAuth } from "@/contexts/authContext";
 import {
   InfoIcon, CalendarDaysIcon, LoaderIcon,
   BookOpenIcon, ClockIcon, MapPinIcon, UserIcon,
-  GraduationCapIcon, DownloadIcon, SparklesIcon
+  GraduationCapIcon, DownloadIcon, SparklesIcon, ZapIcon
 } from "lucide-react";
 
 export default function SchedulePage() {
@@ -201,10 +201,16 @@ export default function SchedulePage() {
                     return (
                       <div key={start + day} className="p-1.5 md:p-3 min-h-[100px] md:min-h-[140px] border-r border-slate-100 dark:border-slate-800 last:border-r-0 flex flex-col gap-2">
                         {classes.length > 0 ? (
-                          classes.map((cls, idx) => (
+                          classes.map((cls, idx) => {
+                            const isOverridden = cls._override?.isOverridden;
+                            return (
                             <div
                               key={idx}
-                              className="relative flex-1 w-full min-h-[70px] p-2.5 md:p-3 rounded-xl md:rounded-2xl bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 text-white shadow-md shadow-blue-900/20 flex flex-col gap-1.5 overflow-hidden hover:-translate-y-0.5 hover:shadow-lg transition-all"
+                              className={`relative flex-1 w-full min-h-[70px] p-2.5 md:p-3 rounded-xl md:rounded-2xl text-white shadow-md flex flex-col gap-1.5 overflow-hidden hover:-translate-y-0.5 hover:shadow-lg transition-all ${
+                                isOverridden
+                                  ? 'bg-gradient-to-br from-amber-500 via-orange-600 to-red-700 shadow-orange-900/20'
+                                  : 'bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 shadow-blue-900/20'
+                              }`}
                             >
                               <div className="absolute -top-5 -right-5 h-16 w-16 rounded-full bg-white/10 blur-md pointer-events-none" />
 
@@ -212,7 +218,14 @@ export default function SchedulePage() {
                                 <span className="text-[8px] md:text-[9px] font-black bg-white/20 px-1.5 py-0.5 rounded uppercase tracking-tighter">
                                   {cls.unitName}
                                 </span>
-                                <BookOpenIcon size={12} className="opacity-60 shrink-0" />
+                                <div className="flex items-center gap-0.5">
+                                  {isOverridden && (
+                                    <span className="flex items-center gap-0.5 text-[7px] md:text-[8px] font-black bg-white/25 px-1 py-0.5 rounded text-yellow-100 uppercase tracking-tight">
+                                      <ZapIcon size={8} /> Temp
+                                    </span>
+                                  )}
+                                  <BookOpenIcon size={12} className="opacity-60 shrink-0" />
+                                </div>
                               </div>
 
                               <p className="relative text-[10px] md:text-xs lg:text-[40px] font-bold leading-tight line-clamp-2">
@@ -232,7 +245,7 @@ export default function SchedulePage() {
                                 )}
                               </div>
                             </div>
-                          ))
+                          );})
                         ) : (
                           <div className="flex-1 w-full rounded-xl border border-dashed border-slate-100 dark:border-slate-800/50" />
                         )}
@@ -258,12 +271,34 @@ export default function SchedulePage() {
             {schedules.map((schedule) => (
               <div
                 key={schedule._id}
-                className="relative p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-lg hover:shadow-blue-900/5 hover:-translate-y-1 hover:border-blue-300 dark:hover:border-blue-800 transition-all group overflow-hidden"
+                className={`relative p-5 rounded-2xl bg-white dark:bg-slate-900 border shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all group overflow-hidden ${
+                  schedule._override?.isOverridden
+                    ? 'border-amber-300 dark:border-amber-700 hover:shadow-orange-900/10 hover:border-amber-400 dark:hover:border-amber-600'
+                    : 'border-slate-200 dark:border-slate-800 hover:shadow-blue-900/5 hover:border-blue-300 dark:hover:border-blue-800'
+                }`}
               >
-                <div className="absolute top-0 left-0 h-1 w-full bg-gradient-to-r from-blue-600 to-indigo-600 scale-x-0 group-hover:scale-x-100 origin-left transition-transform" />
+                <div className={`absolute top-0 left-0 h-1 w-full scale-x-0 group-hover:scale-x-100 origin-left transition-transform ${
+                  schedule._override?.isOverridden
+                    ? 'bg-gradient-to-r from-amber-500 to-orange-600'
+                    : 'bg-gradient-to-r from-blue-600 to-indigo-600'
+                }`} />
+
+                {schedule._override?.isOverridden && (
+                  <div className="mb-3 flex items-center gap-1.5 text-[10px] font-black bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 px-2.5 py-1.5 rounded-lg w-fit">
+                    <ZapIcon size={12} />
+                    Temp change this week
+                    {schedule._override.reason && (
+                      <span className="font-medium text-amber-600 dark:text-amber-500"> — "{schedule._override.reason}"</span>
+                    )}
+                  </div>
+                )}
 
                 <div className="flex justify-between items-start mb-4">
-                  <div className="p-2.5 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-xl text-blue-600 group-hover:from-blue-600 group-hover:to-indigo-700 group-hover:text-white transition-all">
+                  <div className={`p-2.5 rounded-xl transition-all ${
+                    schedule._override?.isOverridden
+                      ? 'bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/30 dark:to-orange-900/30 text-amber-600 group-hover:from-amber-500 group-hover:to-orange-600 group-hover:text-white'
+                      : 'bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 text-blue-600 group-hover:from-blue-600 group-hover:to-indigo-700 group-hover:text-white'
+                  }`}>
                     <BookOpenIcon size={20} />
                   </div>
                   <span className="text-[10px] font-black text-slate-400 bg-slate-50 dark:bg-slate-800 px-2 py-1 rounded-md uppercase tracking-widest">
@@ -282,13 +317,31 @@ export default function SchedulePage() {
                   </div>
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-slate-500 flex items-center gap-1.5 font-medium"><MapPinIcon size={14}/> Venue</span>
-                    <span className="text-slate-900 dark:text-white font-bold">{schedule.venue}</span>
+                    <span className={`font-bold ${
+                      schedule._override?.isOverridden && schedule._override.originalVenue !== schedule.venue
+                        ? 'text-amber-600 dark:text-amber-400'
+                        : 'text-slate-900 dark:text-white'
+                    }`}>
+                      {schedule.venue}
+                      {schedule._override?.isOverridden && schedule._override.originalVenue !== schedule.venue && (
+                        <span className="text-slate-400 line-through ml-1.5 font-medium">{schedule._override.originalVenue}</span>
+                      )}
+                    </span>
                   </div>
                 </div>
 
-                <div className="mt-4 flex items-center gap-1.5 text-[10px] font-bold bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 w-fit px-2.5 py-1.5 rounded-lg">
+                <div className={`mt-4 flex items-center gap-1.5 text-[10px] font-bold w-fit px-2.5 py-1.5 rounded-lg ${
+                  schedule._override?.isOverridden
+                    ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400'
+                    : 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400'
+                }`}>
                   <ClockIcon size={12} />
                   {schedule.dayOfWeek} • {dayjs(`2025-01-01T${schedule.startTime}`).format("h:mm A")}
+                  {schedule._override?.isOverridden && schedule._override.originalStartTime !== schedule.startTime && (
+                    <span className="text-slate-400 line-through ml-1 font-medium">
+                      {dayjs(`2025-01-01T${schedule._override.originalStartTime}`).format("h:mm A")}
+                    </span>
+                  )}
                 </div>
               </div>
             ))}

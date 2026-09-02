@@ -2,14 +2,16 @@
 const express = require('express');
 const router = express.Router();
 const { protect, authorize } = require('../middlewares/auth');
-const { registerUser, loginUser, getOwnProfile, updateProfile, changePassword, forgotPassword, resetPassword, deleteUser, getAllUsers, getUsersByCohort, updateUserRole, verifyEmail } = require('../controllers/userController');
+const { registerUser, loginUser, getOwnProfile, updateProfile, changePassword, forgotPassword, resetPassword, deleteUser, getAllUsers, getUsersByCohort, updateUserRole, verifyEmail, googleAuth, completeAcademicOnboarding } = require('../controllers/userController');
 
 router.post('/register', registerUser);
 router.post('/login', loginUser);
+router.post('/google', googleAuth);
 router.post('/verify-email', verifyEmail);
 router.get('/me', protect, getOwnProfile);
 router.put('/update-profile', protect, updateProfile);
-router.put('/change-password', protect, changePassword)
+router.put('/complete-onboarding', protect, completeAcademicOnboarding);
+router.put('/change-password', protect, changePassword);
 router.post('/forgot-password', forgotPassword);
 router.post('/reset-password', resetPassword);
 router.delete('/me', protect, deleteUser);

@@ -19,7 +19,8 @@ import classImage from '../assets/class 2.jpg';
 // UI Components
 import { unitScheduleService } from "@/services/unitSchedulerApi";
 import { fileUploadService } from "@/services/fileUploadApi";
-import Onboarding from "@/components/Onboarding";
+import SpotlightTour from "@/components/SpotlightTour";
+import AcademicOnboardingModal from "@/components/common/academicOnboardingModal";
 
 // Helpers
 function getGreeting() {
@@ -242,7 +243,7 @@ const ThisWeekList = ({ items, onNavigate }) => (
 );
 
 const QuickActionsGrid = ({ actions, onNavigate }) => (
-  <div className="p-5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm">
+  <div id="quick-actions-bar" className="p-5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm">
     <h3 className="font-bold text-lg mb-5">Quick Actions</h3>
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
       {actions.map(({ label, icon: Icon, path, color }) => (
@@ -268,10 +269,7 @@ export default function Home() {
   const [generalFiles, setGeneralFiles] = useState([]);
   const [cohortFiles, setCohortFiles] = useState([]);
   const [notifications, setNotifications] = useState([]);
-  const [showOnboarding, setShowOnboarding] = useState(false);
   const navigate = useNavigate();
-
-  const words = 'Track your classes, assignments, and weekly timetable in one centralized workspace.';
 
   useEffect(() => {
     const fetchData = async () => {
@@ -307,12 +305,17 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
 
-  useEffect(() => {
-    if (!authLoading && user) {
-      const seen = localStorage.getItem("isOnboarded");
-      if (!seen) setShowOnboarding(true);
-    }
-  }, [user, authLoading]);
+  const needsAcademicSetup = Boolean(
+    user &&
+    user.role !== 'admin' &&
+    (
+      !user.course ||
+      !user.cohort ||
+      !user.studentId ||
+      user.studentId.startsWith('GOOG-') ||
+      user.studentId.startsWith('STU-')
+    )
+  );
 
   const todayName = dayjs().format('dddd');
   const todaysClasses = units.filter((u) => u.dayOfWeek === todayName);
@@ -463,7 +466,11 @@ export default function Home() {
       {/* Quick Actions */}
       <QuickActionsGrid actions={quickActions} onNavigate={navigate} />
 
-      <Onboarding open={showOnboarding} onFinish={() => setShowOnboarding(false)} />
+      <SpotlightTour />
+      <AcademicOnboardingModal 
+        isOpen={needsAcademicSetup} 
+        onSuccess={() => window.location.reload()} 
+      />
     </motion.div>
   );
 }

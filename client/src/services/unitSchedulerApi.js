@@ -57,5 +57,38 @@ export const unitScheduleService = {
             console.error('Error deleting schedule:', error.response?.data || error.message);
             throw error;
         }
-    }
+    },
+
+    // Create a temporary override for a unit schedule
+    createOverride: async (scheduleId, overrideData) => {
+        try {
+            const res = await API.post(`/schedule/${scheduleId}/override`, overrideData);
+            return res.data;
+        } catch (error) {
+            console.error('Error creating override:', error.response?.data || error.message);
+            throw error;
+        }
+    },
+
+    // Get active overrides for the cohort
+    getOverrides: async () => {
+        try {
+            const res = await API.get('/schedule/overrides');
+            return res.data;
+        } catch (error) {
+            console.error('Error fetching overrides:', error.response?.data || error.message);
+            throw error;
+        }
+    },
+
+    // Cancel (delete) an active override
+    cancelOverride: async (overrideId) => {
+        try {
+            const res = await API.delete(`/schedule/override/${overrideId}`);
+            return res.data;
+        } catch (error) {
+            console.error('Error cancelling override:', error.response?.data || error.message);
+            throw error;
+        }
+    },
 }

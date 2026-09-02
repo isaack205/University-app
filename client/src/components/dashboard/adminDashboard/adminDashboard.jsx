@@ -1,5 +1,6 @@
 // Imports
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { adminDashboardService } from "@/services/adminDashboardApi";
 import { MetricCard } from "@/components/metricCard";
 import CourseCohortChart from "@/components/courseCohortChart";
@@ -8,8 +9,12 @@ import {
     FaChalkboardTeacher, FaCalendarAlt, FaTasks, FaExclamationCircle,
     FaClipboardList
 } from 'react-icons/fa';
+import {
+    User2Icon, GraduationCapIcon, SchoolIcon, FileArchiveIcon, MessageSquareIcon, ShieldAlertIcon, MegaphoneIcon
+} from 'lucide-react';
 
 export default function AdminDashboard() {
+    const navigate = useNavigate();
 
     const [ fetchedData, setFetchedData ] = useState({
         userMetrics: { totalUsers: 0, activeUsersThisWeek: 0, newUsersThisWeek: 0 },
@@ -151,31 +156,60 @@ export default function AdminDashboard() {
                 </div>
 
                 {/* ── Quick Actions ── */}
-                <div className="rounded-2xl border border-slate-200 bg-white px-6 py-5 shadow-sm">
+                <div className="rounded-2xl border border-border bg-card px-6 py-5 shadow-sm">
                     <div className="mb-4 flex items-center gap-2">
                         <div className="h-4 w-1 rounded-full bg-indigo-500" />
-                        <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-400">Quick Actions</h2>
+                        <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Quick Actions</h2>
                     </div>
                     <div className="flex flex-wrap gap-3">
-                        <button className="flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-indigo-200 transition-all duration-200 hover:bg-indigo-700 hover:shadow-indigo-300 hover:-translate-y-0.5 active:translate-y-0">
-                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
-                            Add Course
-                        </button>
-                        <button className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition-all duration-200 hover:bg-slate-50 hover:border-slate-300 hover:-translate-y-0.5 active:translate-y-0">
-                            <svg className="h-4 w-4 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a4 4 0 00-5-3.87M9 20H4v-2a4 4 0 015-3.87m0 0A4 4 0 1113 9a4 4 0 01-4 6.13z" /></svg>
+                        <button
+                            onClick={() => navigate('/admin/users')}
+                            className="flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-indigo-200 dark:shadow-none transition-all duration-200 hover:bg-indigo-700 hover:-translate-y-0.5 active:translate-y-0"
+                        >
+                            <User2Icon className="h-4 w-4" />
                             Manage Users
                         </button>
-                        <button className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition-all duration-200 hover:bg-slate-50 hover:border-slate-300 hover:-translate-y-0.5 active:translate-y-0">
-                            <svg className="h-4 w-4 text-teal-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414A1 1 0 0120 9.414V19a2 2 0 01-2 2z" /></svg>
-                            View Reports
+                        <button
+                            onClick={() => navigate('/admin/course')}
+                            className="flex items-center gap-2 rounded-xl border border-border bg-background px-4 py-2.5 text-sm font-semibold text-foreground shadow-sm transition-all duration-200 hover:bg-accent hover:-translate-y-0.5 active:translate-y-0"
+                        >
+                            <GraduationCapIcon className="h-4 w-4 text-green-500" />
+                            Manage Courses
                         </button>
-                        <button className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition-all duration-200 hover:bg-slate-50 hover:border-slate-300 hover:-translate-y-0.5 active:translate-y-0">
-                            <svg className="h-4 w-4 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                            Export Data
+                        <button
+                            onClick={() => navigate('/admin/cohort')}
+                            className="flex items-center gap-2 rounded-xl border border-border bg-background px-4 py-2.5 text-sm font-semibold text-foreground shadow-sm transition-all duration-200 hover:bg-accent hover:-translate-y-0.5 active:translate-y-0"
+                        >
+                            <SchoolIcon className="h-4 w-4 text-purple-500" />
+                            Manage Cohorts
                         </button>
-                        <button className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition-all duration-200 hover:bg-slate-50 hover:border-slate-300 hover:-translate-y-0.5 active:translate-y-0">
-                            <svg className="h-4 w-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                            Settings
+                        <button
+                            onClick={() => navigate('/admin/files')}
+                            className="flex items-center gap-2 rounded-xl border border-border bg-background px-4 py-2.5 text-sm font-semibold text-foreground shadow-sm transition-all duration-200 hover:bg-accent hover:-translate-y-0.5 active:translate-y-0"
+                        >
+                            <FileArchiveIcon className="h-4 w-4 text-amber-500" />
+                            Manage Files
+                        </button>
+                        <button
+                            onClick={() => navigate('/admin/audit')}
+                            className="flex items-center gap-2 rounded-xl bg-purple-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-purple-200 dark:shadow-none transition-all duration-200 hover:bg-purple-700 hover:-translate-y-0.5 active:translate-y-0"
+                        >
+                            <ShieldAlertIcon className="h-4 w-4" />
+                            Security Audit
+                        </button>
+                        <button
+                            onClick={() => navigate('/admin/broadcast')}
+                            className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-amber-200 dark:shadow-none transition-all duration-200 hover:from-amber-700 hover:to-orange-700 hover:-translate-y-0.5 active:translate-y-0"
+                        >
+                            <MegaphoneIcon className="h-4 w-4" />
+                            Broadcast Announcement
+                        </button>
+                        <button
+                            onClick={() => navigate('/admin/feedback')}
+                            className="flex items-center gap-2 rounded-xl border border-border bg-background px-4 py-2.5 text-sm font-semibold text-foreground shadow-sm transition-all duration-200 hover:bg-accent hover:-translate-y-0.5 active:translate-y-0"
+                        >
+                            <MessageSquareIcon className="h-4 w-4 text-pink-500" />
+                            Review Feedback
                         </button>
                     </div>
                 </div>

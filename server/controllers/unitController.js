@@ -1,5 +1,6 @@
 // Imports
 const UnitSchedule = require('../models/unit');
+const ScheduleOverride = require('../models/scheduleOverride');
 const { sendAppNotification } = require('../services/notificationService');
 const { sendSMS } = require('../services/smsService');
 const { User } = require('../models/user');
@@ -25,21 +26,57 @@ exports.createSchedule = async (req, res) => {
     }
 };
 
-// Get all schedules for a cohort
+// Get all schedules for a cohort (with active overrides merged)
 exports.getMyShedule = async (req, res) => {
     try {
         const user = req.user;
-
-        // if (user.role !== 'student') {
-        // return res.status(403).json({ message: 'Only students can access this route' });
-        // }
 
         const schedules = await UnitSchedule.find({ cohort: user.cohort })
                                             .populate([
                                                 { path: 'cohort', select: 'name year'},
                                                 { path: 'lecturer', select: 'name phoneNumber email'},
                                             ]);
-        res.status(200).json(schedules);
+
+        // Fetch active overrides for this cohort (current week)
+        const now = new Date();
+        const overrides = await ScheduleOverride.find({
+            cohort: user.cohort,
+            weekStart: { $lte: now },
+            weekEnd: { $gte: now },
+        }).populate({ path: 'lecturer', select: 'name phoneNumber email' });
+
+        // Merge overrides on top of base schedules
+        const merged = schedules.map(schedule => {
+            const scheduleObj = schedule.toObject();
+            const override = overrides.find(o => 
+                o.unitSchedule.toString() === schedule._id.toString()
+            );
+
+            if (override) {
+                return {
+                    ...scheduleObj,
+                    venue: override.venue || scheduleObj.venue,
+                    dayOfWeek: override.dayOfWeek || scheduleObj.dayOfWeek,
+                    startTime: override.startTime || scheduleObj.startTime,
+                    endTime: override.endTime || scheduleObj.endTime,
+                    lecturer: override.lecturer || scheduleObj.lecturer,
+                    _override: {
+                        isOverridden: true,
+                        reason: override.reason,
+                        expiresAt: override.weekEnd,
+                        overrideId: override._id,
+                        originalVenue: scheduleObj.venue,
+                        originalDayOfWeek: scheduleObj.dayOfWeek,
+                        originalStartTime: scheduleObj.startTime,
+                        originalEndTime: scheduleObj.endTime,
+                    }
+                };
+            }
+
+            return scheduleObj;
+        });
+
+        res.status(200).json(merged);
     } catch (err) {
         res.status(500).json({ message: 'Failed to fetch schedules', error: err.message });
     }

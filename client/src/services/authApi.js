@@ -148,4 +148,26 @@ export const authService = {
         }
     },
 
+    // Google SSO Authentication
+    googleAuth: async (googleData) => {
+        try {
+            const res = await API.post('/auth/google', googleData);
+            return res.data;
+        } catch (error) {
+            console.error('Error in googleAuth:', error.response?.data || error.message);
+            throw error;
+        }
+    },
+
+    // Complete Academic Onboarding
+    completeAcademicOnboarding: async (onboardingData) => {
+        try {
+            const res = await API.put('/auth/complete-onboarding', onboardingData);
+            return res.data;
+        } catch (error) {
+            console.error('Error completing academic onboarding:', error.response?.data || error.message);
+            throw error;
+        }
+    },
+
 }

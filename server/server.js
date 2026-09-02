@@ -28,6 +28,7 @@ const adminDashboardRoutes = require('./routes/adminRoute');
 const catRoutes = require('./routes/catRoutes');
 const fileUploadRoutes = require('./routes/fileUploadRoutes');
 const lecturerRoutes = require('./routes/lectureRoutes');
+const scheduleOverrideRoutes = require('./routes/scheduleOverrideRoutes');
 
 // Initialize app
 const app = express();
@@ -47,17 +48,23 @@ app.use(cors({
   allowedHeaders: ['Content-Type, Authorization']
 }));
 
+const auditLogRoutes = require('./routes/auditLogRoutes');
+const broadcastRoutes = require('./routes/broadcastRoutes');
+
 app.use(helmet()); // Security policy
 app.use(logger); // Logger
 
 app.use('/api/course', courseRoutes);
 app.use('/api/cohort', cohortRoutes);
 app.use('/api/auth', userRoutes);
+app.use('/api/schedule', scheduleOverrideRoutes);
 app.use('/api/schedule', unitScheduleRoutes);
 app.use('/api/assignment', assignementRoutes);
 app.use('/api/feedback', feedbackRoutes);
 app.use('/api/upcoming', upcomingRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/admin/audit', auditLogRoutes);
+app.use('/api/admin/broadcast', broadcastRoutes);
 app.use('/api/admin', adminDashboardRoutes);
 app.use('/api/CAT', catRoutes);
 app.use('/api/upload', fileUploadRoutes);

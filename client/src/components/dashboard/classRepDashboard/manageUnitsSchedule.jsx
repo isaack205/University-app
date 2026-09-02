@@ -14,7 +14,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { useAuth } from "@/contexts/authContext";
-import { LoaderIcon, SendHorizonalIcon, Trash2Icon, CalendarClockIcon, ClockIcon, MapPinIcon } from "lucide-react";
+import { LoaderIcon, SendHorizonalIcon, Trash2Icon, CalendarClockIcon, ClockIcon, MapPinIcon, ZapIcon, XCircleIcon } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -28,6 +28,7 @@ import {
 import UpdateUnit from "@/components/updateUnits";
 import { lecturerService } from "@/services/lecturerApi";
 import DeleteConfirmDialog from "@/components/deleteConfirmDialog";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function ManageUnitSchedule() {
 
@@ -46,6 +47,20 @@ export default function ManageUnitSchedule() {
     const [loading, setLoading] = useState(false);
     const [loadingUnits, setLoadingUnits] = useState(false);
     const [deletingId, setDeletingId] = useState(null);
+
+    // Override state
+    const [overrides, setOverrides] = useState([]);
+    const [overrideDialogOpen, setOverrideDialogOpen] = useState(false);
+    const [overrideTarget, setOverrideTarget] = useState(null);
+    const [overrideVenue, setOverrideVenue] = useState('');
+    const [overrideDayOfWeek, setOverrideDayOfWeek] = useState('');
+    const [overrideStartTime, setOverrideStartTime] = useState('');
+    const [overrideEndTime, setOverrideEndTime] = useState('');
+    const [overrideLecturer, setOverrideLecturer] = useState('');
+    const [overrideWeekOffset, setOverrideWeekOffset] = useState('0');
+    const [overrideReason, setOverrideReason] = useState('');
+    const [creatingOverride, setCreatingOverride] = useState(false);
+    const [cancellingOverrideId, setCancellingOverrideId] = useState(null);
 
     const { user } = useAuth();
 
@@ -179,10 +194,89 @@ export default function ManageUnitSchedule() {
         }
     };
 
+    // Override functions
+    const fetchOverrides = async () => {
+        try {
+            const data = await unitScheduleService.getOverrides();
+            setOverrides(data);
+        } catch (error) {
+            console.error('Failed to fetch overrides:', error);
+        }
+    };
+
+    const getOverrideForUnit = (unitId) => {
+        return overrides.find(o => o.unitSchedule?._id === unitId);
+    };
+
+    const openOverrideDialog = (unit) => {
+        setOverrideTarget(unit);
+        setOverrideVenue('');
+        setOverrideDayOfWeek('');
+        setOverrideStartTime('');
+        setOverrideEndTime('');
+        setOverrideLecturer('');
+        setOverrideWeekOffset('0');
+        setOverrideReason('');
+        setOverrideDialogOpen(true);
+    };
+
+    const handleCreateOverride = async () => {
+        if (!overrideTarget) return;
+
+        // Must have at least one change
+        if (!overrideVenue && !overrideDayOfWeek && !overrideStartTime && !overrideEndTime && !overrideLecturer) {
+            toast.error('Change at least one field (venue, day, time, or lecturer)');
+            return;
+        }
+
+        setCreatingOverride(true);
+        try {
+            const payload = { weekOffset: parseInt(overrideWeekOffset) };
+            if (overrideVenue) payload.venue = overrideVenue;
+            if (overrideDayOfWeek) payload.dayOfWeek = overrideDayOfWeek;
+            if (overrideStartTime) payload.startTime = overrideStartTime;
+            if (overrideEndTime) payload.endTime = overrideEndTime;
+            if (overrideLecturer) payload.lecturer = overrideLecturer;
+            if (overrideReason.trim()) payload.reason = overrideReason.trim();
+
+            await unitScheduleService.createOverride(overrideTarget._id, payload);
+            toast.success(`⚡ Temp change created for ${overrideTarget.unitCode}!`);
+            setOverrideDialogOpen(false);
+            fetchOverrides();
+        } catch (error) {
+            const errorMessage = error.response?.data?.message || error.message || 'Failed to create temp change';
+            toast.error(errorMessage);
+        } finally {
+            setCreatingOverride(false);
+        }
+    };
+
+    const handleCancelOverride = async (overrideId, unitCode) => {
+        setCancellingOverrideId(overrideId);
+        try {
+            await unitScheduleService.cancelOverride(overrideId);
+            toast.success(`✅ Temp change for ${unitCode} cancelled — back to normal!`);
+            fetchOverrides();
+        } catch (error) {
+            const errorMessage = error.response?.data?.message || error.message || 'Failed to cancel override';
+            toast.error(errorMessage);
+        } finally {
+            setCancellingOverrideId(null);
+        }
+    };
+
+    // Helper: get week label from offset
+    const getWeekLabel = (offset) => {
+        if (offset === 0) return 'This week';
+        if (offset === 1) return 'Next week';
+        return `In ${offset} weeks`;
+    };
+
     useEffect(() => {
 
         fetchUnitSchedules();
         fetchLecturers();
+        fetchOverrides();
     }, []);
 
     return (
@@ -400,45 +494,302 @@ export default function ManageUnitSchedule() {
                         <p className="text-sm italic">No units yet. Create one above.</p>
                     </div>
                 ) : (
-                    units.map(unit => (
+                    units.map(unit => {
+                        const activeOverride = getOverrideForUnit(unit._id);
+                        return (
                         <div
                             key={unit._id}
-                            className="group flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl border bg-card px-5 py-4 shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
+                            className={`group flex flex-col gap-4 rounded-xl border bg-card px-5 py-4 shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 ${
+                                activeOverride ? 'border-amber-300 dark:border-amber-700' : ''
+                            }`}
                         >
-                            {/* Left: Info */}
-                            <div className="flex flex-col gap-1.5 min-w-0">
-                                <div className="flex items-center gap-2">
-                                    <span className="inline-flex items-center rounded-md bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 px-2 py-0.5 text-xs font-bold tracking-wide">
-                                        {unit.unitCode}
-                                    </span>
-                                    <p className="font-semibold text-foreground truncate">{unit.unitName}</p>
+                            {/* Override Badge */}
+                            {activeOverride && (
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-3 py-2 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
+                                    <div className="flex items-center gap-2 min-w-0">
+                                        <ZapIcon className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" />
+                                        <div className="min-w-0">
+                                            <p className="text-xs font-bold text-amber-700 dark:text-amber-300">
+                                                ⚡ Temp change active
+                                                <span className="font-medium text-amber-600 dark:text-amber-500 ml-1">
+                                                    (until {new Date(activeOverride.weekEnd).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })})  
+                                                </span>
+                                            </p>
+                                            <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-0.5">
+                                                {activeOverride.unitSchedule?.venue !== undefined && activeOverride.venue && (
+                                                    <span className="text-[10px] text-amber-600 dark:text-amber-400 font-medium">📍 {activeOverride.venue}</span>
+                                                )}
+                                                {activeOverride.dayOfWeek && (
+                                                    <span className="text-[10px] text-amber-600 dark:text-amber-400 font-medium">📅 {activeOverride.dayOfWeek}</span>
+                                                )}
+                                                {activeOverride.startTime && (
+                                                    <span className="text-[10px] text-amber-600 dark:text-amber-400 font-medium">🕐 {activeOverride.startTime}</span>
+                                                )}
+                                            </div>
+                                            {activeOverride.reason && (
+                                                <p className="text-[10px] text-amber-500 mt-0.5 truncate">💬 "{activeOverride.reason}"</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="text-amber-700 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 text-xs font-bold shrink-0 self-start sm:self-auto"
+                                        onClick={() => handleCancelOverride(activeOverride._id, unit.unitCode)}
+                                        disabled={cancellingOverrideId === activeOverride._id}
+                                    >
+                                        {cancellingOverrideId === activeOverride._id ? (
+                                            <LoaderIcon className="h-3.5 w-3.5 animate-spin" />
+                                        ) : (
+                                            <XCircleIcon className="h-3.5 w-3.5" />
+                                        )}
+                                        Cancel
+                                    </Button>
                                 </div>
-                                <div className="flex flex-wrap items-center gap-2 text-xs">
-                                    <span className="inline-flex items-center gap-1 text-muted-foreground">
-                                        <ClockIcon className="h-3 w-3" />
-                                        {unit.dayOfWeek} · {unit.startTime} – {unit.endTime}
-                                    </span>
-                                    <span className="inline-flex items-center gap-1 text-muted-foreground">
-                                        <MapPinIcon className="h-3 w-3" />
-                                        {unit.venue}
-                                    </span>
-                                </div>
-                            </div>
+                            )}
 
-                            {/* Right: Actions */}
-                            <div className="flex items-center gap-2 shrink-0">
-                                <UpdateUnit unit={unit} refreshUnits={fetchUnitSchedules} lecturers={lecturers.currentSemester}/>
-                                <DeleteConfirmDialog
-                                    title="Delete Unit Schedule"
-                                    description={`Are you sure you want to delete "${unit.unitCode} – ${unit.unitName}"? This action cannot be undone.`}
-                                    onConfirm={() => handleDelete(unit)}
-                                    loading={deletingId === unit._id}
-                                />
+                            {/* Main Card Content */}
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                {/* Left: Info */}
+                                <div className="flex flex-col gap-1.5 min-w-0">
+                                    <div className="flex items-center gap-2">
+                                        <span className="inline-flex items-center rounded-md bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 px-2 py-0.5 text-xs font-bold tracking-wide">
+                                            {unit.unitCode}
+                                        </span>
+                                        <p className="font-semibold text-foreground truncate">{unit.unitName}</p>
+                                    </div>
+                                    <div className="flex flex-wrap items-center gap-2 text-xs">
+                                        <span className="inline-flex items-center gap-1 text-muted-foreground">
+                                            <ClockIcon className="h-3 w-3" />
+                                            {unit.dayOfWeek} · {unit.startTime} – {unit.endTime}
+                                        </span>
+                                        <span className="inline-flex items-center gap-1 text-muted-foreground">
+                                            <MapPinIcon className="h-3 w-3" />
+                                            {unit.venue}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {/* Right: Actions */}
+                                <div className="flex items-center gap-2 shrink-0">
+                                    {!activeOverride && (
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="text-amber-600 hover:text-amber-700 hover:bg-amber-50 dark:hover:bg-amber-900/20 text-xs font-bold gap-1"
+                                            onClick={() => openOverrideDialog(unit)}
+                                        >
+                                            <ZapIcon className="h-3.5 w-3.5" />
+                                            <span className="hidden sm:inline">Temp Change</span>
+                                        </Button>
+                                    )}
+                                    <UpdateUnit unit={unit} refreshUnits={fetchUnitSchedules} lecturers={lecturers.currentSemester}/>
+                                    <DeleteConfirmDialog
+                                        title="Delete Unit Schedule"
+                                        description={`Are you sure you want to delete "${unit.unitCode} – ${unit.unitName}"? This action cannot be undone.`}
+                                        onConfirm={() => handleDelete(unit)}
+                                        loading={deletingId === unit._id}
+                                    />
+                                </div>
                             </div>
                         </div>
-                    ))
+                    );})   
                 )}
             </div>
+
+            {/* Temp Change Override Dialog */}
+            <Dialog open={overrideDialogOpen} onOpenChange={setOverrideDialogOpen}>
+                <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            <ZapIcon className="h-5 w-5 text-amber-600" />
+                            Temporary Schedule Change
+                        </DialogTitle>
+                        <DialogDescription>
+                            {overrideTarget && (
+                                <span>Change <strong>{overrideTarget.unitCode} – {overrideTarget.unitName}</strong> for a specific week. It will automatically revert back.</span>
+                            )}
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="space-y-4">
+                        {/* Week Selector */}
+                        <div>
+                            <Label htmlFor="override-week">Which week?</Label>
+                            <Select
+                                id="override-week"
+                                value={overrideWeekOffset}
+                                onValueChange={(value) => setOverrideWeekOffset(value)}
+                                disabled={creatingOverride}
+                            >
+                                <SelectTrigger className="w-full mt-1.5">
+                                    <SelectValue placeholder="Select week" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectGroup>
+                                        <SelectItem value="0">This week</SelectItem>
+                                        <SelectItem value="1">Next week</SelectItem>
+                                        <SelectItem value="2">In 2 weeks</SelectItem>
+                                        <SelectItem value="3">In 3 weeks</SelectItem>
+                                        <SelectItem value="4">In 4 weeks</SelectItem>
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        <p className="text-xs text-muted-foreground font-medium bg-muted/50 px-3 py-2 rounded-lg">
+                            💡 Only fill in the fields you want to change. Leave the rest empty to keep the original.
+                        </p>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {/* Venue */}
+                            <div>
+                                <Label htmlFor="override-venue">New Venue</Label>
+                                <Input
+                                    id="override-venue"
+                                    type="text"
+                                    value={overrideVenue}
+                                    onChange={(e) => setOverrideVenue(e.target.value)}
+                                    className="mt-1.5"
+                                    disabled={creatingOverride}
+                                    placeholder={overrideTarget?.venue || 'e.g. LT3'}
+                                />
+                            </div>
+
+                            {/* Day of Week */}
+                            <div>
+                                <Label htmlFor="override-day">New Day</Label>
+                                <Select
+                                    id="override-day"
+                                    value={overrideDayOfWeek}
+                                    onValueChange={(value) => setOverrideDayOfWeek(value)}
+                                    disabled={creatingOverride}
+                                >
+                                    <SelectTrigger className="w-full mt-1.5">
+                                        <SelectValue placeholder={overrideTarget?.dayOfWeek || 'Same day'} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectGroup>
+                                            <SelectItem value="Monday">Monday</SelectItem>
+                                            <SelectItem value="Tuesday">Tuesday</SelectItem>
+                                            <SelectItem value="Wednesday">Wednesday</SelectItem>
+                                            <SelectItem value="Thursday">Thursday</SelectItem>
+                                            <SelectItem value="Friday">Friday</SelectItem>
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            {/* Start Time */}
+                            <div>
+                                <Label htmlFor="override-start">New Start Time</Label>
+                                <Select
+                                    id="override-start"
+                                    value={overrideStartTime}
+                                    onValueChange={(value) => setOverrideStartTime(value)}
+                                    disabled={creatingOverride}
+                                >
+                                    <SelectTrigger className="w-full mt-1.5">
+                                        <SelectValue placeholder={overrideTarget?.startTime || 'Same time'} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectGroup>
+                                            <SelectItem value="07:00">07:00 a.m</SelectItem>
+                                            <SelectItem value="10:00">10:00 a.m</SelectItem>
+                                            <SelectItem value="13:00">01:00 p.m</SelectItem>
+                                            <SelectItem value="16:00">04:00 p.m</SelectItem>
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            {/* End Time */}
+                            <div>
+                                <Label htmlFor="override-end">New End Time</Label>
+                                <Select
+                                    id="override-end"
+                                    value={overrideEndTime}
+                                    onValueChange={(value) => setOverrideEndTime(value)}
+                                    disabled={creatingOverride}
+                                >
+                                    <SelectTrigger className="w-full mt-1.5">
+                                        <SelectValue placeholder={overrideTarget?.endTime || 'Same time'} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectGroup>
+                                            <SelectItem value="10:00">10:00 a.m</SelectItem>
+                                            <SelectItem value="13:00">01:00 p.m</SelectItem>
+                                            <SelectItem value="16:00">04:00 p.m</SelectItem>
+                                            <SelectItem value="19:00">07:00 p.m</SelectItem>
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            {/* Lecturer (optional) */}
+                            <div className="sm:col-span-2">
+                                <Label htmlFor="override-lecturer">Substitute Lecturer (optional)</Label>
+                                <Select
+                                    id="override-lecturer"
+                                    value={overrideLecturer}
+                                    onValueChange={(value) => setOverrideLecturer(value)}
+                                    disabled={creatingOverride}
+                                >
+                                    <SelectTrigger className="w-full mt-1.5">
+                                        <SelectValue placeholder="Same lecturer" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {lecturers.currentSemester.map(lecturer => (
+                                            <SelectItem value={lecturer._id} key={lecturer._id}>
+                                                {lecturer.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+
+                        {/* Reason */}
+                        <div>
+                            <Label htmlFor="override-reason">Reason (optional)</Label>
+                            <Textarea
+                                id="override-reason"
+                                value={overrideReason}
+                                onChange={(e) => setOverrideReason(e.target.value)}
+                                className="mt-1.5 resize-none"
+                                disabled={creatingOverride}
+                                placeholder='e.g. "Lecturer requested room change"'
+                                rows={2}
+                                maxLength={200}
+                            />
+                            <p className="text-[10px] text-muted-foreground mt-1 text-right">{overrideReason.length}/200</p>
+                        </div>
+                    </div>
+
+                    <DialogFooter className="mt-4">
+                        <DialogClose asChild>
+                            <Button type="button" variant="outline" disabled={creatingOverride}>Cancel</Button>
+                        </DialogClose>
+                        <Button
+                            className="bg-amber-600 hover:bg-amber-700 text-white"
+                            disabled={creatingOverride}
+                            onClick={handleCreateOverride}
+                        >
+                            {creatingOverride ? (
+                                <>
+                                    Creating…
+                                    <LoaderIcon className="animate-spin" />
+                                </>
+                            ) : (
+                                <>
+                                    <ZapIcon className="h-4 w-4" />
+                                    Apply Temp Change
+                                </>
+                            )}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     )
 }

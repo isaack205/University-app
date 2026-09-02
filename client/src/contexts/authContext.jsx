@@ -75,9 +75,30 @@ export const AuthProvider = ({ children }) => {
         }
     }
 
+    const googleLogin = async (googleData) => {
+        setError(null);
+        try {
+            const response = await authService.googleAuth(googleData);
+            localStorage.setItem('userToken', response.token);
+            setUser(response.user);
+            toast.success('Google authentication successful!');
+
+            const needsOnboarding = response.needsOnboarding || (response.user.role !== 'admin' && (!response.user.course || !response.user.cohort));
+
+            return { success: true, needsOnboarding };
+        } catch (error) {
+            const message = error.response?.data?.message || error.message || 'Google authentication failed';
+            toast.error(message);
+            setError(message);
+            return false;
+        } finally {
+            setLOading(false);
+        }
+    };
+
     const login = async (credentials) => {
         // Clear errors
-        setError(null)
+        setError(null);
 
         try {
             const response = await authService.loginUser(credentials);
@@ -85,11 +106,12 @@ export const AuthProvider = ({ children }) => {
             setUser(response.user);
             toast.success('Welcome back!');
 
-            // Navigate based on role
+            const needsOnboarding = response.user.role !== 'admin' && (!response.user.course || !response.user.cohort);
+
             if (response.user.role === "admin") {
-                navigate('/admin/dashboard');
+                navigate('/admin/dashboard', { replace: true });
             } else {
-                navigate('/home');
+                navigate('/home', { replace: true });
             }
             
             return { success: true };
@@ -101,23 +123,28 @@ export const AuthProvider = ({ children }) => {
         } finally {
             setLOading(false);
         }
-    }
+    };
 
     const logout = () => {
         localStorage.removeItem('userToken');
-        toast.success('Logged out successfully!')
+        toast.success('Logged out successfully!');
         setUser(null);
-    }
+    };
+
+    const updateUser = (updatedUser) => {
+        setUser(updatedUser);
+    };
 
     const clearError = () => {
         setError('');
-    }
+    };
 
     const value = {
         user,
         loading,
         error,
         clearError,
+        updateUser,
         isAuthenticated: !!user,
         refreshUser: checkAuthStatus,
         hasRole: (roles) => {
@@ -129,8 +156,9 @@ export const AuthProvider = ({ children }) => {
         },
         register,
         login,
+        googleLogin,
         logout,
-    }
+    };
     
     if (loading) {
         return (

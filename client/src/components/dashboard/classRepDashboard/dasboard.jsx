@@ -3,6 +3,7 @@ import React from "react";
 import { NavLink, Outlet } from 'react-router-dom';
 import { Separator } from "@/components/ui/separator";
 import {
+    LayoutDashboardIcon,
     CalendarClockIcon,
     ClipboardListIcon,
     NotebookPenIcon,
@@ -11,6 +12,7 @@ import {
 } from "lucide-react";
 
 const manageLinks = [
+    { to: '/dashboard', label: 'Overview', icon: LayoutDashboardIcon, end: true },
     { to: '/dashboard/schedule', label: 'Units', icon: CalendarClockIcon },
     { to: '/dashboard/assignment', label: 'Assignments', icon: ClipboardListIcon },
     { to: '/dashboard/CAT', label: 'CAT(s)', icon: NotebookPenIcon },
@@ -28,10 +30,11 @@ export default function Dashboard() {
 
             <nav className="overflow-x-auto">
                 <ul className="bg-muted text-muted-foreground inline-flex w-fit items-center gap-1 rounded-lg p-1">
-                    {manageLinks.map(({ to, label, icon: Icon }) => (
+                    {manageLinks.map(({ to, label, icon: Icon, end }) => (
                         <li key={to}>
                             <NavLink
                                 to={to}
+                                end={end}
                                 className={({ isActive }) =>
                                     `inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium whitespace-nowrap transition-colors ${
                                         isActive

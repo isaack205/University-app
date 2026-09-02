@@ -351,7 +351,7 @@ export default function UsersEditPage() {
                                                 roleColor
                                             )}>
                                                 {user.role || "student"}
-                                                <UpdateRole user={user} />
+                                                <UpdateRole user={user} refreshUsers={fetchAllUsers} />
                                             </span>
 
                                             <DeleteConfirmDialog
@@ -467,7 +467,7 @@ export default function UsersEditPage() {
                                                     : 'bg-blue-50 text-blue-700 border-blue-200'
                                             )}>
                                                 {user.role || "student"}
-                                                <UpdateRole user={user} />
+                                                <UpdateRole user={user} refreshUsers={fetchAllUsers} />
                                             </span>
 
                                             <DeleteConfirmDialog

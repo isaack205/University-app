@@ -89,8 +89,29 @@ const scheduleClassReminders = () => {
     try {
       const sessions = await UnitSchedule.find({ dayOfWeek: today });
 
+      // Fetch active overrides for the current week
+      const ScheduleOverride = require('../models/scheduleOverride');
+      const overrides = await ScheduleOverride.find({
+        weekStart: { $lte: now },
+        weekEnd: { $gte: now },
+      });
+
       for (const session of sessions) {
-        if (isTimeWithin(session.startTime, now, in20Min)) {
+        // Check if there's an active override for this session
+        const override = overrides.find(o =>
+          o.unitSchedule.toString() === session._id.toString()
+        );
+
+        // Use overridden values if they exist
+        const effectiveDay = (override && override.dayOfWeek) || session.dayOfWeek;
+        const effectiveStartTime = (override && override.startTime) || session.startTime;
+        const effectiveVenue = (override && override.venue) || session.venue;
+        const effectiveUnitName = session.unitName;
+
+        // Skip if the effective day isn't today (override may have moved it)
+        if (effectiveDay !== today) continue;
+
+        if (isTimeWithin(effectiveStartTime, now, in20Min)) {
           const students = await User.find({
             cohort: session.cohort,
             'preferences.smsNotifications': true,
@@ -104,14 +125,56 @@ const scheduleClassReminders = () => {
             });
 
             if (!exists) {
-              const msg = `📖 Reminder: ${session.unitName} starts at ${session.startTime} in ${session.venue}`;
+              const msg = `📖 Reminder: ${effectiveUnitName} starts at ${effectiveStartTime} in ${effectiveVenue}`;
 
               await sendAppNotification(
                 student._id, 
                 msg, 
                 'class', 
                 session._id, 
-                toDateFromTimeString(session.startTime)
+                toDateFromTimeString(effectiveStartTime)
+              );
+
+              await sendSMS(student._id, student.phoneNumber, msg, 'class');
+            }
+          }
+        }
+      }
+
+      // Also check for overrides that moved sessions TO today from a different day
+      const movedToToday = overrides.filter(o => 
+        o.dayOfWeek === today
+      );
+
+      for (const override of movedToToday) {
+        const baseSession = await UnitSchedule.findById(override.unitSchedule);
+        if (!baseSession || baseSession.dayOfWeek === today) continue; // Already handled above
+
+        const effectiveStartTime = override.startTime || baseSession.startTime;
+        const effectiveVenue = override.venue || baseSession.venue;
+
+        if (isTimeWithin(effectiveStartTime, now, in20Min)) {
+          const students = await User.find({
+            cohort: baseSession.cohort,
+            'preferences.smsNotifications': true,
+          });
+
+          for (const student of students) {
+            const exists = await Notification.findOne({
+              user: student._id,
+              type: 'class',
+              referenceId: baseSession._id,
+            });
+
+            if (!exists) {
+              const msg = `📖 Reminder: ${baseSession.unitName} starts at ${effectiveStartTime} in ${effectiveVenue} (temp change ⚡)`;
+
+              await sendAppNotification(
+                student._id, 
+                msg, 
+                'class', 
+                baseSession._id, 
+                toDateFromTimeString(effectiveStartTime)
               );
 
               await sendSMS(student._id, student.phoneNumber, msg, 'class');
@@ -125,10 +188,47 @@ const scheduleClassReminders = () => {
   });
 };
 
+// Override Expiry Notification Job (runs daily at midnight)
+const scheduleOverrideExpiryNotifications = () => {
+  cron.schedule('0 0 * * *', async () => {
+    try {
+      const ScheduleOverride = require('../models/scheduleOverride');
+      const now = new Date();
+
+      // Find overrides that expired (weekEnd is in the past)
+      const expiredOverrides = await ScheduleOverride.find({
+        weekEnd: { $lt: now },
+      }).populate({ path: 'unitSchedule', select: 'unitName cohort venue dayOfWeek startTime' });
+
+      for (const override of expiredOverrides) {
+        if (!override.unitSchedule) continue;
+
+        const students = await User.find({ cohort: override.cohort });
+        const msg = `✅ ${override.unitSchedule.unitName} is back to its regular schedule (${override.unitSchedule.dayOfWeek} at ${override.unitSchedule.startTime} in ${override.unitSchedule.venue}) 📅`;
+
+        for (const student of students) {
+          await sendAppNotification(
+            student._id,
+            msg,
+            'schedule',
+            override.unitSchedule._id,
+          );
+        }
+
+        // Clean up — TTL will also handle this, but let's be proactive
+        await ScheduleOverride.findByIdAndDelete(override._id);
+      }
+    } catch (err) {
+      console.error('Override Expiry Notification Error:', err.message);
+    }
+  });
+};
+
 // Export combined scheduler
 const scheduleNotifications = () => {
   scheduleAssignmentReminders(); // hourly
   scheduleClassReminders(); // every 15 mins
+  scheduleOverrideExpiryNotifications(); // daily at midnight
 };
 
 module.exports = scheduleNotifications;

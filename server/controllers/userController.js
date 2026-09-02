@@ -1,4 +1,5 @@
 // Imports
+const mongoose = require('mongoose');
 const { User, Student, Admin } = require('../models/user');
 const JWT = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
@@ -6,6 +7,7 @@ const crypto = require('crypto');
 const sendEmail = require('../utils/sendEmail');
 const { sendAppNotification } = require('../services/notificationService');
 const { sendSMS } = require('../services/smsService');
+const logActivity = require('../utils/auditLogger');
 
 // Load env variables
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -21,16 +23,13 @@ exports.registerUser = async (req, res) => {
             return res.status(403).json({ message: "Admin registration is not allowed via this endpoint" });
         }
 
-        // Check if studentId exists
-        const studentIdExist =  await User.findOne({ studentId })
-                                        .populate([
-                                            { path: 'course', select: 'name code' }, 
-                                            { path: 'cohort', select: 'name year' }
-                                        ]);
-
-        if(studentIdExist) {
-            return res.status(400).json({message: "User with Id already exists"})
-        };
+        // Check if studentId exists (if provided)
+        if (studentId) {
+            const studentIdExist = await User.findOne({ studentId });
+            if (studentIdExist) {
+                return res.status(400).json({ message: "User with Student Reg ID already exists" });
+            }
+        }
 
         // Check if email exists
         const emailExist = await User.findOne({ email });
@@ -46,7 +45,12 @@ exports.registerUser = async (req, res) => {
         // Hash password into 10 string
         const hashedPassword = await bcrypt.hash(password, 10);
         const user = await Student.create({ 
-            ...req.body, 
+            name,
+            email: email.toLowerCase(),
+            studentId: studentId || `STU-${Date.now().toString().slice(-6)}`,
+            phoneNumber: phoneNumber || 'Not Provided',
+            course: course || null,
+            cohort: cohort || null,
             role: role || 'student', 
             password: hashedPassword,
             verificationToken: hashedVerificationToken
@@ -105,6 +109,13 @@ exports.loginUser = async (req, res) => {
 
         const user = await User.findOne(query);
         if (!user) {
+            await logActivity({
+                action: 'LOGIN_FAILED',
+                category: 'AUTH',
+                severity: 'WARNING',
+                details: { identifier },
+                req
+            });
             return res.status(400).json({message: "User not found!"})
         };
 
@@ -117,6 +128,14 @@ exports.loginUser = async (req, res) => {
 
         const isMatch = await bcrypt.compare(password, user.password);
         if(!isMatch) {
+            await logActivity({
+                user,
+                action: 'LOGIN_FAILED',
+                category: 'AUTH',
+                severity: 'WARNING',
+                details: { identifier },
+                req
+            });
             return res.status(400).json({message: "Invalid credentials"})
         }
 
@@ -136,6 +155,16 @@ exports.loginUser = async (req, res) => {
         // Track last login time for activity feed
         user.lastLoginAt = new Date();
         await user.save({ validateBeforeSave: false });
+
+        // Log audit event
+        await logActivity({
+            user,
+            action: 'LOGIN_SUCCESS',
+            category: 'AUTH',
+            severity: 'INFO',
+            details: { role: user.role },
+            req
+        });
 
         // Strip sensitive fields before sending to client
         const safeUser = user.toObject();
@@ -409,23 +438,19 @@ exports.updateUserRole = async (req, res) => {
             return res.status(403).json({ message: "Admins cannot demote themselves for security reasons" });
         }
 
-        // Find and update the user
-        const user = await User.findByIdAndUpdate(
-            userId, 
-            { role: newRole }, 
-            { new: true, runValidators: true }
-        ).select('-password');
-
-        if (!user) {
+        const existingUser = await User.findById(userId);
+        if (!existingUser) {
             return res.status(404).json({ message: "User not found" });
         }
 
-        // Send email to the user about their new status
-        // await sendEmail({
-        //     to: user.email,
-        //     subject: "Account Role Updated",
-        //     text: `Hi ${user.name},\n\nYour account role has been updated to: ${newRole}.\n\nPlease log out and log back in to see the changes reflected in your dashboard.`
-        // }).catch(() => { /* silent fail if email provider is down */ });
+        // Update discriminator key 'role' directly in MongoDB collection
+        await User.collection.updateOne(
+            { _id: new mongoose.Types.ObjectId(userId) },
+            { $set: { role: newRole } }
+        );
+
+        // Fetch updated user document
+        const user = await User.findById(userId).select('-password');
 
         await sendAppNotification(
             user._id, 
@@ -434,7 +459,15 @@ exports.updateUserRole = async (req, res) => {
             req.user.id, 
         );
 
-        // await sendSMS(user._id, user.phoneNumber, `Hi ${user.name},\n\nYour account role has been updated to: ${newRole}.\n\nPlease log out and log back in to see the changes reflected.`, 'role_update');
+        // Audit Log Event
+        await logActivity({
+            user: req.user,
+            action: 'ROLE_ELEVATED',
+            category: 'SECURITY',
+            severity: newRole === 'admin' ? 'CRITICAL' : 'WARNING',
+            details: { targetUserId: user._id, targetUserName: user.name, targetEmail: user.email, oldRole: existingUser.role, newRole },
+            req
+        });
 
         res.status(200).json({ 
             message: `User role successfully updated to ${newRole}`, 
@@ -444,3 +477,151 @@ exports.updateUserRole = async (req, res) => {
         res.status(500).json({ message: "Error updating user role", error: error.message });
     }
 };
+
+// Google SSO Authentication
+exports.googleAuth = async (req, res) => {
+    try {
+        const { email, name, googleId } = req.body;
+
+        if (!email) {
+            return res.status(400).json({ message: "Google authentication failed — email missing" });
+        }
+
+        let user = await User.findOne({ email });
+
+        if (!user) {
+            // Create base user for new Google signup (email is auto-verified by Google)
+            const randomPassword = crypto.randomBytes(16).toString('hex');
+            const hashedPassword = await bcrypt.hash(randomPassword, 10);
+            const tempStudentId = `GOOG-${Date.now().toString().slice(-6)}`;
+
+            user = new User({
+                name: name || 'Google User',
+                email: email.toLowerCase(),
+                phoneNumber: 'Not Provided',
+                studentId: tempStudentId,
+                password: hashedPassword,
+                isVerified: true,
+                role: 'student'
+            });
+
+            await user.save();
+
+            await logActivity({
+                user,
+                action: 'GOOGLE_SIGNUP_SUCCESS',
+                category: 'AUTH',
+                severity: 'INFO',
+                details: { email: user.email },
+                req
+            });
+        } else {
+            // Ensure Google SSO users are marked verified
+            if (!user.isVerified) {
+                user.isVerified = true;
+                await user.save({ validateBeforeSave: false });
+            }
+
+            await logActivity({
+                user,
+                action: 'GOOGLE_LOGIN_SUCCESS',
+                category: 'AUTH',
+                severity: 'INFO',
+                details: { email: user.email },
+                req
+            });
+        }
+
+        if (user.role !== 'admin' && user.course) {
+            await user.populate([
+                { path: 'course', select: 'name code' },
+                { path: 'cohort', select: 'name year' }
+            ]);
+        }
+
+        const token = JWT.sign(
+            { id: user._id, role: user.role },
+            JWT_SECRET,
+            { expiresIn: '1d' }
+        );
+
+        user.lastLoginAt = new Date();
+        await user.save({ validateBeforeSave: false });
+
+        const safeUser = user.toObject();
+        delete safeUser.password;
+
+        const needsOnboarding = user.role !== 'admin' && (!user.course || !user.cohort || user.studentId?.startsWith('GOOG-'));
+
+        res.status(200).json({
+            message: "Google authentication successful",
+            token,
+            user: safeUser,
+            needsOnboarding
+        });
+    } catch (error) {
+        console.error("Error in googleAuth:", error);
+        res.status(500).json({ message: "Google authentication failed", error: error.message });
+    }
+};
+
+// Complete Academic Setup Onboarding
+exports.completeAcademicOnboarding = async (req, res) => {
+    try {
+        const { studentId, course, cohort } = req.body;
+
+        if (!studentId || !course || !cohort) {
+            return res.status(400).json({ message: "Student Reg ID, Course, and Cohort are all required" });
+        }
+
+        const user = await User.findById(req.user.id);
+        if (!user) {
+            return res.status(404).json({ message: "User account not found" });
+        }
+
+        // Check if studentId is already taken by another user
+        const existingStudentId = await User.findOne({ studentId: studentId.toUpperCase(), _id: { $ne: user._id } });
+        if (existingStudentId) {
+            return res.status(409).json({ message: `Student ID "${studentId.toUpperCase()}" is already registered by another account` });
+        }
+
+        user.studentId = studentId.toUpperCase();
+        user.course = course;
+        user.cohort = cohort;
+        await user.save();
+
+        await user.populate([
+            { path: 'course', select: 'name code' },
+            { path: 'cohort', select: 'name year' }
+        ]);
+
+        await logActivity({
+            user,
+            action: 'ACADEMIC_ONBOARDING_COMPLETED',
+            category: 'AUTH',
+            severity: 'INFO',
+            details: { studentId: user.studentId, course: user.course?.name, cohort: user.cohort?.name },
+            req
+        });
+
+        const safeUser = user.toObject();
+        delete safeUser.password;
+
+        res.status(200).json({
+            message: "Academic profile setup completed successfully! Welcome to CampusHub! 🎉",
+            user: safeUser
+        });
+    } catch (error) {
+        console.error("Error in completeAcademicOnboarding:", error);
+        res.status(500).json({ message: "Failed to complete academic setup", error: error.message });
+    }
+};
+
+        // Send email to the user about their new status
+        // await sendEmail({
+        //     to: user.email,
+        //     subject: "Account Role Updated",
+        //     text: `Hi ${user.name},\n\nYour account role has been updated to: ${newRole}.\n\nPlease log out and log back in to see the changes reflected in your dashboard.`
+        // }).catch(() => { /* silent fail if email provider is down */ });
+
+        // await sendSMS(user._id, user.phoneNumber, `Hi ${user.name},\n\nYour account role has been updated to: ${newRole}.\n\nPlease log out and log back in to see the changes reflected.`, 'role_update');

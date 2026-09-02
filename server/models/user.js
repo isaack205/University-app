@@ -32,8 +32,8 @@ const User = mongoose.model('User', userSchema);
 // Student Discriminator Schema (Students & ClassReps)
 const studentSchema = new mongoose.Schema({
   studentId: { type: String, required: true, unique: true },
-  course: { type: mongoose.Schema.Types.ObjectId, ref: 'Course', required: true },
-  cohort: { type: mongoose.Schema.Types.ObjectId, ref: 'Cohort', required: true },
+  course: { type: mongoose.Schema.Types.ObjectId, ref: 'Course', default: null },
+  cohort: { type: mongoose.Schema.Types.ObjectId, ref: 'Cohort', default: null },
 });
 
 // Admin Discriminator Schema (Admins only - no course or cohort)

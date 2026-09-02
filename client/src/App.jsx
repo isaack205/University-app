@@ -33,6 +33,9 @@ import UsersEditPage from "./components/dashboard/adminDashboard/usersPage";
 import ManageFiles from "./components/dashboard/classRepDashboard/manageFiles";
 import LecturersPage from "./pages/lecturerPage";
 import ManageLecturers from "./components/dashboard/classRepDashboard/manageLecturer";
+import ClassRepOverview from "./components/dashboard/classRepDashboard/classRepOverview";
+import AdminAuditPage from "./components/dashboard/adminDashboard/adminAuditPage";
+import AdminBroadcastPage from "./components/dashboard/adminDashboard/adminBroadcastPage";
 
 export default function App () {
   return (
@@ -71,6 +74,7 @@ export default function App () {
 
           <Route element={<ProtectedRoute allowedRoles={['classRep', 'admin']} />}>
             <Route path="/dashboard" element={<Dashboard />} >
+              <Route index element={<ClassRepOverview />} />
               <Route path='schedule' element={<ManageUnitSchedule />} />
               <Route path="assignment" element={<ManageAssignment /> }/>
               <Route path="CAT" element={<ManageCat />} />
@@ -86,6 +90,8 @@ export default function App () {
             <Route path="/admin/users" element={<UsersEditPage />} />
             <Route path="/admin/files" element={<AdminManageFiles />} />
             <Route path="/admin/feedback" element={<AdminFeedback />} />
+            <Route path="/admin/audit" element={<AdminAuditPage />} />
+            <Route path="/admin/broadcast" element={<AdminBroadcastPage />} />
           </Route>
 
         </Route>
