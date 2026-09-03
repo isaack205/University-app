@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Header from './header.jsx';
 import Footer from './footer.jsx';
 import BottomNav from './bottomNav.jsx';
+import HelpHub from './helpHub.jsx';
 import { Sidebar } from '@/components/ui/sidebar.jsx';
 import { Outlet } from 'react-router-dom';
 
@@ -23,6 +24,7 @@ export default function Layout() {
 
             <Footer />
             <BottomNav toggleSidebar={toggleSidebar} />
+            <HelpHub />
         </div>
     );
 }

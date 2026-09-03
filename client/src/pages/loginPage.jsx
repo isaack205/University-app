@@ -52,7 +52,6 @@ export default function LoginPage() {
 
             if (result && result.success) {
                 toast.success("Google Sign-In successful!");
-                navigate("/home", { replace: true });
             }
         } catch (err) {
             toast.error(err.response?.data?.message || err.message || "Google Sign-In failed");

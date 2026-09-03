@@ -7,6 +7,7 @@ import { assignmentService } from "@/services/assignementApi";
 import { catService } from "@/services/catApi";
 import { lecturerService } from "@/services/lecturerApi";
 import dayjs from "dayjs";
+import { toast } from "sonner";
 import {
   CalendarClockIcon,
   ClipboardListIcon,
@@ -23,7 +24,10 @@ import {
   LoaderIcon,
   GraduationCapIcon,
   CheckCircle2Icon,
-  AlertTriangleIcon
+  AlertTriangleIcon,
+  Share2Icon,
+  CopyIcon,
+  QrCodeIcon
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -375,6 +379,95 @@ export default function ClassRepOverview() {
 
         {/* Right 1 Col: Upcoming Deadlines & Active Overrides Sidebar */}
         <div className="space-y-6">
+          {/* Classroom Growth Hub & Referral Widget */}
+          <div className="rounded-2xl border bg-gradient-to-br from-blue-50 to-indigo-50/50 dark:from-slate-900 dark:to-blue-950/40 p-5 shadow-sm space-y-4 border-blue-200 dark:border-blue-900">
+            <div className="flex items-center justify-between border-b border-blue-200 dark:border-blue-800 pb-3">
+              <h3 className="font-extrabold text-foreground text-sm flex items-center gap-1.5 text-blue-900 dark:text-blue-200">
+                <SparklesIcon size={16} className="text-blue-600" />
+                Classroom Growth Hub
+              </h3>
+              <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300">
+                Class Rep
+              </span>
+            </div>
+
+            <p className="text-xs text-muted-foreground font-medium">
+              Invite your classmates to register so everyone stays updated on CATs & schedule changes.
+            </p>
+
+            {/* Link 1: Class Cohort Invite Link */}
+            {(() => {
+              const courseCode = user?.course?.name?.replace(/\s+/g, "-") || user?.course?.code || user?.course || "";
+              const cohortName = user?.cohort?.name?.replace(/\s+/g, "-") || user?.cohort?.year?.toString() || user?.cohort || "";
+              const cohortUrl = courseCode && cohortName
+                ? `${window.location.origin}/register?course=${encodeURIComponent(courseCode)}&cohort=${encodeURIComponent(cohortName)}`
+                : `${window.location.origin}/register`;
+              const courseName = user?.course?.name || user?.course?.code || "our class";
+
+              return (
+                <div className="space-y-2">
+                  <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 flex items-center justify-between">
+                    <span>1. Class Cohort Link (Pre-fills Course)</span>
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      readOnly
+                      value={cohortUrl}
+                      className="w-full text-xs font-mono bg-white dark:bg-slate-950 p-2.5 rounded-xl border border-slate-300 dark:border-slate-800 text-slate-700 dark:text-slate-300 truncate"
+                    />
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        navigator.clipboard.writeText(cohortUrl);
+                        toast.success("Cohort Invite Link copied to clipboard! 🚀");
+                      }}
+                      className="shrink-0 h-9 rounded-xl border-slate-300 dark:border-slate-700"
+                    >
+                      <CopyIcon size={14} />
+                    </Button>
+                  </div>
+
+                  <Button
+                    size="sm"
+                    className="w-full font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl h-9 text-xs gap-1.5 shadow-md shadow-emerald-600/20"
+                    onClick={() => {
+                      const message = `Hey class! We are tracking all our ${courseName} CATs, assignments, and timetable updates on CampusHub 🎓\n\nRegister here to join our cohort:\n${cohortUrl}`;
+                      window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`, "_blank");
+                    }}
+                  >
+                    <Share2Icon size={14} /> Share Cohort Link on WhatsApp
+                  </Button>
+                </div>
+              );
+            })()}
+
+            {/* Link 2: General App Link */}
+            <div className="pt-2 border-t border-blue-200/60 dark:border-blue-900/60 space-y-2">
+              <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300">
+                2. General App Link (Standard Registration)
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  readOnly
+                  value={`${window.location.origin}/register`}
+                  className="w-full text-xs font-mono bg-white dark:bg-slate-950 p-2.5 rounded-xl border border-slate-300 dark:border-slate-800 text-slate-700 dark:text-slate-300 truncate"
+                />
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    navigator.clipboard.writeText(`${window.location.origin}/register`);
+                    toast.success("General Invite Link copied!");
+                  }}
+                  className="shrink-0 h-9 rounded-xl border-slate-300 dark:border-slate-700"
+                >
+                  <CopyIcon size={14} />
+                </Button>
+              </div>
+            </div>
+          </div>
+
           {/* Active Overrides Quick Alert */}
           {overrides.length > 0 && (
             <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 space-y-3">

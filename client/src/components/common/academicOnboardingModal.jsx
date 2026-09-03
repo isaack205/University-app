@@ -39,6 +39,14 @@ export default function AcademicOnboardingModal({ isOpen, onSuccess }) {
       try {
         const data = await courseService.getAllCourses();
         setCourses(data || []);
+
+        const pendingCourse = sessionStorage.getItem("pendingInviteCourse");
+        if (pendingCourse && data?.length) {
+          const matched = data.find(c => c._id === pendingCourse || c.code?.toLowerCase() === pendingCourse.toLowerCase() || c.name?.toLowerCase().includes(pendingCourse.toLowerCase()));
+          if (matched) {
+            setSelectedCourse(matched._id);
+          }
+        }
       } catch (err) {
         console.error("Failed to load courses:", err);
       } finally {
@@ -56,6 +64,14 @@ export default function AcademicOnboardingModal({ isOpen, onSuccess }) {
       try {
         const data = await cohortService.getCohortsByCourse(selectedCourse);
         setCohorts(data || []);
+
+        const pendingCohort = sessionStorage.getItem("pendingInviteCohort");
+        if (pendingCohort && data?.length) {
+          const matched = data.find(c => c._id === pendingCohort || c.name?.toLowerCase().includes(pendingCohort.toLowerCase()) || c.year?.toString() === pendingCohort);
+          if (matched) {
+            setSelectedCohort(matched._id);
+          }
+        }
       } catch (err) {
         console.error("Failed to load cohorts:", err);
       } finally {

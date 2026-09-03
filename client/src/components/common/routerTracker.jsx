@@ -47,6 +47,16 @@ export function StartupRedirect() {
         return;
       }
 
+      if (authLoading) return;
+
+      let finalPath = lastPath;
+      if (rawLast === "/" || !localStorage.getItem('lastPath')) {
+        finalPath = decoded.role === 'admin' ? '/admin/dashboard' : '/home';
+      }
+
+      // Go to last visited route if valid token
+      navigate(finalPath, { replace: true });
+
     } catch (error) {
       // Invalid token format
       localStorage.removeItem('userToken');
@@ -54,12 +64,22 @@ export function StartupRedirect() {
       return;
     }
 
-    if (authLoading) return;
-
-    // Go to last visited route if valid token
-    navigate(lastPath, { replace: true });
-
   }, [authLoading, navigate]);
 
   return null;
 }
+
+// Higher order wrapper: Redirects logged in users directly to their dashboard (No clutter/modals on public/invite links)
+export function GuestOnlyRoute({ children }) {
+  const { user, loading } = useAuth();
+
+  if (loading) return null;
+
+  if (user) {
+    const redirectPath = user.role === 'admin' ? '/admin/dashboard' : '/home';
+    return <Navigate to={redirectPath} replace />;
+  }
+
+  return children;
+}
+

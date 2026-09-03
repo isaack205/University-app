@@ -13,6 +13,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from "@/contexts/authContext";
 import AccountProfile from "@/components/accountProfile";
 import { useTheme } from "@/contexts/themeContext";
+import { useUpdate } from "@/contexts/updateContext";
 import { toast } from "sonner";
 import { authService } from "@/services/authApi";
 import { notificationService } from "@/services/notificationService";
@@ -20,6 +21,7 @@ import { pushManager } from "@/utils/pushManager";
 
 export default function SettingsPage() {
   const { user, setUser, logout } = useAuth();
+  const { nudgeVisible, handleUpdate } = useUpdate();
   
   const [emailReminders, setEmailReminders] = useState(user?.preferences?.emailNotifications ?? true);
   const [smsReminders, setSmsReminders] = useState(user?.preferences?.smsNotifications ?? false);
@@ -149,6 +151,26 @@ export default function SettingsPage() {
             </div>
           </div>
         </div>
+
+        {/* Update Nudge Section */}
+        {nudgeVisible && (
+          <div className="bg-indigo-50 border border-indigo-200 dark:bg-indigo-900/20 dark:border-indigo-800 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm animate-in fade-in zoom-in-95 duration-300">
+            <div>
+              <h3 className="text-indigo-900 dark:text-indigo-300 font-bold flex items-center gap-2">
+                ✨ Update Available
+              </h3>
+              <p className="text-sm text-indigo-700 dark:text-indigo-400 mt-1">
+                A new version of CampusHub is ready to be installed.
+              </p>
+            </div>
+            <Button 
+              onClick={handleUpdate}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white shrink-0"
+            >
+              Restart App to Update
+            </Button>
+          </div>
+        )}
 
         {/* Account Settings */}
         <div>

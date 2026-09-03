@@ -85,6 +85,12 @@ export const AuthProvider = ({ children }) => {
 
             const needsOnboarding = response.needsOnboarding || (response.user.role !== 'admin' && (!response.user.course || !response.user.cohort));
 
+            if (response.user.role === "admin") {
+                navigate('/admin/dashboard', { replace: true });
+            } else {
+                navigate('/home', { replace: true });
+            }
+
             return { success: true, needsOnboarding };
         } catch (error) {
             const message = error.response?.data?.message || error.message || 'Google authentication failed';

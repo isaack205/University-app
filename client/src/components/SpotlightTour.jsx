@@ -85,25 +85,37 @@ export default function SpotlightTour() {
 
   const steps = isMobile ? mobileSteps : desktopSteps;
   const currentStep = steps[activeStep] || steps[0];
+  const currentTargetId = currentStep?.targetId;
 
   // Update target rect on step change or scroll/resize
   const updateTargetRect = useCallback(() => {
-    if (!isVisible || !currentStep) return;
-    const el = document.getElementById(currentStep.targetId);
+    if (!isVisible || !currentTargetId) return;
+    const el = document.getElementById(currentTargetId);
     if (el) {
       const rect = el.getBoundingClientRect();
-      setTargetRect({
-        top: rect.top,
-        left: rect.left,
-        width: rect.width,
-        height: rect.height,
-        bottom: rect.bottom,
-        right: rect.right
+      setTargetRect((prev) => {
+        if (
+          prev &&
+          prev.top === rect.top &&
+          prev.left === rect.left &&
+          prev.width === rect.width &&
+          prev.height === rect.height
+        ) {
+          return prev;
+        }
+        return {
+          top: rect.top,
+          left: rect.left,
+          width: rect.width,
+          height: rect.height,
+          bottom: rect.bottom,
+          right: rect.right
+        };
       });
     } else {
       setTargetRect(null);
     }
-  }, [isVisible, currentStep]);
+  }, [isVisible, currentTargetId]);
 
   useEffect(() => {
     updateTargetRect();

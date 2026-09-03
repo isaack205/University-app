@@ -22,13 +22,13 @@ import CoursePage from "./components/dashboard/adminDashboard/coursePage";
 import CohortPage from "./components/dashboard/adminDashboard/cohortPage";
 import AdminFeedback from "./components/dashboard/adminDashboard/adminFeedback";
 import AdminManageFiles from "./components/dashboard/adminDashboard/adminManageFiles";
-import { PathTracker, StartupRedirect } from "./components/common/routerTracker";
+import LandingPage from "./pages/landingPage";
+import { PathTracker, StartupRedirect, GuestOnlyRoute } from "./components/common/routerTracker";
 import SettingsPage from "./pages/settingsPage";
 import ManageCat from "./components/dashboard/classRepDashboard/manageCAT";
 import CATPage from "./pages/catPage";
 import FilesPage, { GeneralFiles, CohortFiles } from "./pages/filePages";
 import HelpPage from "./pages/helpPage";
-import FloatingActionButtons from "./components/common/floatingActionButtons";
 import UsersEditPage from "./components/dashboard/adminDashboard/usersPage";
 import ManageFiles from "./components/dashboard/classRepDashboard/manageFiles";
 import LecturersPage from "./pages/lecturerPage";
@@ -36,19 +36,22 @@ import ManageLecturers from "./components/dashboard/classRepDashboard/manageLect
 import ClassRepOverview from "./components/dashboard/classRepDashboard/classRepOverview";
 import AdminAuditPage from "./components/dashboard/adminDashboard/adminAuditPage";
 import AdminBroadcastPage from "./components/dashboard/adminDashboard/adminBroadcastPage";
+import NotFoundPage from "./pages/notFoundPage";
+import { UpdateProvider } from "./contexts/updateContext";
+import UpdateBanner from "./components/common/updateBanner";
 
 export default function App () {
   return (
-    <>
+    <UpdateProvider>
       <Toaster richColors position="top-right"/>
       <PathTracker />
-      <FloatingActionButtons />
+      <UpdateBanner />
       
       <Routes>
-        <Route path="/" element={<StartupRedirect />} />
+        <Route path="/" element={<LandingPage />} />
 
-        <Route path="/login" element={<LoginPage />} />
-        <Route path='/register' element={<RegisterPage />} />
+        <Route path="/login" element={<GuestOnlyRoute><LoginPage /></GuestOnlyRoute>} />
+        <Route path='/register' element={<GuestOnlyRoute><RegisterPage /></GuestOnlyRoute>} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/verify-email" element={<VerifyEmailPage />} />
@@ -95,7 +98,10 @@ export default function App () {
           </Route>
 
         </Route>
+
+        {/* Catch-all 404 Route */}
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
-    </>
+    </UpdateProvider>
   )
 }

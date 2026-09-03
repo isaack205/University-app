@@ -41,6 +41,9 @@ export default function AdminFeedback() {
     const [updating, setUpdating] = useState(false);
     const [adminNote, setAdminNote] = useState('');
     const [newStatus, setNewStatus] = useState('');
+    const [sendEmailToUser, setSendEmailToUser] = useState(false);
+    const [replyMessage, setReplyMessage] = useState('');
+
 
     const fetchFeedback = async () => {
         setLoading(true);
@@ -68,6 +71,8 @@ export default function AdminFeedback() {
         setSelectedFeedback(f);
         setAdminNote(f.adminNote || '');
         setNewStatus(f.status);
+        setSendEmailToUser(false);
+        setReplyMessage('');
     };
 
     const handleUpdateFeedback = async () => {
@@ -76,13 +81,20 @@ export default function AdminFeedback() {
         try {
             const updated = await feedbackService.updateFeedbackStatus(selectedFeedback._id, {
                 status: newStatus,
-                adminNote
+                adminNote,
+                sendEmail: sendEmailToUser,
+                replyMessage: sendEmailToUser ? replyMessage : undefined
             });
             toast.success("Feedback updated successfully");
+            if (sendEmailToUser) {
+                toast.success("Reply email sent to user!");
+            }
             
             // Update local state
             setFeedbacks(prev => prev.map(f => f._id === selectedFeedback._id ? updated.feedback : f));
             setSelectedFeedback(updated.feedback);
+            setSendEmailToUser(false);
+            setReplyMessage('');
         } catch (error) {
             const msg = error.response?.data?.message || 'Failed to update feedback';
             toast.error(msg);
@@ -162,7 +174,7 @@ export default function AdminFeedback() {
             {/* Main Content Split */}
             <div className="flex flex-1 overflow-hidden">
                 {/* Left Sidebar: List */}
-                <div className="w-full md:w-1/3 lg:w-[400px] border-r border-slate-200 bg-white flex flex-col overflow-y-auto">
+                <div className={`w-full md:w-1/3 lg:w-[400px] border-r border-slate-200 bg-white flex flex-col overflow-y-auto ${selectedFeedback ? 'hidden md:flex' : 'flex'}`}>
                     {loading ? (
                         <div className="flex flex-col items-center justify-center p-12 text-slate-400">
                             <LoaderIcon className="w-8 h-8 animate-spin mb-4 text-indigo-500" />
@@ -207,12 +219,21 @@ export default function AdminFeedback() {
                 </div>
 
                 {/* Right Panel: Details */}
-                <div className="hidden md:flex flex-1 flex-col bg-slate-50/50 overflow-y-auto">
+                <div className={`w-full md:flex-1 flex-col bg-slate-50/50 overflow-y-auto ${selectedFeedback ? 'flex' : 'hidden md:flex'}`}>
                     {selectedFeedback ? (
-                        <div className="p-8 max-w-4xl mx-auto w-full">
+                        <div className="p-4 md:p-8 max-w-4xl mx-auto w-full">
+                            {/* Mobile Back Button */}
+                            <button 
+                                onClick={() => setSelectedFeedback(null)}
+                                className="md:hidden flex items-center gap-2 text-indigo-600 font-medium mb-4"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                                Back to Inbox
+                            </button>
+
                             {/* Message Card */}
                             <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-6">
-                                <div className="p-6 border-b border-slate-100 bg-slate-50/50 flex justify-between items-start">
+                                <div className="p-6 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
                                     <div className="flex items-center gap-4">
                                         <div className="w-12 h-12 bg-indigo-100 text-indigo-700 rounded-full flex items-center justify-center font-bold text-lg">
                                             {selectedFeedback.user ? selectedFeedback.user.name.charAt(0).toUpperCase() : (selectedFeedback.guestName ? selectedFeedback.guestName.charAt(0).toUpperCase() : '?')}
@@ -276,20 +297,55 @@ export default function AdminFeedback() {
                                                 </p>
                                             )}
                                         </div>
-                                        <div className="md:col-span-2">
-                                            <label className="block text-sm font-medium text-slate-700 mb-2">Internal Admin Note</label>
-                                            <Textarea 
-                                                className="min-h-[100px] w-full text-sm placeholder:text-slate-300"
-                                                placeholder="Add private notes about how this was handled..."
-                                                value={adminNote}
-                                                onChange={(e) => setAdminNote(e.target.value)}
-                                            />
+                                        <div className="md:col-span-2 space-y-4">
+                                            <div>
+                                                <label className="block text-sm font-medium text-slate-700 mb-2">Internal Admin Note</label>
+                                                <Textarea 
+                                                    className="min-h-[80px] w-full text-sm placeholder:text-slate-300"
+                                                    placeholder="Add private notes about how this was handled..."
+                                                    value={adminNote}
+                                                    onChange={(e) => setAdminNote(e.target.value)}
+                                                />
+                                            </div>
+                                            
+                                            <div className="border-t border-slate-100 pt-4">
+                                                <div className="flex items-center gap-2 mb-2">
+                                                    <input 
+                                                        type="checkbox" 
+                                                        id="sendEmailCheck" 
+                                                        className="w-4 h-4 text-indigo-600 rounded border-slate-300"
+                                                        checked={sendEmailToUser}
+                                                        onChange={(e) => setSendEmailToUser(e.target.checked)}
+                                                    />
+                                                    <label htmlFor="sendEmailCheck" className="text-sm font-medium text-slate-700 cursor-pointer">
+                                                        Send reply via Email
+                                                    </label>
+                                                </div>
+                                                
+                                                {sendEmailToUser && (
+                                                    <div className="mt-2">
+                                                        <Textarea 
+                                                            className="min-h-[120px] w-full text-sm border-indigo-200 focus-visible:ring-indigo-500"
+                                                            placeholder="Type the message that will be sent to the user..."
+                                                            value={replyMessage}
+                                                            onChange={(e) => setReplyMessage(e.target.value)}
+                                                        />
+                                                        <p className="text-xs text-slate-500 mt-2">
+                                                            This message will be emailed to {selectedFeedback.user ? selectedFeedback.user.email : (selectedFeedback.guestEmail || 'the user')}.
+                                                        </p>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                     <div className="mt-6 flex justify-end">
                                         <Button 
                                             onClick={handleUpdateFeedback} 
-                                            disabled={updating || (newStatus === selectedFeedback.status && adminNote === (selectedFeedback.adminNote || ''))}
+                                            disabled={
+                                                updating || 
+                                                (newStatus === selectedFeedback.status && adminNote === (selectedFeedback.adminNote || '') && !sendEmailToUser) ||
+                                                (sendEmailToUser && !replyMessage.trim())
+                                            }
                                             className="bg-indigo-600 hover:bg-indigo-700 text-white"
                                         >
                                             {updating ? <LoaderIcon className="w-4 h-4 animate-spin mr-2" /> : <CheckCircle2Icon className="w-4 h-4 mr-2" />}

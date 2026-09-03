@@ -3,6 +3,7 @@ import { Button } from "./button";
 import { CircleXIcon, LayoutDashboardIcon, CalendarDaysIcon, NotebookPenIcon, PencilLineIcon, FileArchiveIcon, MessageSquareIcon, GraduationCapIcon, SchoolIcon, User2Icon, BrainCircuitIcon, ShieldIcon, ShieldAlertIcon, MegaphoneIcon } from "lucide-react";
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from "@/contexts/authContext";
+import { useUpdate } from "@/contexts/updateContext";
 import FileMenu from "../fileMenu";
 import confetti from "canvas-confetti";
 
@@ -10,6 +11,7 @@ export const Sidebar = ({ isOpen, toggleSidebar }) => {
     const navigate = useNavigate();
     const location = useLocation();
     const { hasRole } = useAuth();
+    const { nudgeVisible, handleUpdate } = useUpdate();
 
     const handleNavigation = (path) => {
         navigate(path);
@@ -255,16 +257,27 @@ export const Sidebar = ({ isOpen, toggleSidebar }) => {
                 )}
 
                 {/* Footer status inside sidebar */}
-                <div className="mt-auto pt-4 border-t border-border/60">
-                    <div className="flex items-center gap-2">
-                        <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                            CampusHub Active
-                        </span>
+                <div className="mt-auto pt-4 border-t border-border/60 flex flex-col gap-3">
+                    {nudgeVisible && (
+                        <Button 
+                            onClick={handleUpdate} 
+                            size="sm" 
+                            className="w-full bg-indigo-100 hover:bg-indigo-200 text-indigo-700 font-bold border border-indigo-200"
+                        >
+                            Update Ready [Restart]
+                        </Button>
+                    )}
+                    <div>
+                        <div className="flex items-center gap-2">
+                            <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                                CampusHub Active
+                            </span>
+                        </div>
+                        <p className="text-[9px] font-medium text-muted-foreground mt-0.5">
+                            v{import.meta.env.VITE_APP_VERSION || "0.1.3"} • PWA Ready
+                        </p>
                     </div>
-                    <p className="text-[9px] font-medium text-muted-foreground mt-0.5">
-                        v0.1.3 • PWA Ready
-                    </p>
                 </div>
             </aside>
         </>

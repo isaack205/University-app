@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { useAuth } from "@/contexts/authContext";
 import { toast } from "sonner";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import {
   Card,
   CardContent,
@@ -18,7 +18,8 @@ import {
   MailIcon,
   UserIcon,
   LoaderIcon,
-  SendHorizonalIcon
+  SendHorizonalIcon,
+  SparklesIcon
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -27,6 +28,10 @@ import registerPhoto2 from "../assets/university 2.png";
 import logo from "../assets/image.png";
 
 export default function RegisterPage() {
+  const [searchParams] = useSearchParams();
+  const courseParam = searchParams.get("course");
+  const cohortParam = searchParams.get("cohort");
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -41,6 +46,11 @@ export default function RegisterPage() {
 
   const { register, googleLogin, clearError } = useAuth();
   const navigate = useNavigate();
+
+  React.useEffect(() => {
+    if (courseParam) sessionStorage.setItem("pendingInviteCourse", courseParam);
+    if (cohortParam) sessionStorage.setItem("pendingInviteCohort", cohortParam);
+  }, [courseParam, cohortParam]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -68,7 +78,6 @@ export default function RegisterPage() {
 
       if (result && result.success) {
         toast.success("Google Sign-In successful!");
-        navigate("/home", { replace: true });
       }
     } catch (err) {
       toast.error(err.response?.data?.message || err.message || "Google Sign-In failed");

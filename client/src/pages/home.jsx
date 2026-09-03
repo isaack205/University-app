@@ -271,6 +271,8 @@ export default function Home() {
   const [notifications, setNotifications] = useState([]);
   const navigate = useNavigate();
 
+  const words = 'Track your classes, assignments, and weekly timetable in one centralized workspace.';
+
   useEffect(() => {
     const fetchData = async () => {
       try {
