@@ -30,7 +30,7 @@ import { Button } from "@/components/ui/button";
 const TICKET_CATEGORIES = [
   {
     value: "bug",
-    label: "🐞 Bug / Technical Issue",
+    label: "Bug / Technical Issue",
     description: "App crashes, broken features, unexpected errors",
     priority: "high",
     color: "text-red-500",
@@ -38,7 +38,7 @@ const TICKET_CATEGORIES = [
   },
   {
     value: "class_rep_elevation",
-    label: "👑 Class Rep Role Request",
+    label: "Class Rep Role Request",
     description: "Request elevation to Class Rep role after contacting admin",
     priority: "high",
     color: "text-amber-500",
@@ -46,7 +46,7 @@ const TICKET_CATEGORIES = [
   },
   {
     value: "feature",
-    label: "💡 Feature Request",
+    label: "Feature Request",
     description: "Suggest a new feature or improvement to the platform",
     priority: "normal",
     color: "text-indigo-500",
@@ -54,7 +54,7 @@ const TICKET_CATEGORIES = [
   },
   {
     value: "general",
-    label: "❓ General Support",
+    label: "General Support",
     description: "Questions or general help with using CampusHub",
     priority: "low",
     color: "text-blue-500",

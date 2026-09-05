@@ -14,7 +14,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { useAuth } from "@/contexts/authContext";
-import { LoaderIcon, SendHorizonalIcon, Trash2Icon, CalendarClockIcon, ClockIcon, MapPinIcon, ZapIcon, XCircleIcon } from "lucide-react";
+import { LoaderIcon, SendHorizonalIcon, CalendarClockIcon, ClockIcon, MapPinIcon, ZapIcon, XCircleIcon, SearchIcon, PlusIcon } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -40,13 +40,14 @@ export default function ManageUnitSchedule() {
     const [dayOfWeek, setDayOfWeek] = useState('');
     const [startTime, setStartTime] = useState('');
     const [endTime, setEndTime] = useState('');
-    const [cohort, setCohort] = useState('');
-    const [formDataError, setFormDataError] = useState('');
+    const [formDataError, setFormDataError] = useState({});
     const [units, setUnits] = useState([]);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [loadingUnits, setLoadingUnits] = useState(false);
     const [deletingId, setDeletingId] = useState(null);
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
 
     // Override state
     const [overrides, setOverrides] = useState([]);
@@ -72,13 +73,14 @@ export default function ManageUnitSchedule() {
         setDayOfWeek('');
         setStartTime('');
         setEndTime('');
-        setCohort('');
-        setFormDataError('');
+        setFormDataError({});
     };
 
     const fetchLecturers = async () => {
         try {
-            const lecturersData = await lecturerService.getLecturersByCohort(user?.cohort?._id);
+            const cohortId = user?.cohort?._id || user?.cohort;
+            if (!cohortId) return;
+            const lecturersData = await lecturerService.getLecturersByCohort(cohortId);
             setLecturers(lecturersData);
         } catch (error) {
             const message = error.response?.data?.message || error.message || "Failed to fetch lecturers";
@@ -107,7 +109,7 @@ export default function ManageUnitSchedule() {
         e.preventDefault();
 
         setLoading(true);
-        setFormDataError(null);
+        setFormDataError({});
         setError(null);
 
         let errors = {};
@@ -120,11 +122,6 @@ export default function ManageUnitSchedule() {
 
         if (!unitCode.trim()) {
             errors.unitCode = 'Unit Code is required.'
-            isValid = false;
-        }
-
-        if (!selectedLecturer.trim()) {
-            errors.selectedLecturer = 'Lecturer name is required.'
             isValid = false;
         }
 
@@ -148,8 +145,10 @@ export default function ManageUnitSchedule() {
             isValid = false;
         }
 
-        if (!cohort.trim()) {
-            errors.cohort = 'Cohort is required.'
+        const cohortId = user?.cohort?._id || user?.cohort;
+
+        if (!cohortId) {
+            errors.cohort = 'Cohort missing from user profile.'
             isValid = false;
         }
 
@@ -161,14 +160,15 @@ export default function ManageUnitSchedule() {
         }
 
         const payload = {
-            unitName, unitCode, lecturer: selectedLecturer, venue, dayOfWeek, startTime, endTime, cohort
+            unitName, unitCode, lecturer: selectedLecturer || null, venue, dayOfWeek, startTime, endTime, cohort: cohortId
         }
 
         try {
             await unitScheduleService.createSchedule(payload);
-            toast.success(`Unit registered successfully`);
+            toast.success(`Unit registered successfully 🎉`);
             fetchUnitSchedules();
             resetForm();
+            setIsDialogOpen(false);
             return { success: true };
         } catch (error) {
             const errorMessage = error.response?.data?.message || error.message || 'An unexpected error occured!'
@@ -184,7 +184,7 @@ export default function ManageUnitSchedule() {
         setDeletingId(unit._id);
         try {
             await unitScheduleService.deleteSchedule(unit._id);
-            toast.success(`"${unit.unitCode} – ${unit.unitName}" deleted successfully.`);
+            toast.success(`"${unit.unitCode} – ${unit.unitName}" deleted successfully 🗑️`);
             fetchUnitSchedules();
         } catch (error) {
             const errorMessage = error.response?.data?.message || error.message || 'Failed to delete unit schedule.';
@@ -265,221 +265,218 @@ export default function ManageUnitSchedule() {
         }
     };
 
-    // Helper: get week label from offset
-    const getWeekLabel = (offset) => {
-        if (offset === 0) return 'This week';
-        if (offset === 1) return 'Next week';
-        return `In ${offset} weeks`;
-    };
-
     useEffect(() => {
-
         fetchUnitSchedules();
         fetchLecturers();
         fetchOverrides();
     }, []);
 
+    const filteredUnits = units.filter(unit => {
+        const q = searchQuery.toLowerCase().trim();
+        if (!q) return true;
+        const lecturerName = typeof unit.lecturer === 'object' ? unit.lecturer?.name || '' : '';
+        return (
+            unit.unitName?.toLowerCase().includes(q) ||
+            unit.unitCode?.toLowerCase().includes(q) ||
+            unit.venue?.toLowerCase().includes(q) ||
+            unit.dayOfWeek?.toLowerCase().includes(q) ||
+            lecturerName.toLowerCase().includes(q)
+        );
+    });
+
     return (
         <div>
-            <Dialog>
-                <DialogTrigger asChild>
-                    <Button className="mt-2 bg-blue-600 hover:bg-blue-700 text-white">Create Unit</Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
-                    <DialogHeader>
-                        <DialogTitle>Register a unit</DialogTitle>
-                        <DialogDescription>* All fields are required</DialogDescription>
-                    </DialogHeader>
+            {/* Top Toolbar: Search & Action */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mt-2">
+                <div className="relative flex-1 max-w-md">
+                    <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        placeholder="Search by code, name, venue, day, lecturer..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="pl-9"
+                    />
+                </div>
+                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                    <DialogTrigger asChild>
+                        <Button className="bg-blue-600 hover:bg-blue-700 text-white gap-2 shrink-0">
+                            <PlusIcon className="h-4 w-4" />
+                            Register Unit
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
+                        <DialogHeader>
+                            <DialogTitle>Register a unit</DialogTitle>
+                            <DialogDescription>* Fill in unit details below</DialogDescription>
+                        </DialogHeader>
 
-                    <form onSubmit={handleSubmit}>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div>
-                                <Label htmlFor="unitname">Unit Name</Label>
-                                <Input
-                                    id="unitname"
-                                    name="unitName"
-                                    type="text"
-                                    value={unitName}
-                                    onChange={(e) => setUnitName(e.target.value)}
-                                    className={`mt-1.5 ${formDataError.unitName ? 'border-destructive' : ''}`}
-                                    disabled={loading}
-                                    required
-                                    placeholder="Education"
-                                />
-                                {formDataError.unitName && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.unitName}</p>}
+                        <form onSubmit={handleSubmit}>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <Label htmlFor="unitname">Unit Name</Label>
+                                    <Input
+                                        id="unitname"
+                                        name="unitName"
+                                        type="text"
+                                        value={unitName}
+                                        onChange={(e) => setUnitName(e.target.value)}
+                                        className={`mt-1.5 ${formDataError.unitName ? 'border-destructive' : ''}`}
+                                        disabled={loading}
+                                        required
+                                        placeholder="Computer Science"
+                                    />
+                                    {formDataError.unitName && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.unitName}</p>}
+                                </div>
+
+                                <div>
+                                    <Label htmlFor="unitcode">Unit Code</Label>
+                                    <Input
+                                        id="unitcode"
+                                        name="unitCode"
+                                        type="text"
+                                        value={unitCode}
+                                        onChange={(e) => setUnitCode(e.target.value.toUpperCase())}
+                                        className={`mt-1.5 ${formDataError.unitCode ? 'border-destructive' : ''}`}
+                                        disabled={loading}
+                                        required
+                                        placeholder="COSC 111"
+                                    />
+                                    {formDataError.unitCode && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.unitCode}</p>}
+                                </div>
+
+                                <div>
+                                    <Label htmlFor="lecturer">Lecturer (optional)</Label>
+                                    <Select
+                                        onValueChange={(value) => setSelectedLecturer(value === "none" ? "" : value)}
+                                        id="lecturer"
+                                        value={selectedLecturer || "none"}
+                                        disabled={loading}
+                                    >
+                                        <SelectTrigger className="w-full mt-1.5">
+                                            <SelectValue placeholder="Select lecturer (optional)" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="none">None / Unassigned</SelectItem>
+                                            {lecturers.currentSemester?.map(lecturer => (
+                                                <SelectItem value={lecturer._id} key={lecturer._id}>
+                                                    {lecturer.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    {formDataError.selectedLecturer && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.selectedLecturer}</p>}
+                                </div>
+
+                                <div>
+                                    <Label htmlFor="venue">Venue</Label>
+                                    <Input
+                                        id="venue"
+                                        name="venue"
+                                        type="text"
+                                        value={venue}
+                                        onChange={(e) => setVenue(e.target.value)}
+                                        className={`mt-1.5 ${formDataError.venue ? 'border-destructive' : ''}`}
+                                        disabled={loading}
+                                        required
+                                        placeholder="SRPB01"
+                                    />
+                                    {formDataError.venue && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.venue}</p>}
+                                </div>
+
+                                <div>
+                                    <Label htmlFor="dayofweek">Day of week</Label>
+                                    <Select
+                                        id="dayofweek"
+                                        value={dayOfWeek}
+                                        onValueChange={(value) => setDayOfWeek(value)}
+                                        disabled={loading}
+                                    >
+                                        <SelectTrigger className="w-full mt-1.5">
+                                            <SelectValue placeholder="Select day" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectGroup>
+                                                <SelectItem value="Monday">Monday</SelectItem>
+                                                <SelectItem value="Tuesday">Tuesday</SelectItem>
+                                                <SelectItem value="Wednesday">Wednesday</SelectItem>
+                                                <SelectItem value="Thursday">Thursday</SelectItem>
+                                                <SelectItem value="Friday">Friday</SelectItem>
+                                            </SelectGroup>
+                                        </SelectContent>
+                                    </Select>
+                                    {formDataError.dayOfWeek && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.dayOfWeek}</p>}
+                                </div>
+
+                                <div>
+                                    <Label htmlFor="start-time">Start Time</Label>
+                                    <Select
+                                        id="start-time"
+                                        value={startTime}
+                                        onValueChange={(value) => setStartTime(value)}
+                                        disabled={loading}
+                                    >
+                                        <SelectTrigger className="w-full mt-1.5">
+                                            <SelectValue placeholder="Select start time" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectGroup>
+                                                <SelectItem value="07:00">07:00 a.m</SelectItem>
+                                                <SelectItem value="10:00">10:00 a.m</SelectItem>
+                                                <SelectItem value="13:00">01:00 p.m</SelectItem>
+                                                <SelectItem value="16:00">04:00 p.m</SelectItem>
+                                            </SelectGroup>
+                                        </SelectContent>
+                                    </Select>
+                                    {formDataError.startTime && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.startTime}</p>}
+                                </div>
+
+                                <div>
+                                    <Label htmlFor="end-time">End Time</Label>
+                                    <Select
+                                        id="end-time"
+                                        value={endTime}
+                                        onValueChange={(value) => setEndTime(value)}
+                                        disabled={loading}
+                                    >
+                                        <SelectTrigger className="w-full mt-1.5">
+                                            <SelectValue placeholder="Select end time" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectGroup>
+                                                <SelectItem value="10:00">10:00 a.m</SelectItem>
+                                                <SelectItem value="13:00">01:00 p.m</SelectItem>
+                                                <SelectItem value="16:00">04:00 p.m</SelectItem>
+                                                <SelectItem value="19:00">07:00 p.m</SelectItem>
+                                            </SelectGroup>
+                                        </SelectContent>
+                                    </Select>
+                                    {formDataError.endTime && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.endTime}</p>}
+                                </div>
                             </div>
 
-                            <div>
-                                <Label htmlFor="unitcode">Unit Code</Label>
-                                <Input
-                                    id="unitcode"
-                                    name="unitCode"
-                                    type="text"
-                                    value={unitCode}
-                                    onChange={(e) => setUnitCode(e.target.value.toUpperCase())}
-                                    className={`mt-1.5 ${formDataError.unitCode ? 'border-destructive' : ''}`}
-                                    disabled={loading}
-                                    required
-                                    placeholder="cosc 111"
-                                />
-                                {formDataError.unitCode && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.unitCode}</p>}
-                            </div>
-
-                            <div>
-                                <Label htmlFor="lecturer">Lecturer</Label>
-                                <Select
-                                    onValueChange={(value) => setSelectedLecturer(value)}
-                                    id="lecturer"
-                                    value={selectedLecturer}
-                                    disabled={loading}
-                                >
-                                    <SelectTrigger className="w-full mt-1.5">
-                                        <SelectValue placeholder="Select lecturer" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {lecturers.currentSemester.map(lecturer => (
-                                            <SelectItem value={lecturer._id} key={lecturer._id}>
-                                                {lecturer.name}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                {formDataError.selectedLecturer && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.selectedLecturer}</p>}
-                            </div>
-
-                            <div>
-                                <Label htmlFor="venue">Venue</Label>
-                                <Input
-                                    id="venue"
-                                    name="venue"
-                                    type="text"
-                                    value={venue}
-                                    onChange={(e) => setVenue(e.target.value)}
-                                    className={`mt-1.5 ${formDataError.venue ? 'border-destructive' : ''}`}
-                                    disabled={loading}
-                                    required
-                                    placeholder="srpb01"
-                                />
-                                {formDataError.venue && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.venue}</p>}
-                            </div>
-
-                            <div>
-                                <Label htmlFor="dayofweek">Day of week</Label>
-                                <Select
-                                    id="dayofweek"
-                                    value={dayOfWeek}
-                                    onValueChange={(value) => setDayOfWeek(value)}
-                                    disabled={loading}
-                                >
-                                    <SelectTrigger className="w-full mt-1.5">
-                                        <SelectValue placeholder="Select day" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectGroup>
-                                            <SelectItem value="Monday">Monday</SelectItem>
-                                            <SelectItem value="Tuesday">Tuesday</SelectItem>
-                                            <SelectItem value="Wednesday">Wednesday</SelectItem>
-                                            <SelectItem value="Thursday">Thursday</SelectItem>
-                                            <SelectItem value="Friday">Friday</SelectItem>
-                                        </SelectGroup>
-                                    </SelectContent>
-                                </Select>
-                                {formDataError.dayOfWeek && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.dayOfWeek}</p>}
-                            </div>
-
-                            <div>
-                                <Label htmlFor="start-time">Start Time</Label>
-                                <Select
-                                    id="start-time"
-                                    value={startTime}
-                                    onValueChange={(value) => setStartTime(value)}
-                                    disabled={loading}
-                                >
-                                    <SelectTrigger className="w-full mt-1.5">
-                                        <SelectValue placeholder="Select start time" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectGroup>
-                                            <SelectItem value="07:00">07:00 a.m</SelectItem>
-                                            <SelectItem value="10:00">10:00 a.m</SelectItem>
-                                            <SelectItem value="13:00">01:00 p.m</SelectItem>
-                                            <SelectItem value="16:00">04:00 p.m</SelectItem>
-                                        </SelectGroup>
-                                    </SelectContent>
-                                </Select>
-                                {formDataError.startTime && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.startTime}</p>}
-                            </div>
-
-                            <div>
-                                <Label htmlFor="end-time">End Time</Label>
-                                <Select
-                                    id="end-time"
-                                    value={endTime}
-                                    onValueChange={(value) => setEndTime(value)}
-                                    disabled={loading}
-                                >
-                                    <SelectTrigger className="w-full mt-1.5">
-                                        <SelectValue placeholder="Select start time" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectGroup>
-                                            <SelectItem value="10:00">10:00 a.m</SelectItem>
-                                            <SelectItem value="13:00">01:00 p.m</SelectItem>
-                                            <SelectItem value="16:00">04:00 p.m</SelectItem>
-                                            <SelectItem value="19:00">07:00 p.m</SelectItem>
-                                        </SelectGroup>
-                                    </SelectContent>
-                                </Select>
-                                {formDataError.endTime && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.endTime}</p>}
-                            </div>
-
-                            <div>
-                                <Label htmlFor="cohort">Cohort</Label>
-                                <Select
-                                    id="cohort"
-                                    value={cohort}
-                                    onValueChange={(value) => setCohort(value)}
-                                    required
-                                    defaultValue={user.cohort._id}
-                                    disabled={loading}
-                                >
-                                    <SelectTrigger className="w-full mt-1.5">
-                                        <SelectValue placeholder="Select your group/cohort" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectGroup>
-                                            <SelectItem value={user.cohort._id} key={user.cohort._id}>
-                                                {user.cohort.name}
-                                            </SelectItem>
-                                        </SelectGroup>
-                                    </SelectContent>
-                                </Select>
-                                {formDataError.cohort && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.cohort}</p>}
-                            </div>
-                        </div>
-
-                        <DialogFooter className="mt-5">
-                            <DialogClose asChild>
-                                <Button type="button" variant="outline">Cancel</Button>
-                            </DialogClose>
-                            <Button className="bg-blue-600 hover:bg-blue-700 text-white" disabled={loading} type="submit">
-                                { loading ? (
-                                    <>
-                                        Creating
-                                        <LoaderIcon className="animate-spin"/>
-                                    </>
-                                    ) : (
-                                    <>
-                                        Create unit
-                                        <SendHorizonalIcon />
-                                    </>
-                                    )
-                                }
-                            </Button>
-                        </DialogFooter>
-                    </form>
-                </DialogContent>
-            </Dialog>
+                            <DialogFooter className="mt-5">
+                                <DialogClose asChild>
+                                    <Button type="button" variant="outline">Cancel</Button>
+                                </DialogClose>
+                                <Button className="bg-blue-600 hover:bg-blue-700 text-white gap-2" disabled={loading} type="submit">
+                                    { loading ? (
+                                        <>
+                                            Creating
+                                            <LoaderIcon className="h-4 w-4 animate-spin"/>
+                                        </>
+                                        ) : (
+                                        <>
+                                            Create unit
+                                            <SendHorizonalIcon className="h-4 w-4" />
+                                        </>
+                                        )
+                                    }
+                                </Button>
+                            </DialogFooter>
+                        </form>
+                    </DialogContent>
+                </Dialog>
+            </div>
 
             {/* Cards List */}
             <div className="mt-6 space-y-3">
@@ -488,13 +485,15 @@ export default function ManageUnitSchedule() {
                         <LoaderIcon className="animate-spin h-5 w-5" />
                         <span className="font-medium">Loading units…</span>
                     </div>
-                ) : units.length === 0 ? (
+                ) : filteredUnits.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-14 text-center text-muted-foreground gap-2">
                         <CalendarClockIcon className="h-10 w-10 opacity-30" />
-                        <p className="text-sm italic">No units yet. Create one above.</p>
+                        <p className="text-sm italic">
+                            {searchQuery ? "No units match your search query." : "No units yet. Create one above."}
+                        </p>
                     </div>
                 ) : (
-                    units.map(unit => {
+                    filteredUnits.map(unit => {
                         const activeOverride = getOverrideForUnit(unit._id);
                         return (
                         <div
@@ -739,7 +738,7 @@ export default function ManageUnitSchedule() {
                                         <SelectValue placeholder="Same lecturer" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {lecturers.currentSemester.map(lecturer => (
+                                        {lecturers.currentSemester?.map(lecturer => (
                                             <SelectItem value={lecturer._id} key={lecturer._id}>
                                                 {lecturer.name}
                                             </SelectItem>
@@ -771,14 +770,14 @@ export default function ManageUnitSchedule() {
                             <Button type="button" variant="outline" disabled={creatingOverride}>Cancel</Button>
                         </DialogClose>
                         <Button
-                            className="bg-amber-600 hover:bg-amber-700 text-white"
+                            className="bg-amber-600 hover:bg-amber-700 text-white gap-2"
                             disabled={creatingOverride}
                             onClick={handleCreateOverride}
                         >
                             {creatingOverride ? (
                                 <>
                                     Creating…
-                                    <LoaderIcon className="animate-spin" />
+                                    <LoaderIcon className="h-4 w-4 animate-spin" />
                                 </>
                             ) : (
                                 <>

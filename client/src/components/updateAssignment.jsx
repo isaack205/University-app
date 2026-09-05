@@ -1,5 +1,5 @@
 // Imports
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 import { SquarePenIcon, LoaderIcon, SendHorizonalIcon } from "lucide-react";
 import { Button } from "./ui/button";
 import { Label } from "./ui/label";
@@ -26,16 +26,16 @@ import { useAuth } from "@/contexts/authContext";
 import { toast } from "sonner";
 import { unitScheduleService } from "@/services/unitSchedulerApi";
 import { assignmentService } from "@/services/assignementApi";
-import { Textarea } from "./ui/textarea";
+import MarkdownEditor from "@/components/common/markdownEditor";
 
 export default function UpdateAssignment({ assignment, refreshAssignment }) {
 
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [selectedUnit, setSelectedUnit] = useState('');
-    const [cohort, setCohort] = useState('');
     const [dueDate, setDueDate] = useState('');
     const [units, setUnits] = useState([]);
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const [formDataError, setFormDataError] = useState({});
     const [errors, setErrors] = useState(null);
@@ -43,7 +43,6 @@ export default function UpdateAssignment({ assignment, refreshAssignment }) {
     const { user } = useAuth();
 
     const fetchUnitSchedules = async () => {
-    
         try {
             const data = await unitScheduleService.getMyShedule();
             setUnits(data);
@@ -55,27 +54,22 @@ export default function UpdateAssignment({ assignment, refreshAssignment }) {
         }
     };
 
-
     function formatDateForInput(isoString) {
+        if (!isoString) return '';
         const date = new Date(isoString);
-
         const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
             .toISOString()
             .slice(0, 16);
-
         return local;
     }
 
     useEffect(() => {
-
         if (assignment) {
             setTitle(assignment?.title || '');
             setDescription(assignment?.description || '');
             setSelectedUnit(assignment?.unit?._id || assignment?.unit || '');
-            setCohort(assignment?.cohort?._id || assignment?.cohort || '');
-            setDueDate(formatDateForInput(assignment?.dueDate) || '')
+            setDueDate(formatDateForInput(assignment?.dueDate) || '');
         }
-
         fetchUnitSchedules();
     }, [assignment]);
 
@@ -83,7 +77,7 @@ export default function UpdateAssignment({ assignment, refreshAssignment }) {
         e.preventDefault();
         
         setLoading(true);
-        setFormDataError(null);
+        setFormDataError({});
         setErrors(null);
 
         let isValid = true;
@@ -99,13 +93,8 @@ export default function UpdateAssignment({ assignment, refreshAssignment }) {
             isValid = false;
         }
 
-        if (!cohort.trim()) {
-            errors.cohort = 'Cohort is required.'
-            isValid = false;
-        }
-
         if (!dueDate.trim()) {
-            errors.dueDate = 'DueDate is required.'
+            errors.dueDate = 'Due Date is required.'
             isValid = false;
         }
 
@@ -116,14 +105,22 @@ export default function UpdateAssignment({ assignment, refreshAssignment }) {
             return;
         }
 
+        const cohortId = user?.cohort?._id || user?.cohort;
+
         const payload = {
-            _id: assignment?._id, title, description, unit: selectedUnit, cohort, dueDate: new Date(dueDate).toISOString()
+            _id: assignment?._id,
+            title,
+            description,
+            unit: selectedUnit,
+            cohort: cohortId,
+            dueDate: new Date(dueDate).toISOString()
         }
 
         try {
             await assignmentService.updateAssignment(payload._id, payload);
+            toast.success('Assignment updated successfully! ✏️')
+            setIsDialogOpen(false);
             refreshAssignment();
-            toast.success('Assignment updated successfully!')
         } catch (error) {
             const errorMessage = error.response?.data?.message || error.message || 'An unexpected error occured!'
             toast.error(errorMessage)
@@ -136,25 +133,23 @@ export default function UpdateAssignment({ assignment, refreshAssignment }) {
 
     return(
         <div>
-            <Dialog>
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogTrigger asChild>
                     <Button variant="ghost" size="icon" aria-label="Edit assignment">
-                        <SquarePenIcon className="text-green-600"/>
+                        <SquarePenIcon className="h-4 w-4 text-green-600"/>
                     </Button>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
+                <DialogContent className="sm:max-w-xl max-h-[85vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle>Update assignment</DialogTitle>
-                        <DialogDescription>
-                            * All fields are required.
-                        </DialogDescription>
+                        <DialogDescription>Modify details for this assignment.</DialogDescription>
                     </DialogHeader>
 
-                    {errors && <p className="mt-1 font-bold text-destructive text-right">{errors}</p>}
+                    {errors && <p className="mt-1 font-bold text-destructive text-right text-sm">{errors}</p>}
 
-                    <form onSubmit={handleSubmit}>
+                    <form onSubmit={handleSubmit} className="space-y-4 mt-2">
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div>
+                            <div className="sm:col-span-2">
                                 <Label htmlFor="title">Title</Label>
                                 <Input
                                     id="title"
@@ -185,7 +180,7 @@ export default function UpdateAssignment({ assignment, refreshAssignment }) {
                                     <SelectContent>
                                         {units.map(unit => (
                                             <SelectItem value={unit._id} key={unit._id}>
-                                                {unit.unitCode}
+                                                {unit.unitCode} – {unit.unitName}
                                             </SelectItem>
                                         ))}
                                     </SelectContent>
@@ -194,28 +189,7 @@ export default function UpdateAssignment({ assignment, refreshAssignment }) {
                             </div>
 
                             <div>
-                                <Label htmlFor="cohort">Cohort</Label>
-                                <Select
-                                    onValueChange={value => setCohort(value)}
-                                    disabled={loading}
-                                    value={cohort}
-                                    id="cohort"
-                                    required
-                                >
-                                    <SelectTrigger className="w-full mt-1.5">
-                                        <SelectValue placeholder="Select your cohort:" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value={user.cohort._id} key={user.cohort._id}>
-                                            {user?.cohort.name}
-                                        </SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                {formDataError.cohort && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.cohort}</p>}
-                            </div>
-
-                            <div>
-                                <Label htmlFor="duedate">Due Date</Label>
+                                <Label htmlFor="duedate">Due Date & Time</Label>
                                 <Input
                                     id="duedate"
                                     name="dueDate"
@@ -223,7 +197,6 @@ export default function UpdateAssignment({ assignment, refreshAssignment }) {
                                     type="datetime-local"
                                     onChange={(e) => setDueDate(e.target.value)}
                                     className={`mt-1.5 ${formDataError.dueDate ? 'border-destructive' : ''}`}
-                                    placeholder="Enter date"
                                     disabled={loading}
                                     required
                                 />
@@ -231,40 +204,38 @@ export default function UpdateAssignment({ assignment, refreshAssignment }) {
                             </div>
 
                             <div className="sm:col-span-2">
-                                <Label htmlFor="description">Description</Label>
-                                <Textarea
-                                    id="description"
-                                    name="description"
+                                <MarkdownEditor
+                                    id="edit-assignment-description"
+                                    label="Description (Optional)"
                                     value={description}
-                                    onChange={(e) => setDescription(e.target.value)}
-                                    className="mt-1.5"
-                                    placeholder="Description (Optional)"
+                                    onChange={setDescription}
+                                    placeholder="Details, instructions, bullet points, or submission guidelines..."
                                     disabled={loading}
+                                    rows={4}
                                 />
                             </div>
                         </div>
 
-                        <DialogFooter className="mt-5">
+                        <DialogFooter className="pt-3 border-t">
                             <DialogClose asChild>
-                                <Button type="button" variant="outline">Cancel</Button>
+                                <Button type="button" variant="outline" disabled={loading}>Cancel</Button>
                             </DialogClose>
                             <Button className="bg-blue-600 hover:bg-blue-700 text-white" disabled={loading} type="submit">
                                 { loading ? (
                                     <>
                                         Saving
-                                        <LoaderIcon className="animate-spin"/>
+                                        <LoaderIcon className="animate-spin h-4 w-4 ml-1"/>
                                     </>
                                     ) : (
                                     <>
                                         Save Changes
-                                        <SendHorizonalIcon />
+                                        <SendHorizonalIcon className="h-4 w-4 ml-1" />
                                     </>
                                     )
                                 }
                             </Button>
                         </DialogFooter>
                     </form>
-
                 </DialogContent>
             </Dialog>
         </div>

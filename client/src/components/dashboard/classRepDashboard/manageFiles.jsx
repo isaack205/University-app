@@ -14,7 +14,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { useAuth } from "@/contexts/authContext";
-import { LoaderIcon, SendHorizonalIcon, Trash2Icon, FolderIcon, TagIcon } from "lucide-react";
+import { LoaderIcon, SendHorizonalIcon, Trash2Icon, FolderIcon, TagIcon, SearchIcon, UploadIcon } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -34,9 +34,9 @@ export default function ManageFiles() {
     const [fileDescription, setFileDescription] = useState('');
     const [file, setFile] = useState();
     const [fileType, setFileType] = useState('');
-    const [course, setCourse] = useState('');
-    const [cohort, setCohort] = useState('');
-    const [formDataError, setFormDataError] = useState('');
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [formDataError, setFormDataError] = useState({});
     const [files, setFiles] = useState([]);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
@@ -48,11 +48,9 @@ export default function ManageFiles() {
     const resetForm = () => {
         setFileName('');
         setFileDescription('');
-        setFile();
+        setFile(null);
         setFileType('');
-        setCourse('');
-        setCohort('');
-        setFormDataError('');
+        setFormDataError({});
     };
 
     const fetchFiles = async () => {
@@ -72,11 +70,19 @@ export default function ManageFiles() {
         }
     }
 
+    const handleFileSelect = (selectedFile) => {
+        setFile(selectedFile);
+        if (selectedFile && !fileName.trim()) {
+            const nameWithoutExt = selectedFile.name.replace(/\.[^/.]+$/, "");
+            setFileName(nameWithoutExt);
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
         setLoading(true);
-        setFormDataError(null);
+        setFormDataError({});
         setError(null);
 
         let errors = {};
@@ -102,12 +108,15 @@ export default function ManageFiles() {
             isValid = false;
         }
 
-        if (!course.trim()) {
+        const courseId = user?.course?._id || user?.course;
+        const cohortId = user?.cohort?._id || user?.cohort;
+
+        if (!courseId) {
             errors.course = 'Course is required.'
             isValid = false;
         }
 
-        if (!cohort.trim()) {
+        if (!cohortId) {
             errors.cohort = 'Cohort is required.'
             isValid = false;
         }
@@ -124,12 +133,13 @@ export default function ManageFiles() {
        formData.append("fileName", fileName); 
        formData.append("fileDescription", fileDescription); 
        formData.append("fileType", fileType); 
-       formData.append("course", course); 
-       formData.append("cohort", cohort);
+       formData.append("course", courseId); 
+       formData.append("cohort", cohortId);
 
         try {
             await fileUploadService.createFile(formData);
-            toast.success(`File uploaded successfully`);
+            toast.success(`File uploaded successfully 🚀`);
+            setIsDialogOpen(false);
             fetchFiles();
             resetForm();
             return { success: true };
@@ -158,164 +168,141 @@ export default function ManageFiles() {
     };
 
     useEffect(() => {
-
-        refreshFiles: fetchFiles();
+        fetchFiles();
     }, []);
+
+    const filteredFiles = files.filter(f =>
+        f.fileName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        f.fileType?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        f.fileDescription?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
     return (
         <div>
-            <Dialog>
-                <DialogTrigger asChild>
-                    <Button className="mt-2 bg-blue-600 hover:bg-blue-700 text-white">Upload File</Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
-                    <DialogHeader>
-                        <DialogTitle>Upload new file</DialogTitle>
-                        <DialogDescription>* All fields are required</DialogDescription>
-                    </DialogHeader>
+            {/* Top Action Bar */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mt-2">
+                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                    <DialogTrigger asChild>
+                        <Button className="bg-blue-600 hover:bg-blue-700 text-white gap-2">
+                            <UploadIcon className="h-4 w-4" />
+                            Upload File
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-xl max-h-[85vh] overflow-y-auto">
+                        <DialogHeader>
+                            <DialogTitle>Upload new file</DialogTitle>
+                            <DialogDescription>
+                                Upload course materials, notes, or assignment files for <strong>{user?.cohort?.name || "your cohort"}</strong>.
+                            </DialogDescription>
+                        </DialogHeader>
 
-                    <form onSubmit={handleSubmit}>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div>
-                                <Label htmlFor="filename">File Name</Label>
-                                <Input
-                                    id="filename"
-                                    name="fileName"
-                                    type="text"
-                                    value={fileName}
-                                    onChange={(e) => setFileName(e.target.value)}
-                                    className={`mt-1.5 ${formDataError.fileName ? 'border-destructive' : ''}`}
-                                    disabled={loading}
-                                    required
-                                    placeholder="Word Docs"
-                                />
-                                {formDataError.fileName && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.fileName}</p>}
+                        <form onSubmit={handleSubmit} className="space-y-4 mt-2">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="sm:col-span-2">
+                                    <Label htmlFor="file">Select File</Label>
+                                    <Input
+                                        id="file"
+                                        name="file"
+                                        type="file"
+                                        accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.jpg,.png"
+                                        onChange={(e) => handleFileSelect(e.target.files[0])}
+                                        className={`mt-1.5 cursor-pointer ${formDataError.file ? 'border-destructive' : ''}`}
+                                        disabled={loading}
+                                        required
+                                    />
+                                    {formDataError.file && (<p className="mt-1 text-sm font-medium text-destructive">{formDataError.file}</p>)}
+                                </div>
+
+                                <div>
+                                    <Label htmlFor="filename">File Name</Label>
+                                    <Input
+                                        id="filename"
+                                        name="fileName"
+                                        type="text"
+                                        value={fileName}
+                                        onChange={(e) => setFileName(e.target.value)}
+                                        className={`mt-1.5 ${formDataError.fileName ? 'border-destructive' : ''}`}
+                                        disabled={loading}
+                                        required
+                                        placeholder="e.g. Lecture Notes Week 3"
+                                    />
+                                    {formDataError.fileName && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.fileName}</p>}
+                                </div>
+
+                                <div>
+                                    <Label htmlFor="filetype">File Type</Label>
+                                    <Select
+                                        id="filetype"
+                                        value={fileType}
+                                        onValueChange={(value) => setFileType(value)}
+                                        disabled={loading}
+                                    >
+                                        <SelectTrigger className="w-full mt-1.5">
+                                            <SelectValue placeholder="Select file type" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectGroup>
+                                                <SelectItem value="Notes">Notes</SelectItem>
+                                                <SelectItem value="Assignment">Assignment</SelectItem>
+                                                <SelectItem value="CAT">CAT</SelectItem>
+                                            </SelectGroup>
+                                        </SelectContent>
+                                    </Select>
+                                    {formDataError.fileType && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.fileType}</p>}
+                                </div>
+
+                                <div className="sm:col-span-2">
+                                    <Label htmlFor="filedescription">File Description</Label>
+                                    <Input
+                                        id="filedescription"
+                                        name="fileDescription"
+                                        type="text"
+                                        value={fileDescription}
+                                        onChange={(e) => setFileDescription(e.target.value)}
+                                        className={`mt-1.5 ${formDataError.fileDescription ? 'border-destructive' : ''}`}
+                                        disabled={loading}
+                                        required
+                                        placeholder="Brief description of file contents"
+                                    />
+                                    {formDataError.fileDescription && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.fileDescription}</p>}
+                                </div>
                             </div>
 
-                            <div>
-                                <Label htmlFor="filedescription">File Description</Label>
-                                <Input
-                                    id="filedescription"
-                                    name="fileDescription"
-                                    type="text"
-                                    value={fileDescription}
-                                    onChange={(e) => setFileDescription(e.target.value)}
-                                    className={`mt-1.5 ${formDataError.fileDescription ? 'border-destructive' : ''}`}
-                                    disabled={loading}
-                                    required
-                                    placeholder="description"
-                                />
-                                {formDataError.fileDescription && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.fileDescription}</p>}
-                            </div>
+                            <DialogFooter className="pt-3 border-t">
+                                <DialogClose asChild>
+                                    <Button type="button" variant="outline" disabled={loading}>Cancel</Button>
+                                </DialogClose>
+                                <Button className="bg-blue-600 hover:bg-blue-700 text-white" disabled={loading} type="submit">
+                                    { loading ? (
+                                        <>
+                                            Uploading
+                                            <LoaderIcon className="animate-spin h-4 w-4 ml-1"/>
+                                        </>
+                                        ) : (
+                                        <>
+                                            Upload File
+                                            <SendHorizonalIcon className="h-4 w-4 ml-1" />
+                                        </>
+                                        )
+                                    }
+                                </Button>
+                            </DialogFooter>
+                        </form>
+                    </DialogContent>
+                </Dialog>
 
-                            <div className="sm:col-span-2">
-                                <Label htmlFor="file">Select File</Label>
-                                <Input
-                                    id="file"
-                                    name="file"
-                                    type="file"
-                                    accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.jpg,.png"
-                                    onChange={(e) => setFile(e.target.files[0])}
-                                    className={`mt-1.5 ${formDataError.file ? 'border-destructive' : ''}`}
-                                    disabled={loading}
-                                    required
-                                />
-                                {formDataError.file && (<p className="mt-1 text-sm font-medium text-destructive">{formDataError.file}</p>)}
-                            </div>
-
-                            <div>
-                                <Label htmlFor="filetype">File Type</Label>
-                                <Select
-                                    id="filetype"
-                                    value={fileType}
-                                    onValueChange={(value) => setFileType(value)}
-                                    disabled={loading}
-                                >
-                                    <SelectTrigger className="w-full mt-1.5">
-                                        <SelectValue placeholder="Select file type" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectGroup>
-                                            <SelectItem value="Assignment">Assignment</SelectItem>
-                                            <SelectItem value="Notes">Notes</SelectItem>
-                                            <SelectItem value="CAT">CAT</SelectItem>
-                                        </SelectGroup>
-                                    </SelectContent>
-                                </Select>
-                                {formDataError.fileType && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.fileType}</p>}
-                            </div>
-
-                            <div>
-                                <Label htmlFor="course">Course</Label>
-                                <Select
-                                    id="course"
-                                    value={course}
-                                    onValueChange={(value) => setCourse(value)}
-                                    required
-                                    defaultValue={user.course._id}
-                                    disabled={loading}
-                                >
-                                    <SelectTrigger className="w-full mt-1.5">
-                                        <SelectValue placeholder="Select your course" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectGroup>
-                                            <SelectItem value={user.course._id} key={user.course._id}>
-                                                {user.course.name}
-                                            </SelectItem>
-                                        </SelectGroup>
-                                    </SelectContent>
-                                </Select>
-                                {formDataError.course && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.course}</p>}
-                            </div>
-
-                            <div>
-                                <Label htmlFor="cohort">Cohort</Label>
-                                <Select
-                                    id="cohort"
-                                    value={cohort}
-                                    onValueChange={(value) => setCohort(value)}
-                                    required
-                                    defaultValue={user.cohort._id}
-                                    disabled={loading}
-                                >
-                                    <SelectTrigger className="w-full mt-1.5">
-                                        <SelectValue placeholder="Select your group/cohort" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectGroup>
-                                            <SelectItem value={user.cohort._id} key={user.cohort._id}>
-                                                {user.cohort.name}
-                                            </SelectItem>
-                                        </SelectGroup>
-                                    </SelectContent>
-                                </Select>
-                                {formDataError.cohort && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.cohort}</p>}
-                            </div>
-                        </div>
-
-                        <DialogFooter className="mt-5">
-                            <DialogClose asChild>
-                                <Button type="button" variant="outline">Cancel</Button>
-                            </DialogClose>
-                            <Button className="bg-blue-600 hover:bg-blue-700 text-white" disabled={loading} type="submit">
-                                { loading ? (
-                                    <>
-                                        Uploading
-                                        <LoaderIcon className="animate-spin"/>
-                                    </>
-                                    ) : (
-                                    <>
-                                        Upload File
-                                        <SendHorizonalIcon />
-                                    </>
-                                    )
-                                }
-                            </Button>
-                        </DialogFooter>
-                    </form>
-                </DialogContent>
-            </Dialog>
+                {/* Live Search Input */}
+                <div className="relative flex-1 sm:max-w-xs">
+                    <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        type="text"
+                        placeholder="Search files..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="pl-9 text-sm"
+                    />
+                </div>
+            </div>
 
             {/* Cards List */}
             <div className="mt-6 space-y-3">
@@ -324,13 +311,15 @@ export default function ManageFiles() {
                         <LoaderIcon className="animate-spin h-5 w-5" />
                         <span className="font-medium">Loading files…</span>
                     </div>
-                ) : files.length === 0 ? (
+                ) : filteredFiles.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-14 text-center text-muted-foreground gap-2">
                         <FolderIcon className="h-10 w-10 opacity-30" />
-                        <p className="text-sm italic">No files yet. Upload one above.</p>
+                        <p className="text-sm italic">
+                            {searchQuery ? `No files matching "${searchQuery}"` : "No files yet. Upload one above."}
+                        </p>
                     </div>
                 ) : (
-                    files.map(file => (
+                    filteredFiles.map(file => (
                         <div
                             key={file._id}
                             className="group flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl border bg-card px-5 py-4 shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"

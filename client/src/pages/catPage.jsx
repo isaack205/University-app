@@ -1,5 +1,6 @@
 // Imports
 import React, { useEffect, useState } from "react";
+import ReactMarkdown from "react-markdown";
 import { useAuth } from "@/contexts/authContext";
 import { catService } from "@/services/catApi";
 import { toast } from "sonner";
@@ -305,6 +306,15 @@ export default function CATPage() {
                       </>
                     )}
                   </div>
+
+                  {selectedCAT.description?.trim() && (
+                    <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg border-l-4 border-indigo-500">
+                      <p className="text-[10px] font-black uppercase text-slate-400 mb-2 tracking-widest">Description & Instructions</p>
+                      <div className="prose dark:prose-invert prose-sm max-w-none text-slate-700 dark:text-slate-300 leading-relaxed text-sm [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_h3]:text-base [&_h3]:font-bold [&_blockquote]:border-l-2 [&_blockquote]:border-indigo-400 [&_blockquote]:pl-3 [&_blockquote]:italic [&_code]:bg-slate-200 dark:[&_code]:bg-slate-700 [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded">
+                        <ReactMarkdown>{selectedCAT.description}</ReactMarkdown>
+                      </div>
+                    </div>
+                  )}
 
                   {selectedCAT.type === "sitting" && selectedCAT.requiredItems?.length > 0 && (
                     <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg border-l-4 border-emerald-500">

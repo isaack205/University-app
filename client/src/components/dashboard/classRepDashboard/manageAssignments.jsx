@@ -1,6 +1,6 @@
 // Imports
-import React, {useState, useEffect} from "react";
-import { SendHorizonalIcon, LoaderIcon, Trash2Icon, ClipboardListIcon, CalendarIcon, BookOpenIcon } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { SendHorizonalIcon, LoaderIcon, Trash2Icon, ClipboardListIcon, CalendarIcon, BookOpenIcon, SearchIcon, PlusIcon } from "lucide-react";
 import {
   Dialog,
   DialogClose,
@@ -26,8 +26,8 @@ import { unitScheduleService } from "@/services/unitSchedulerApi";
 import { toast } from "sonner";
 import { assignmentService } from "@/services/assignementApi";
 import UpdateAssignment from "@/components/updateAssignment";
-import { Textarea } from "@/components/ui/textarea";
 import DeleteConfirmDialog from "@/components/deleteConfirmDialog";
+import MarkdownEditor from "@/components/common/markdownEditor";
 
 export default function ManageAssignment() {
 
@@ -35,19 +35,19 @@ export default function ManageAssignment() {
     const [description, setDescription] = useState('');
     const [selectedUnit, setSelectedUnit] = useState('');
     const [units, setUnits] = useState([]);
-    const [cohort, setCohort] = useState('');
     const [dueDate, setDueDate] = useState('');
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
     const [loading, setLoading] = useState(false);
     const [assignmentLoading, setAssignmentLoading] = useState(false);
     const [deletingId, setDeletingId] = useState(null);
-    const [assignments, setAssignments] = useState([])
+    const [assignments, setAssignments] = useState([]);
     const [formDataError, setFormDataError] = useState({});
     const [errors, setErrors] = useState(null);
 
     const { user } = useAuth();
 
     const fetchUnitSchedules = async () => {
-
         try {
             const data = await unitScheduleService.getMyShedule();
             setUnits(data);
@@ -60,7 +60,6 @@ export default function ManageAssignment() {
     }
 
     const fetchAssignments = async () => {
-
         setAssignmentLoading(true);
 
         try {
@@ -74,11 +73,9 @@ export default function ManageAssignment() {
         } finally {
             setAssignmentLoading(false);
         }
-
     }
 
     useEffect(() => {
-
         fetchUnitSchedules();
         fetchAssignments();
     }, []);
@@ -88,13 +85,14 @@ export default function ManageAssignment() {
         setDescription('');
         setSelectedUnit('');
         setDueDate('');
+        setFormDataError({});
     }
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
         setLoading(true);
-        setFormDataError(null);
+        setFormDataError({});
         setErrors(null);
 
         let isValid = true;
@@ -110,13 +108,14 @@ export default function ManageAssignment() {
             isValid = false;
         }
 
-        if (!cohort.trim()) {
+        const cohortId = user?.cohort?._id || user?.cohort;
+        if (!cohortId) {
             errors.cohort = 'Cohort is required.'
             isValid = false;
         }
 
         if (!dueDate.trim()) {
-            errors.dueDate = 'DueDate is required.'
+            errors.dueDate = 'Due Date is required.'
             isValid = false;
         }
 
@@ -131,14 +130,15 @@ export default function ManageAssignment() {
         const isoDate = localDate.toISOString();
 
         const payload = {
-            title, description, unit: selectedUnit, cohort, dueDate: isoDate
+            title, description, unit: selectedUnit, cohort: cohortId, dueDate: isoDate
         }
 
         try {
             await assignmentService.createAssignment(payload);
+            toast.success('Assignment posted successfully! 📚');
+            setIsDialogOpen(false);
             fetchAssignments();
             resetForm();
-            toast.success('Assignment posted successfully!')
         } catch (error) {
             const errorMessage = error.response?.data?.message || error.message || 'An unexpected error occured!'
             toast.error(errorMessage)
@@ -163,137 +163,137 @@ export default function ManageAssignment() {
         }
     };
 
+    const filteredAssignments = assignments.filter(a =>
+        a.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        a.unit?.unitCode?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        a.description?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
     return(
         <div>
-            <Dialog>
-                <DialogTrigger asChild>
-                    <Button className="mt-2 bg-blue-600 hover:bg-blue-700 text-white">Create assignment</Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
-                    <DialogHeader>
-                        <DialogTitle>Register an assignment</DialogTitle>
-                        <DialogDescription>
-                            * All fields are required.
-                        </DialogDescription>
-                    </DialogHeader>
+            {/* Top Action Bar */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mt-2">
+                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                    <DialogTrigger asChild>
+                        <Button className="bg-blue-600 hover:bg-blue-700 text-white gap-2">
+                            <PlusIcon className="h-4 w-4" />
+                            Create Assignment
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-xl max-h-[85vh] overflow-y-auto">
+                        <DialogHeader>
+                            <DialogTitle>Register an assignment</DialogTitle>
+                            <DialogDescription>
+                                Post a new assignment for <strong>{user?.cohort?.name || "your cohort"}</strong>.
+                            </DialogDescription>
+                        </DialogHeader>
 
-                    {errors && <p className="mt-1 font-bold text-destructive text-right">{errors}</p>}
+                        {errors && <p className="mt-1 font-bold text-destructive text-right text-sm">{errors}</p>}
 
-                    <form onSubmit={handleSubmit}>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div>
-                                <Label htmlFor="title">Title</Label>
-                                <Input
-                                    id="title"
-                                    name="title"
-                                    value={title}
-                                    type="text"
-                                    onChange={(e) => setTitle(e.target.value)}
-                                    className={`mt-1.5 ${formDataError.title ? 'border-destructive' : ''}`}
-                                    placeholder="Assignment title"
-                                    disabled={loading}
-                                    required
-                                />
-                                {formDataError.title && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.title}</p>}
+                        <form onSubmit={handleSubmit} className="space-y-4 mt-2">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="sm:col-span-2">
+                                    <Label htmlFor="title">Title</Label>
+                                    <Input
+                                        id="title"
+                                        name="title"
+                                        value={title}
+                                        type="text"
+                                        onChange={(e) => setTitle(e.target.value)}
+                                        className={`mt-1.5 ${formDataError.title ? 'border-destructive' : ''}`}
+                                        placeholder="e.g. Operating Systems Lab Assignment 1"
+                                        disabled={loading}
+                                        required
+                                    />
+                                    {formDataError.title && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.title}</p>}
+                                </div>
+
+                                <div>
+                                    <Label htmlFor="selectedUnit">Unit Code</Label>
+                                    <Select
+                                        onValueChange={value => setSelectedUnit(value)}
+                                        disabled={loading}
+                                        value={selectedUnit}
+                                        id="selectedUnit"
+                                        required
+                                    >
+                                        <SelectTrigger className="w-full mt-1.5">
+                                            <SelectValue placeholder="Select unit" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {units.map(unit => (
+                                                <SelectItem value={unit._id} key={unit._id}>
+                                                    {unit.unitCode} – {unit.unitName}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    {formDataError.selectedUnit && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.selectedUnit}</p>}
+                                </div>
+
+                                <div>
+                                    <Label htmlFor="duedate">Due Date & Time</Label>
+                                    <Input
+                                        id="duedate"
+                                        name="dueDate"
+                                        value={dueDate}
+                                        type="datetime-local"
+                                        onChange={(e) => setDueDate(e.target.value)}
+                                        className={`mt-1.5 ${formDataError.dueDate ? 'border-destructive' : ''}`}
+                                        disabled={loading}
+                                        required
+                                    />
+                                    {formDataError.dueDate && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.dueDate}</p>}
+                                </div>
+
+                                <div className="sm:col-span-2">
+                                    <MarkdownEditor
+                                        id="assignment-description"
+                                        label="Description (Optional)"
+                                        value={description}
+                                        onChange={setDescription}
+                                        placeholder="Details, instructions, bullet points, or submission guidelines..."
+                                        disabled={loading}
+                                        rows={4}
+                                    />
+                                </div>
                             </div>
 
-                            <div>
-                                <Label htmlFor="selectedUnit">Unit Code</Label>
-                                <Select
-                                    onValueChange={value => setSelectedUnit(value)}
-                                    disabled={loading}
-                                    value={selectedUnit}
-                                    id="selectedUnit"
-                                    required
-                                >
-                                    <SelectTrigger className="w-full mt-1.5">
-                                        <SelectValue placeholder="Select unit" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {units.map(unit => (
-                                            <SelectItem value={unit._id} key={unit._id}>
-                                                {unit.unitCode}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                {formDataError.selectedUnit && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.selectedUnit}</p>}
-                            </div>
+                            <DialogFooter className="pt-3 border-t">
+                                <DialogClose asChild>
+                                    <Button type="button" variant="outline" disabled={loading}>Cancel</Button>
+                                </DialogClose>
+                                <Button className="bg-blue-600 hover:bg-blue-700 text-white" disabled={loading} type="submit">
+                                    { loading ? (
+                                        <>
+                                            Creating
+                                            <LoaderIcon className="animate-spin h-4 w-4 ml-1"/>
+                                        </>
+                                        ) : (
+                                        <>
+                                            Post Assignment
+                                            <SendHorizonalIcon className="h-4 w-4 ml-1" />
+                                        </>
+                                        )
+                                    }
+                                </Button>
+                            </DialogFooter>
+                        </form>
+                    </DialogContent>
+                </Dialog>
 
-                            <div>
-                                <Label htmlFor="cohort">Cohort</Label>
-                                <Select
-                                    onValueChange={value => setCohort(value)}
-                                    disabled={loading}
-                                    value={cohort}
-                                    id="cohort"
-                                    required
-                                >
-                                    <SelectTrigger className="w-full mt-1.5">
-                                        <SelectValue placeholder="Select your cohort:" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value={user.cohort._id} key={user.cohort._id}>
-                                            {user?.cohort.name}
-                                        </SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                {formDataError.cohort && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.cohort}</p>}
-                            </div>
-
-                            <div>
-                                <Label htmlFor="duedate">Due Date</Label>
-                                <Input
-                                    id="duedate"
-                                    name="dueDate"
-                                    value={dueDate}
-                                    type="datetime-local"
-                                    onChange={(e) => setDueDate(e.target.value)}
-                                    className={`mt-1.5 ${formDataError.dueDate ? 'border-destructive' : ''}`}
-                                    placeholder="Enter date"
-                                    disabled={loading}
-                                    required
-                                />
-                                {formDataError.dueDate && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.dueDate}</p>}
-                            </div>
-
-                            <div className="sm:col-span-2">
-                                <Label htmlFor="description">Description</Label>
-                                <Textarea
-                                    id="description"
-                                    name="description"
-                                    value={description}
-                                    onChange={(e) => setDescription(e.target.value)}
-                                    className="mt-1.5"
-                                    placeholder="Description (Optional)"
-                                    disabled={loading}
-                                />
-                            </div>
-                        </div>
-
-                        <DialogFooter className="mt-5">
-                            <DialogClose asChild>
-                                <Button type="button" variant="outline">Cancel</Button>
-                            </DialogClose>
-                            <Button className="bg-blue-600 hover:bg-blue-700 text-white" disabled={loading} type="submit">
-                                { loading ? (
-                                    <>
-                                        Creating
-                                        <LoaderIcon className="animate-spin"/>
-                                    </>
-                                    ) : (
-                                    <>
-                                        Post assignment
-                                        <SendHorizonalIcon />
-                                    </>
-                                    )
-                                }
-                            </Button>
-                        </DialogFooter>
-                    </form>
-
-                </DialogContent>
-            </Dialog>
+                {/* Live Search Input */}
+                <div className="relative flex-1 sm:max-w-xs">
+                    <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        type="text"
+                        placeholder="Search assignments..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="pl-9 text-sm"
+                    />
+                </div>
+            </div>
 
             {/* Cards List */}
             <div className="mt-6 space-y-3">
@@ -302,13 +302,15 @@ export default function ManageAssignment() {
                         <LoaderIcon className="animate-spin h-5 w-5" />
                         <span className="font-medium">Loading assignments…</span>
                     </div>
-                ) : assignments.length === 0 ? (
+                ) : filteredAssignments.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-14 text-center text-muted-foreground gap-2">
                         <ClipboardListIcon className="h-10 w-10 opacity-30" />
-                        <p className="text-sm italic">No assignments yet. Create one above.</p>
+                        <p className="text-sm italic">
+                            {searchQuery ? `No assignments matching "${searchQuery}"` : "No assignments yet. Create one above."}
+                        </p>
                     </div>
                 ) : (
-                    assignments.map(assignment => (
+                    filteredAssignments.map(assignment => (
                         <div
                             key={assignment._id}
                             className="group flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl border bg-card px-5 py-4 shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"

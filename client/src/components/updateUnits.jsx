@@ -26,13 +26,12 @@ import {
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/authContext";
 import { SquarePenIcon } from "lucide-react";
-import { lecturerService } from "@/services/lecturerApi";
 
 export default function UpdateUnit({ unit, refreshUnits, lecturers }) { // Unit as props
 
     const [unitName, setUnitName] = useState(unit?.unitName || '');
     const [unitCode, setUnitCode] = useState(unit?.unitCode || '');
-    const [selectedLecturer, setSelectedLecturer] = useState(unit?.lecturer?._id);
+    const [selectedLecturer, setSelectedLecturer] = useState(unit?.lecturer?._id || (typeof unit?.lecturer === 'string' ? unit.lecturer : ''));
     const [venue, setVenue] = useState(unit?.venue || '');
     const [dayOfWeek, setDayOfWeek] = useState(unit?.dayOfWeek || '');
     const [startTime, setStartTime] = useState(unit?.startTime || '');
@@ -40,15 +39,27 @@ export default function UpdateUnit({ unit, refreshUnits, lecturers }) { // Unit 
     const [formDataError, setFormDataError] = useState({});
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-    const { user }= useAuth();
-    const [cohort, setCohort] = useState(user?.cohort || '');
+    const { user } = useAuth();
+
+    useEffect(() => {
+        if (unit) {
+            setUnitName(unit.unitName || '');
+            setUnitCode(unit.unitCode || '');
+            setSelectedLecturer(unit.lecturer?._id || (typeof unit.lecturer === 'string' ? unit.lecturer : ''));
+            setVenue(unit.venue || '');
+            setDayOfWeek(unit.dayOfWeek || '');
+            setStartTime(unit.startTime || '');
+            setEndTime(unit.endTime || '');
+        }
+    }, [unit]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
         setLoading(true);
-        setFormDataError(null);
+        setFormDataError({});
         setError(null);
 
         let errors = {};
@@ -61,11 +72,6 @@ export default function UpdateUnit({ unit, refreshUnits, lecturers }) { // Unit 
 
         if (!unitCode.trim()) {
             errors.unitCode = 'Unit Code is required.'
-            isValid = false;
-        }
-
-        if (!selectedLecturer.trim()) {
-            errors.selectedLecturer = 'Lecturer name is required.'
             isValid = false;
         }
 
@@ -89,8 +95,10 @@ export default function UpdateUnit({ unit, refreshUnits, lecturers }) { // Unit 
             isValid = false;
         }
 
-        if (!cohort) {
-            errors.cohort = 'Cohort is required.'
+        const cohortId = user?.cohort?._id || user?.cohort;
+
+        if (!cohortId) {
+            errors.cohort = 'Cohort missing from user profile.'
             isValid = false;
         }
 
@@ -102,13 +110,14 @@ export default function UpdateUnit({ unit, refreshUnits, lecturers }) { // Unit 
         }
 
         const payload = {
-            _id: unit?._id, unitName, unitCode, lecturer: selectedLecturer, venue, dayOfWeek, startTime, endTime, cohort
+            _id: unit?._id, unitName, unitCode, lecturer: selectedLecturer || null, venue, dayOfWeek, startTime, endTime, cohort: cohortId
         }
 
         try {
             await unitScheduleService.updateSchedule(payload._id, payload);
-            toast.success(`Unit updated successfully`);
+            toast.success(`Unit updated successfully ✏️`);
             refreshUnits();
+            setIsDialogOpen(false);
             return { success: true };
         } catch (error) {
             const errorMessage = error.response?.data?.message || error.message || 'An unexpected error occured!'
@@ -122,7 +131,7 @@ export default function UpdateUnit({ unit, refreshUnits, lecturers }) { // Unit 
 
     return(
         <div>
-            <Dialog>
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogTrigger asChild>
                     <Button variant="ghost" size="icon" aria-label="Edit unit">
                         <SquarePenIcon className="text-green-600"/>
@@ -131,15 +140,15 @@ export default function UpdateUnit({ unit, refreshUnits, lecturers }) { // Unit 
                 <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle>Update unit</DialogTitle>
-                        <DialogDescription>* All fields are required</DialogDescription>
+                        <DialogDescription>* Update unit schedule details</DialogDescription>
                     </DialogHeader>
 
                     <form onSubmit={handleSubmit}>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
-                                <Label htmlFor="unitname">Unit Name</Label>
+                                <Label htmlFor="edit-unitname">Unit Name</Label>
                                 <Input
-                                    id="unitname"
+                                    id="edit-unitname"
                                     name="unitName"
                                     type="text"
                                     value={unitName}
@@ -153,9 +162,9 @@ export default function UpdateUnit({ unit, refreshUnits, lecturers }) { // Unit 
                             </div>
 
                             <div>
-                                <Label htmlFor="unitcode">Unit Code</Label>
+                                <Label htmlFor="edit-unitcode">Unit Code</Label>
                                 <Input
-                                    id="unitcode"
+                                    id="edit-unitcode"
                                     name="unitCode"
                                     type="text"
                                     value={unitCode}
@@ -169,18 +178,19 @@ export default function UpdateUnit({ unit, refreshUnits, lecturers }) { // Unit 
                             </div>
 
                             <div>
-                                <Label htmlFor="lecturer">Lecturer</Label>
+                                <Label htmlFor="edit-lecturer">Lecturer (optional)</Label>
                                 <Select
-                                    onValueChange={(value) => setSelectedLecturer(value)}
-                                    id="lecturer"
-                                    value={selectedLecturer}
+                                    onValueChange={(value) => setSelectedLecturer(value === "none" ? "" : value)}
+                                    id="edit-lecturer"
+                                    value={selectedLecturer || "none"}
                                     disabled={loading}
                                 >
                                     <SelectTrigger className="w-full mt-1.5">
-                                        <SelectValue placeholder="Select lecturer" />
+                                        <SelectValue placeholder="Select lecturer (optional)" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {lecturers.map(lecturer => (
+                                        <SelectItem value="none">None / Unassigned</SelectItem>
+                                        {lecturers?.map(lecturer => (
                                             <SelectItem value={lecturer._id} key={lecturer._id}>
                                                 {lecturer.name}
                                             </SelectItem>
@@ -191,9 +201,9 @@ export default function UpdateUnit({ unit, refreshUnits, lecturers }) { // Unit 
                             </div>
 
                             <div>
-                                <Label htmlFor="venue">Venue</Label>
+                                <Label htmlFor="edit-venue">Venue</Label>
                                 <Input
-                                    id="venue"
+                                    id="edit-venue"
                                     name="venue"
                                     type="text"
                                     value={venue}
@@ -207,9 +217,9 @@ export default function UpdateUnit({ unit, refreshUnits, lecturers }) { // Unit 
                             </div>
 
                             <div>
-                                <Label htmlFor="dayofweek">Day of week</Label>
+                                <Label htmlFor="edit-dayofweek">Day of week</Label>
                                 <Select
-                                    id="dayofweek"
+                                    id="edit-dayofweek"
                                     value={dayOfWeek}
                                     onValueChange={(value) => setDayOfWeek(value)}
                                     disabled={loading}
@@ -231,9 +241,9 @@ export default function UpdateUnit({ unit, refreshUnits, lecturers }) { // Unit 
                             </div>
 
                             <div>
-                                <Label htmlFor="start-time">Start Time</Label>
+                                <Label htmlFor="edit-start-time">Start Time</Label>
                                 <Select
-                                    id="start-time"
+                                    id="edit-start-time"
                                     value={startTime}
                                     onValueChange={(value) => setStartTime(value)}
                                     disabled={loading}
@@ -254,15 +264,15 @@ export default function UpdateUnit({ unit, refreshUnits, lecturers }) { // Unit 
                             </div>
 
                             <div>
-                                <Label htmlFor="end-time">End Time</Label>
+                                <Label htmlFor="edit-end-time">End Time</Label>
                                 <Select
-                                    id="end-time"
+                                    id="edit-end-time"
                                     value={endTime}
                                     onValueChange={(value) => setEndTime(value)}
                                     disabled={loading}
                                 >
                                     <SelectTrigger className="w-full mt-1.5">
-                                        <SelectValue placeholder="Select start time" />
+                                        <SelectValue placeholder="Select end time" />
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectGroup>
@@ -275,45 +285,22 @@ export default function UpdateUnit({ unit, refreshUnits, lecturers }) { // Unit 
                                 </Select>
                                 {formDataError.endTime && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.endTime}</p>}
                             </div>
-
-                            <div>
-                                <Label htmlFor="cohort">Cohort</Label>
-                                <Select
-                                    id="cohort"
-                                    onValueChange={(value) => setCohort(value)}
-                                    required
-                                    disabled={loading}
-                                    defaultValue={user.cohort._id}
-                                >
-                                    <SelectTrigger className="w-full mt-1.5">
-                                        <SelectValue placeholder="Select your group/cohort" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectGroup>
-                                            <SelectItem value={user.cohort._id} key={user.cohort._id}>
-                                                {user.cohort.name}
-                                            </SelectItem>
-                                        </SelectGroup>
-                                    </SelectContent>
-                                </Select>
-                                {formDataError.cohort && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.cohort}</p>}
-                            </div>
                         </div>
 
                         <DialogFooter className="mt-5">
                             <DialogClose asChild>
                                 <Button type="button" variant="outline">Cancel</Button>
                             </DialogClose>
-                            <Button className="bg-blue-600 hover:bg-blue-700 text-white" disabled={loading} type="submit">
+                            <Button className="bg-blue-600 hover:bg-blue-700 text-white gap-2" disabled={loading} type="submit">
                                 { loading ? (
                                     <>
                                         Saving
-                                        <LoaderIcon className="animate-spin"/>
+                                        <LoaderIcon className="h-4 w-4 animate-spin"/>
                                     </>
                                     ) : (
                                     <>
                                         Save changes
-                                        <SendHorizonalIcon />
+                                        <SendHorizonalIcon className="h-4 w-4" />
                                     </>
                                     )
                                 }

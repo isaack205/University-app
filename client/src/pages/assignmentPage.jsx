@@ -1,5 +1,6 @@
 // Imports
 import React, { useEffect, useState } from "react";
+import ReactMarkdown from "react-markdown";
 import { useAuth } from "@/contexts/authContext";
 import { assignmentService } from "@/services/assignementApi";
 import { toast } from "sonner";
@@ -249,8 +250,8 @@ export default function AssignmentPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <DetailItem label="Unit Name" value={selectedAssignment.unit.unitName} icon={<BookOpenIcon size={16}/>} color="text-blue-600" />
                     <DetailItem label="Unit Code" value={selectedAssignment.unit.unitCode.toUpperCase()} icon={<HashIcon size={16}/>} color="text-indigo-600" />
-                    <DetailItem label="Lecturer" value={`${selectedAssignment.unit.lecturer.name}`} icon={<UserIcon size={16}/>} color="text-emerald-600" />
-                    <DetailItem label="Lecturer email" value={`${selectedAssignment.unit.lecturer.email}`} icon={<UserIcon size={16}/>} color="text-emerald-600" />
+                    <DetailItem label="Lecturer" value={selectedAssignment.unit?.lecturer?.name || "Not assigned"} icon={<UserIcon size={16}/>} color="text-emerald-600" />
+                    <DetailItem label="Lecturer email" value={selectedAssignment.unit?.lecturer?.email || "N/A"} icon={<UserIcon size={16}/>} color="text-emerald-600" />
                     <DetailItem label="Cohort" value={selectedAssignment.cohort.name} icon={<UserIcon size={16}/>} color="text-amber-600" />
                     <DetailItem
                       label="Due Date"
@@ -262,10 +263,14 @@ export default function AssignmentPage() {
                   </div>
 
                   <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg border-l-4 border-blue-500">
-                    <p className="text-[10px] font-black uppercase text-slate-400 mb-1 tracking-widest">Full Description</p>
-                    <p className="text-slate-700 dark:text-slate-300 leading-relaxed text-sm">
-                      {selectedAssignment.description || "No description provided."}
-                    </p>
+                    <p className="text-[10px] font-black uppercase text-slate-400 mb-2 tracking-widest">Full Description</p>
+                    {selectedAssignment.description?.trim() ? (
+                      <div className="prose dark:prose-invert prose-sm max-w-none text-slate-700 dark:text-slate-300 leading-relaxed text-sm [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_h3]:text-base [&_h3]:font-bold [&_blockquote]:border-l-2 [&_blockquote]:border-blue-400 [&_blockquote]:pl-3 [&_blockquote]:italic [&_code]:bg-slate-200 dark:[&_code]:bg-slate-700 [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded">
+                        <ReactMarkdown>{selectedAssignment.description}</ReactMarkdown>
+                      </div>
+                    ) : (
+                      <p className="text-slate-500 text-sm italic">No description provided.</p>
+                    )}
                   </div>
 
                   <div className="flex flex-wrap justify-between items-center gap-2 pt-4 border-t">
