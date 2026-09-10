@@ -79,9 +79,9 @@ exports.createFile = async (req, res) => {
         fileUpload._id,
         );
 
-        if (student.preferences.smsNotifications && student.phoneNumber) {
-        await sendSMS(student._id, student.phoneNumber, `📚 New document file posted: ${fileUpload.fileName}`, 'document');
-        }
+        // if (student.preferences.smsNotifications && student.phoneNumber) {
+        // await sendSMS(student._id, student.phoneNumber, `📚 New document file posted: ${fileUpload.fileName}`, 'document');
+        // }
 
     };
     

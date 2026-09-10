@@ -5,6 +5,7 @@ const UpdateContext = createContext(null);
 
 export function UpdateProvider({ children }) {
     const [isCritical, setIsCritical] = useState(false);
+    const [isSilent, setIsSilent] = useState(false);
     const [dismissed, setDismissed] = useState(false);
     const [isUpdating, setIsUpdating] = useState(false);
     const [releaseNotes, setReleaseNotes] = useState(null);
@@ -27,14 +28,20 @@ export function UpdateProvider({ children }) {
         },
     });
 
-    // When an update is detected, fetch our config to see if it's critical, and fetch GitHub release notes
+    // When an update is detected, fetch our config to see if it's critical or silent, and fetch GitHub release notes
     useEffect(() => {
         if (needRefresh) {
-            // Fetch local config for critical flag
+            // Fetch local config for critical/silent flags
             fetch('/update-config.json?' + new Date().getTime())
                 .then(res => res.json())
                 .then(data => {
-                    if (data.critical) {
+                    if (data.silent) {
+                        setIsSilent(true);
+                        // Silently apply update in the background
+                        if (updateServiceWorker) {
+                            updateServiceWorker(true);
+                        }
+                    } else if (data.critical) {
                         setIsCritical(true);
                         setDismissed(false); // Force it to show if previously dismissed
                     }
@@ -76,19 +83,19 @@ export function UpdateProvider({ children }) {
 
     const handleUpdate = useCallback(async () => {
         setIsUpdating(true);
-        // The 4-5 second labor illusion
+        // The 3 - 4 second labor illusion
         setTimeout(async () => {
             if (updateServiceWorker) {
                 await updateServiceWorker(true);
             }
             // Force reload just in case the SW doesn't automatically trigger it (especially in dev mode)
             window.location.reload();
-        }, 4500);
+        }, 3500);
     }, [updateServiceWorker]);
 
     // We only expose a "banner is visible" state, but also the raw needRefresh for nudges
-    const bannerVisible = needRefresh && (!dismissed || isCritical);
-    const nudgeVisible = needRefresh && dismissed && !isCritical;
+    const bannerVisible = needRefresh && !isSilent && (!dismissed || isCritical);
+    const nudgeVisible = needRefresh && !isSilent && dismissed && !isCritical;
 
     return (
         <UpdateContext.Provider value={{

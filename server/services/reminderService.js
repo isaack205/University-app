@@ -23,9 +23,9 @@ exports.runReminders = async () => {
         assignment._id, 
         assignment.dueDate ,
       );
-      if (student.preferences?.smsNotifications && student.phoneNumber) {
-        await sendSMS(student._id, student.phoneNumber, message, 'assignment');
-      }
+      // if (student.preferences?.smsNotifications && student.phoneNumber) {
+      //   await sendSMS(student._id, student.phoneNumber, message, 'assignment');
+      // }
     }
   }
 
@@ -36,7 +36,7 @@ exports.runReminders = async () => {
       const students = await User.find({ cohort: session.cohort, 'preferences.smsNotifications': true });
       for (const student of students) {
         const message = `📖 Reminder: ${session.unitName} starts at ${session.startTime} in ${session.venue}`;
-        await sendSMS(student._id, student.phoneNumber, message, 'class');
+        // await sendSMS(student._id, student.phoneNumber, message, 'class');
       }
     }
   }

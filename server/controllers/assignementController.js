@@ -28,9 +28,9 @@ exports.createAssignment = async (req, res) => {
         assignment.dueDate
       );
 
-      if (student.preferences.smsNotifications && student.phoneNumber) {
-        await sendSMS(student._id, student.phoneNumber, `📚 New assignment posted: ${assignment.title}, due ${new Date(assignment.dueDate).toDateString()}`, 'assignment');
-      }
+      // if (student.preferences.smsNotifications && student.phoneNumber) {
+      //   await sendSMS(student._id, student.phoneNumber, `📚 New assignment posted: ${assignment.title}, due ${new Date(assignment.dueDate).toDateString()}`, 'assignment');
+      // }
 
     };
 

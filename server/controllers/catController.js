@@ -237,7 +237,7 @@ exports.updateCAT = async (req, res) => {
             if (bccEmails.length > 0) {
                 // Send single email with all students in BCC
                 sendEmail({
-                    to: process.env.EMAIL_USER || 'no-reply@campushub.com', // fallback to something generic
+                    to: process.env.EMAIL_FROM || process.env.EMAIL_USERNAME || 'no-reply@campushub.com',
                     bcc: bccEmails.join(','),
                     subject: `🚨 URGENT: CAT Rescheduled - ${cat.title}`,
                     html: emailHtml

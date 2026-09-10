@@ -133,14 +133,14 @@ exports.updateSchedule = async (req, res) => {
                     updatedSchedule._id, 
                 );
 
-                if (student.preferences.smsNotifications && student.phoneNumber) {
-                    await sendSMS(
-                        student._id, 
-                        student.phoneNumber, 
-                        `⚠️ ${updatedSchedule.unitName} schedule updated: ${updatedSchedule.startTime} at ${updatedSchedule.venue}`, 
-                        'schedule'
-                    );
-                }
+                // if (student.preferences.smsNotifications && student.phoneNumber) {
+                //     await sendSMS(
+                //         student._id, 
+                //         student.phoneNumber, 
+                //         `⚠️ ${updatedSchedule.unitName} schedule updated: ${updatedSchedule.startTime} at ${updatedSchedule.venue}`, 
+                //         'schedule'
+                //     );
+                // }
             }
         }
 

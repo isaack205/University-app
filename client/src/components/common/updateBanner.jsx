@@ -43,11 +43,11 @@ export default function UpdateBanner() {
                             <div className="text-sm text-slate-600 prose prose-sm prose-indigo dark:prose-invert">
                                 <ReactMarkdown>{releaseNotes.body}</ReactMarkdown>
                             </div>
-                            {releaseNotes.url && (
+                            {/* {releaseNotes.url && (
                                 <a href={releaseNotes.url} target="_blank" rel="noopener noreferrer" className="text-xs text-indigo-600 hover:underline mt-3 inline-block font-medium">
                                     View on GitHub →
                                 </a>
-                            )}
+                            )} */}
                         </div>
                     )}
 

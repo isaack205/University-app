@@ -279,9 +279,9 @@ Submitted from: Landing Page Program Request Modal
         <div className="mt-12 md:mt-16 relative max-w-6xl mx-auto">
           <div className="absolute -inset-2 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 rounded-3xl blur-2xl opacity-20 animate-pulse pointer-events-none" />
           
-          <div className="relative rounded-3xl bg-slate-900 border border-slate-800 shadow-2xl overflow-hidden p-4 sm:p-6 lg:p-8 text-left">
+          <div className="relative rounded-3xl  bg-white/80 border border-slate-200 shadow-2xl overflow-hidden p-4 sm:p-6 lg:p-8 text-left">
             {/* Window Control Header & Interactive Tabs */}
-            <div className="flex flex-wrap items-center justify-between pb-4 border-b border-slate-800 mb-6 gap-3">
+            <div className="flex flex-wrap items-center justify-between pb-4 border-b border-slate-200 mb-6 gap-3">
               <div className="flex items-center gap-2">
                 <div className="h-3 w-3 rounded-full bg-red-500" />
                 <div className="h-3 w-3 rounded-full bg-amber-500" />
@@ -292,28 +292,28 @@ Submitted from: Landing Page Program Request Modal
               </div>
 
               {/* Feature Tab Switcher */}
-              <div className="flex items-center gap-1 bg-slate-800 p-1 rounded-xl border border-slate-700 text-xs font-bold">
+              <div className="flex items-center gap-1 bg-slate-200 p-1 rounded-xl border border-slate-700 text-xs font-bold">
                 <button
                   onClick={() => setActiveTab("overview")}
-                  className={`px-3 py-1.5 rounded-lg transition-all ${activeTab === "overview" ? "bg-blue-600 text-white shadow" : "text-slate-400 hover:text-slate-200"}`}
+                  className={`px-3 py-1.5 rounded-lg transition-all ${activeTab === "overview" ? "bg-blue-600 text-white shadow" : "text-slate-600 hover:text-slate-900"}`}
                 >
                   🏠 Overview
                 </button>
                 <button
                   onClick={() => setActiveTab("schedule")}
-                  className={`px-3 py-1.5 rounded-lg transition-all ${activeTab === "schedule" ? "bg-blue-600 text-white shadow" : "text-slate-400 hover:text-slate-200"}`}
+                  className={`px-3 py-1.5 rounded-lg transition-all ${activeTab === "schedule" ? "bg-blue-600 text-white shadow" : "text-slate-600 hover:text-slate-900"}`}
                 >
                   📅 Timetable
                 </button>
                 <button
                   onClick={() => setActiveTab("cats")}
-                  className={`px-3 py-1.5 rounded-lg transition-all ${activeTab === "cats" ? "bg-amber-600 text-white shadow" : "text-slate-400 hover:text-slate-200"}`}
+                  className={`px-3 py-1.5 rounded-lg transition-all ${activeTab === "cats" ? "bg-amber-600 text-white shadow" : "text-slate-600 hover:text-slate-900"}`}
                 >
                   ⏰ CATs
                 </button>
                 <button
                   onClick={() => setActiveTab("assignments")}
-                  className={`px-3 py-1.5 rounded-lg transition-all ${activeTab === "assignments" ? "bg-indigo-600 text-white shadow" : "text-slate-400 hover:text-slate-200"}`}
+                  className={`px-3 py-1.5 rounded-lg transition-all ${activeTab === "assignments" ? "bg-indigo-600 text-white shadow" : "text-slate-600 hover:text-slate-900"}`}
                 >
                   📝 Assignments
                 </button>
@@ -324,8 +324,8 @@ Submitted from: Landing Page Program Request Modal
             <div className="relative grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
               
               {/* Desktop Browser Screen Screenshot Frame (Left 8-cols) */}
-              <div className="lg:col-span-8 bg-slate-950 border border-slate-800 rounded-2xl p-2 sm:p-3 space-y-3 shadow-xl overflow-hidden">
-                <div className="flex items-center justify-between border-b border-slate-800/80 pb-2.5 px-2">
+              <div className="lg:col-span-8 bg-slate-800 border border-slate-200 rounded-2xl p-2 sm:p-3 space-y-3 shadow-xl overflow-hidden">
+                <div className="flex items-center justify-between border-b border-slate-200/80 pb-2.5 px-2">
                   <div className="flex items-center gap-2">
                     <div className="h-6 w-6 rounded-md bg-blue-600 text-white font-black text-[11px] flex items-center justify-center">CH</div>
                     <span className="text-xs font-bold text-slate-300 capitalize">{activeTab} Workspace</span>
@@ -354,7 +354,7 @@ Submitted from: Landing Page Program Request Modal
 
               {/* Smartphone PWA Frame Mockup (Right 4-cols / Floating Overlap) */}
               <div className="lg:col-span-4 relative">
-                <div className="bg-slate-950 border-4 border-slate-700 rounded-[2.5rem] p-2.5 shadow-2xl max-w-xs mx-auto space-y-2 relative">
+                <div className="bg-slate-800 border-4 border-slate-200 rounded-[2.5rem] p-2.5 shadow-2xl max-w-xs mx-auto space-y-2 relative">
                   
                   {/* Phone Speaker & Notch */}
                   <div className="w-20 h-3 bg-slate-800 rounded-full mx-auto mb-1" />

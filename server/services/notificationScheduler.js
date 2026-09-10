@@ -135,7 +135,7 @@ const scheduleClassReminders = () => {
                 toDateFromTimeString(effectiveStartTime)
               );
 
-              await sendSMS(student._id, student.phoneNumber, msg, 'class');
+              // await sendSMS(student._id, student.phoneNumber, msg, 'class');
             }
           }
         }
@@ -177,7 +177,7 @@ const scheduleClassReminders = () => {
                 toDateFromTimeString(effectiveStartTime)
               );
 
-              await sendSMS(student._id, student.phoneNumber, msg, 'class');
+              // await sendSMS(student._id, student.phoneNumber, msg, 'class');
             }
           }
         }

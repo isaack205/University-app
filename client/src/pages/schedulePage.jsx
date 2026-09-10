@@ -228,7 +228,7 @@ export default function SchedulePage() {
                                 </div>
                               </div>
 
-                              <p className="relative text-[10px] md:text-xs lg:text-[40px] font-bold leading-tight line-clamp-2">
+                              <p className="relative text-[10px] md:text-xs lg:text-[20px] font-bold leading-tight line-clamp-2">
                                   {cls.unitCode}
                               </p>
 

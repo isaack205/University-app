@@ -1,4 +1,5 @@
 {
-    "version": "0.1.3",
-    "critical": false
+    "version": "1.0.0",
+    "critical": true,
+    "silent": false
 }
