@@ -14,7 +14,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { useAuth } from "@/contexts/authContext";
-import { LoaderIcon, SendHorizonalIcon } from "lucide-react";
+import { LoaderIcon, SendHorizonalIcon, CalendarClockIcon, ClockIcon, MapPinIcon, ZapIcon, XCircleIcon, SearchIcon, PlusIcon } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -25,17 +25,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table2";
 import UpdateUnit from "@/components/updateUnits";
 import { lecturerService } from "@/services/lecturerApi";
+import DeleteConfirmDialog from "@/components/deleteConfirmDialog";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function ManageUnitSchedule() {
 
@@ -47,12 +40,28 @@ export default function ManageUnitSchedule() {
     const [dayOfWeek, setDayOfWeek] = useState('');
     const [startTime, setStartTime] = useState('');
     const [endTime, setEndTime] = useState('');
-    const [cohort, setCohort] = useState('');
-    const [formDataError, setFormDataError] = useState('');
+    const [formDataError, setFormDataError] = useState({});
     const [units, setUnits] = useState([]);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [loadingUnits, setLoadingUnits] = useState(false);
+    const [deletingId, setDeletingId] = useState(null);
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+
+    // Override state
+    const [overrides, setOverrides] = useState([]);
+    const [overrideDialogOpen, setOverrideDialogOpen] = useState(false);
+    const [overrideTarget, setOverrideTarget] = useState(null);
+    const [overrideVenue, setOverrideVenue] = useState('');
+    const [overrideDayOfWeek, setOverrideDayOfWeek] = useState('');
+    const [overrideStartTime, setOverrideStartTime] = useState('');
+    const [overrideEndTime, setOverrideEndTime] = useState('');
+    const [overrideLecturer, setOverrideLecturer] = useState('');
+    const [overrideWeekOffset, setOverrideWeekOffset] = useState('0');
+    const [overrideReason, setOverrideReason] = useState('');
+    const [creatingOverride, setCreatingOverride] = useState(false);
+    const [cancellingOverrideId, setCancellingOverrideId] = useState(null);
 
     const { user } = useAuth();
 
@@ -64,13 +73,14 @@ export default function ManageUnitSchedule() {
         setDayOfWeek('');
         setStartTime('');
         setEndTime('');
-        setCohort('');
-        setFormDataError('');
+        setFormDataError({});
     };
 
     const fetchLecturers = async () => {
         try {
-            const lecturersData = await lecturerService.getLecturersByCohort(user?.cohort?._id);
+            const cohortId = user?.cohort?._id || user?.cohort;
+            if (!cohortId) return;
+            const lecturersData = await lecturerService.getLecturersByCohort(cohortId);
             setLecturers(lecturersData);
         } catch (error) {
             const message = error.response?.data?.message || error.message || "Failed to fetch lecturers";
@@ -99,7 +109,7 @@ export default function ManageUnitSchedule() {
         e.preventDefault();
 
         setLoading(true);
-        setFormDataError(null);
+        setFormDataError({});
         setError(null);
 
         let errors = {};
@@ -112,11 +122,6 @@ export default function ManageUnitSchedule() {
 
         if (!unitCode.trim()) {
             errors.unitCode = 'Unit Code is required.'
-            isValid = false;
-        }
-
-        if (!selectedLecturer.trim()) {
-            errors.selectedLecturer = 'Lecturer name is required.'
             isValid = false;
         }
 
@@ -140,8 +145,10 @@ export default function ManageUnitSchedule() {
             isValid = false;
         }
 
-        if (!cohort.trim()) {
-            errors.cohort = 'Cohort is required.'
+        const cohortId = user?.cohort?._id || user?.cohort;
+
+        if (!cohortId) {
+            errors.cohort = 'Cohort missing from user profile.'
             isValid = false;
         }
 
@@ -153,14 +160,15 @@ export default function ManageUnitSchedule() {
         }
 
         const payload = {
-            unitName, unitCode, lecturer: selectedLecturer, venue, dayOfWeek, startTime, endTime, cohort
+            unitName, unitCode, lecturer: selectedLecturer || null, venue, dayOfWeek, startTime, endTime, cohort: cohortId
         }
 
         try {
             await unitScheduleService.createSchedule(payload);
-            toast.success(`Unit registered successfully`);
+            toast.success(`Unit registered successfully 🎉`);
             fetchUnitSchedules();
             resetForm();
+            setIsDialogOpen(false);
             return { success: true };
         } catch (error) {
             const errorMessage = error.response?.data?.message || error.message || 'An unexpected error occured!'
@@ -172,250 +180,615 @@ export default function ManageUnitSchedule() {
         }
     }
 
-    useEffect(() => {
+    const handleDelete = async (unit) => {
+        setDeletingId(unit._id);
+        try {
+            await unitScheduleService.deleteSchedule(unit._id);
+            toast.success(`"${unit.unitCode} – ${unit.unitName}" deleted successfully 🗑️`);
+            fetchUnitSchedules();
+        } catch (error) {
+            const errorMessage = error.response?.data?.message || error.message || 'Failed to delete unit schedule.';
+            toast.error(errorMessage);
+        } finally {
+            setDeletingId(null);
+        }
+    };
 
+    // Override functions
+    const fetchOverrides = async () => {
+        try {
+            const data = await unitScheduleService.getOverrides();
+            setOverrides(data);
+        } catch (error) {
+            console.error('Failed to fetch overrides:', error);
+        }
+    };
+
+    const getOverrideForUnit = (unitId) => {
+        return overrides.find(o => o.unitSchedule?._id === unitId);
+    };
+
+    const openOverrideDialog = (unit) => {
+        setOverrideTarget(unit);
+        setOverrideVenue('');
+        setOverrideDayOfWeek('');
+        setOverrideStartTime('');
+        setOverrideEndTime('');
+        setOverrideLecturer('');
+        setOverrideWeekOffset('0');
+        setOverrideReason('');
+        setOverrideDialogOpen(true);
+    };
+
+    const handleCreateOverride = async () => {
+        if (!overrideTarget) return;
+
+        // Must have at least one change
+        if (!overrideVenue && !overrideDayOfWeek && !overrideStartTime && !overrideEndTime && !overrideLecturer) {
+            toast.error('Change at least one field (venue, day, time, or lecturer)');
+            return;
+        }
+
+        setCreatingOverride(true);
+        try {
+            const payload = { weekOffset: parseInt(overrideWeekOffset) };
+            if (overrideVenue) payload.venue = overrideVenue;
+            if (overrideDayOfWeek) payload.dayOfWeek = overrideDayOfWeek;
+            if (overrideStartTime) payload.startTime = overrideStartTime;
+            if (overrideEndTime) payload.endTime = overrideEndTime;
+            if (overrideLecturer) payload.lecturer = overrideLecturer;
+            if (overrideReason.trim()) payload.reason = overrideReason.trim();
+
+            await unitScheduleService.createOverride(overrideTarget._id, payload);
+            toast.success(`⚡ Temp change created for ${overrideTarget.unitCode}!`);
+            setOverrideDialogOpen(false);
+            fetchOverrides();
+        } catch (error) {
+            const errorMessage = error.response?.data?.message || error.message || 'Failed to create temp change';
+            toast.error(errorMessage);
+        } finally {
+            setCreatingOverride(false);
+        }
+    };
+
+    const handleCancelOverride = async (overrideId, unitCode) => {
+        setCancellingOverrideId(overrideId);
+        try {
+            await unitScheduleService.cancelOverride(overrideId);
+            toast.success(`✅ Temp change for ${unitCode} cancelled — back to normal!`);
+            fetchOverrides();
+        } catch (error) {
+            const errorMessage = error.response?.data?.message || error.message || 'Failed to cancel override';
+            toast.error(errorMessage);
+        } finally {
+            setCancellingOverrideId(null);
+        }
+    };
+
+    useEffect(() => {
         fetchUnitSchedules();
         fetchLecturers();
+        fetchOverrides();
     }, []);
+
+    const filteredUnits = units.filter(unit => {
+        const q = searchQuery.toLowerCase().trim();
+        if (!q) return true;
+        const lecturerName = typeof unit.lecturer === 'object' ? unit.lecturer?.name || '' : '';
+        return (
+            unit.unitName?.toLowerCase().includes(q) ||
+            unit.unitCode?.toLowerCase().includes(q) ||
+            unit.venue?.toLowerCase().includes(q) ||
+            unit.dayOfWeek?.toLowerCase().includes(q) ||
+            lecturerName.toLowerCase().includes(q)
+        );
+    });
 
     return (
         <div>
-            <Dialog>
-                <DialogTrigger className="rounded-xl shadow-xl p-1 mt-10 bg-blue-300 dark:bg-slate-800 text-white cursor-pointer hover:shadow-blue-200 transition-all duration-400 text-black">Create Unit</DialogTrigger>
-                <DialogContent className="bg-gray-300 dark:bg-slate-800">
+            {/* Top Toolbar: Search & Action */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mt-2">
+                <div className="relative flex-1 max-w-md">
+                    <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        placeholder="Search by code, name, venue, day, lecturer..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="pl-9"
+                    />
+                </div>
+                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                    <DialogTrigger asChild>
+                        <Button className="bg-blue-600 hover:bg-blue-700 text-white gap-2 shrink-0">
+                            <PlusIcon className="h-4 w-4" />
+                            Register Unit
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
+                        <DialogHeader>
+                            <DialogTitle>Register a unit</DialogTitle>
+                            <DialogDescription>* Fill in unit details below</DialogDescription>
+                        </DialogHeader>
+
+                        <form onSubmit={handleSubmit}>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <Label htmlFor="unitname">Unit Name</Label>
+                                    <Input
+                                        id="unitname"
+                                        name="unitName"
+                                        type="text"
+                                        value={unitName}
+                                        onChange={(e) => setUnitName(e.target.value)}
+                                        className={`mt-1.5 ${formDataError.unitName ? 'border-destructive' : ''}`}
+                                        disabled={loading}
+                                        required
+                                        placeholder="Computer Science"
+                                    />
+                                    {formDataError.unitName && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.unitName}</p>}
+                                </div>
+
+                                <div>
+                                    <Label htmlFor="unitcode">Unit Code</Label>
+                                    <Input
+                                        id="unitcode"
+                                        name="unitCode"
+                                        type="text"
+                                        value={unitCode}
+                                        onChange={(e) => setUnitCode(e.target.value.toUpperCase())}
+                                        className={`mt-1.5 ${formDataError.unitCode ? 'border-destructive' : ''}`}
+                                        disabled={loading}
+                                        required
+                                        placeholder="COSC 111"
+                                    />
+                                    {formDataError.unitCode && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.unitCode}</p>}
+                                </div>
+
+                                <div>
+                                    <Label htmlFor="lecturer">Lecturer (optional)</Label>
+                                    <Select
+                                        onValueChange={(value) => setSelectedLecturer(value === "none" ? "" : value)}
+                                        id="lecturer"
+                                        value={selectedLecturer || "none"}
+                                        disabled={loading}
+                                    >
+                                        <SelectTrigger className="w-full mt-1.5">
+                                            <SelectValue placeholder="Select lecturer (optional)" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="none">None / Unassigned</SelectItem>
+                                            {lecturers.currentSemester?.map(lecturer => (
+                                                <SelectItem value={lecturer._id} key={lecturer._id}>
+                                                    {lecturer.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    {formDataError.selectedLecturer && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.selectedLecturer}</p>}
+                                </div>
+
+                                <div>
+                                    <Label htmlFor="venue">Venue</Label>
+                                    <Input
+                                        id="venue"
+                                        name="venue"
+                                        type="text"
+                                        value={venue}
+                                        onChange={(e) => setVenue(e.target.value)}
+                                        className={`mt-1.5 ${formDataError.venue ? 'border-destructive' : ''}`}
+                                        disabled={loading}
+                                        required
+                                        placeholder="SRPB01"
+                                    />
+                                    {formDataError.venue && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.venue}</p>}
+                                </div>
+
+                                <div>
+                                    <Label htmlFor="dayofweek">Day of week</Label>
+                                    <Select
+                                        id="dayofweek"
+                                        value={dayOfWeek}
+                                        onValueChange={(value) => setDayOfWeek(value)}
+                                        disabled={loading}
+                                    >
+                                        <SelectTrigger className="w-full mt-1.5">
+                                            <SelectValue placeholder="Select day" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectGroup>
+                                                <SelectItem value="Monday">Monday</SelectItem>
+                                                <SelectItem value="Tuesday">Tuesday</SelectItem>
+                                                <SelectItem value="Wednesday">Wednesday</SelectItem>
+                                                <SelectItem value="Thursday">Thursday</SelectItem>
+                                                <SelectItem value="Friday">Friday</SelectItem>
+                                            </SelectGroup>
+                                        </SelectContent>
+                                    </Select>
+                                    {formDataError.dayOfWeek && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.dayOfWeek}</p>}
+                                </div>
+
+                                <div>
+                                    <Label htmlFor="start-time">Start Time</Label>
+                                    <Select
+                                        id="start-time"
+                                        value={startTime}
+                                        onValueChange={(value) => setStartTime(value)}
+                                        disabled={loading}
+                                    >
+                                        <SelectTrigger className="w-full mt-1.5">
+                                            <SelectValue placeholder="Select start time" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectGroup>
+                                                <SelectItem value="07:00">07:00 a.m</SelectItem>
+                                                <SelectItem value="10:00">10:00 a.m</SelectItem>
+                                                <SelectItem value="13:00">01:00 p.m</SelectItem>
+                                                <SelectItem value="16:00">04:00 p.m</SelectItem>
+                                            </SelectGroup>
+                                        </SelectContent>
+                                    </Select>
+                                    {formDataError.startTime && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.startTime}</p>}
+                                </div>
+
+                                <div>
+                                    <Label htmlFor="end-time">End Time</Label>
+                                    <Select
+                                        id="end-time"
+                                        value={endTime}
+                                        onValueChange={(value) => setEndTime(value)}
+                                        disabled={loading}
+                                    >
+                                        <SelectTrigger className="w-full mt-1.5">
+                                            <SelectValue placeholder="Select end time" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectGroup>
+                                                <SelectItem value="10:00">10:00 a.m</SelectItem>
+                                                <SelectItem value="13:00">01:00 p.m</SelectItem>
+                                                <SelectItem value="16:00">04:00 p.m</SelectItem>
+                                                <SelectItem value="19:00">07:00 p.m</SelectItem>
+                                            </SelectGroup>
+                                        </SelectContent>
+                                    </Select>
+                                    {formDataError.endTime && <p className="mt-1 text-sm font-medium text-destructive">{formDataError.endTime}</p>}
+                                </div>
+                            </div>
+
+                            <DialogFooter className="mt-5">
+                                <DialogClose asChild>
+                                    <Button type="button" variant="outline">Cancel</Button>
+                                </DialogClose>
+                                <Button className="bg-blue-600 hover:bg-blue-700 text-white gap-2" disabled={loading} type="submit">
+                                    { loading ? (
+                                        <>
+                                            Creating
+                                            <LoaderIcon className="h-4 w-4 animate-spin"/>
+                                        </>
+                                        ) : (
+                                        <>
+                                            Create unit
+                                            <SendHorizonalIcon className="h-4 w-4" />
+                                        </>
+                                        )
+                                    }
+                                </Button>
+                            </DialogFooter>
+                        </form>
+                    </DialogContent>
+                </Dialog>
+            </div>
+
+            {/* Cards List */}
+            <div className="mt-6 space-y-3">
+                {loadingUnits ? (
+                    <div className="flex items-center justify-center gap-2 py-10 text-muted-foreground">
+                        <LoaderIcon className="animate-spin h-5 w-5" />
+                        <span className="font-medium">Loading units…</span>
+                    </div>
+                ) : filteredUnits.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-14 text-center text-muted-foreground gap-2">
+                        <CalendarClockIcon className="h-10 w-10 opacity-30" />
+                        <p className="text-sm italic">
+                            {searchQuery ? "No units match your search query." : "No units yet. Create one above."}
+                        </p>
+                    </div>
+                ) : (
+                    filteredUnits.map(unit => {
+                        const activeOverride = getOverrideForUnit(unit._id);
+                        return (
+                        <div
+                            key={unit._id}
+                            className={`group flex flex-col gap-4 rounded-xl border bg-card px-5 py-4 shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 ${
+                                activeOverride ? 'border-amber-300 dark:border-amber-700' : ''
+                            }`}
+                        >
+                            {/* Override Badge */}
+                            {activeOverride && (
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-3 py-2 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
+                                    <div className="flex items-center gap-2 min-w-0">
+                                        <ZapIcon className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" />
+                                        <div className="min-w-0">
+                                            <p className="text-xs font-bold text-amber-700 dark:text-amber-300">
+                                                ⚡ Temp change active
+                                                <span className="font-medium text-amber-600 dark:text-amber-500 ml-1">
+                                                    (until {new Date(activeOverride.weekEnd).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })})  
+                                                </span>
+                                            </p>
+                                            <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-0.5">
+                                                {activeOverride.unitSchedule?.venue !== undefined && activeOverride.venue && (
+                                                    <span className="text-[10px] text-amber-600 dark:text-amber-400 font-medium">📍 {activeOverride.venue}</span>
+                                                )}
+                                                {activeOverride.dayOfWeek && (
+                                                    <span className="text-[10px] text-amber-600 dark:text-amber-400 font-medium">📅 {activeOverride.dayOfWeek}</span>
+                                                )}
+                                                {activeOverride.startTime && (
+                                                    <span className="text-[10px] text-amber-600 dark:text-amber-400 font-medium">🕐 {activeOverride.startTime}</span>
+                                                )}
+                                            </div>
+                                            {activeOverride.reason && (
+                                                <p className="text-[10px] text-amber-500 mt-0.5 truncate">💬 "{activeOverride.reason}"</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="text-amber-700 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 text-xs font-bold shrink-0 self-start sm:self-auto"
+                                        onClick={() => handleCancelOverride(activeOverride._id, unit.unitCode)}
+                                        disabled={cancellingOverrideId === activeOverride._id}
+                                    >
+                                        {cancellingOverrideId === activeOverride._id ? (
+                                            <LoaderIcon className="h-3.5 w-3.5 animate-spin" />
+                                        ) : (
+                                            <XCircleIcon className="h-3.5 w-3.5" />
+                                        )}
+                                        Cancel
+                                    </Button>
+                                </div>
+                            )}
+
+                            {/* Main Card Content */}
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                {/* Left: Info */}
+                                <div className="flex flex-col gap-1.5 min-w-0">
+                                    <div className="flex items-center gap-2">
+                                        <span className="inline-flex items-center rounded-md bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 px-2 py-0.5 text-xs font-bold tracking-wide">
+                                            {unit.unitCode}
+                                        </span>
+                                        <p className="font-semibold text-foreground truncate">{unit.unitName}</p>
+                                    </div>
+                                    <div className="flex flex-wrap items-center gap-2 text-xs">
+                                        <span className="inline-flex items-center gap-1 text-muted-foreground">
+                                            <ClockIcon className="h-3 w-3" />
+                                            {unit.dayOfWeek} · {unit.startTime} – {unit.endTime}
+                                        </span>
+                                        <span className="inline-flex items-center gap-1 text-muted-foreground">
+                                            <MapPinIcon className="h-3 w-3" />
+                                            {unit.venue}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {/* Right: Actions */}
+                                <div className="flex items-center gap-2 shrink-0">
+                                    {!activeOverride && (
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="text-amber-600 hover:text-amber-700 hover:bg-amber-50 dark:hover:bg-amber-900/20 text-xs font-bold gap-1"
+                                            onClick={() => openOverrideDialog(unit)}
+                                        >
+                                            <ZapIcon className="h-3.5 w-3.5" />
+                                            <span className="hidden sm:inline">Temp Change</span>
+                                        </Button>
+                                    )}
+                                    <UpdateUnit unit={unit} refreshUnits={fetchUnitSchedules} lecturers={lecturers.currentSemester}/>
+                                    <DeleteConfirmDialog
+                                        title="Delete Unit Schedule"
+                                        description={`Are you sure you want to delete "${unit.unitCode} – ${unit.unitName}"? This action cannot be undone.`}
+                                        onConfirm={() => handleDelete(unit)}
+                                        loading={deletingId === unit._id}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    );})   
+                )}
+            </div>
+
+            {/* Temp Change Override Dialog */}
+            <Dialog open={overrideDialogOpen} onOpenChange={setOverrideDialogOpen}>
+                <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
                     <DialogHeader>
-                        <DialogTitle className="text-2xl font-bold text-green-500 text-center ">Register a unit</DialogTitle>
-                        <DialogDescription className="text-red-500">* All fields are required</DialogDescription>
+                        <DialogTitle className="flex items-center gap-2">
+                            <ZapIcon className="h-5 w-5 text-amber-600" />
+                            Temporary Schedule Change
+                        </DialogTitle>
+                        <DialogDescription>
+                            {overrideTarget && (
+                                <span>Change <strong>{overrideTarget.unitCode} – {overrideTarget.unitName}</strong> for a specific week. It will automatically revert back.</span>
+                            )}
+                        </DialogDescription>
                     </DialogHeader>
 
-                    <form onSubmit={handleSubmit}>
-                        <span>
-                            <Label htmlFor="unitname" className="text-lg md:text-2xl lg:text-2xl text-blue-600">Unit Name:</Label>
-                            <Input
-                                id="unitname"
-                                name="unitName"
-                                type="text"
-                                value={unitName}
-                                onChange={(e) => setUnitName(e.target.value)}
-                                className={`border ${formDataError.unitName ? 'border-2 border-red-500 shadow shadow-red-500' : 'border-green-500'}`}
-                                disabled={loading}
-                                required
-                                placeholder="Education"
+                    <div className="space-y-4">
+                        {/* Week Selector */}
+                        <div>
+                            <Label htmlFor="override-week">Which week?</Label>
+                            <Select
+                                id="override-week"
+                                value={overrideWeekOffset}
+                                onValueChange={(value) => setOverrideWeekOffset(value)}
+                                disabled={creatingOverride}
+                            >
+                                <SelectTrigger className="w-full mt-1.5">
+                                    <SelectValue placeholder="Select week" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectGroup>
+                                        <SelectItem value="0">This week</SelectItem>
+                                        <SelectItem value="1">Next week</SelectItem>
+                                        <SelectItem value="2">In 2 weeks</SelectItem>
+                                        <SelectItem value="3">In 3 weeks</SelectItem>
+                                        <SelectItem value="4">In 4 weeks</SelectItem>
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        <p className="text-xs text-muted-foreground font-medium bg-muted/50 px-3 py-2 rounded-lg">
+                            💡 Only fill in the fields you want to change. Leave the rest empty to keep the original.
+                        </p>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {/* Venue */}
+                            <div>
+                                <Label htmlFor="override-venue">New Venue</Label>
+                                <Input
+                                    id="override-venue"
+                                    type="text"
+                                    value={overrideVenue}
+                                    onChange={(e) => setOverrideVenue(e.target.value)}
+                                    className="mt-1.5"
+                                    disabled={creatingOverride}
+                                    placeholder={overrideTarget?.venue || 'e.g. LT3'}
+                                />
+                            </div>
+
+                            {/* Day of Week */}
+                            <div>
+                                <Label htmlFor="override-day">New Day</Label>
+                                <Select
+                                    id="override-day"
+                                    value={overrideDayOfWeek}
+                                    onValueChange={(value) => setOverrideDayOfWeek(value)}
+                                    disabled={creatingOverride}
+                                >
+                                    <SelectTrigger className="w-full mt-1.5">
+                                        <SelectValue placeholder={overrideTarget?.dayOfWeek || 'Same day'} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectGroup>
+                                            <SelectItem value="Monday">Monday</SelectItem>
+                                            <SelectItem value="Tuesday">Tuesday</SelectItem>
+                                            <SelectItem value="Wednesday">Wednesday</SelectItem>
+                                            <SelectItem value="Thursday">Thursday</SelectItem>
+                                            <SelectItem value="Friday">Friday</SelectItem>
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            {/* Start Time */}
+                            <div>
+                                <Label htmlFor="override-start">New Start Time</Label>
+                                <Select
+                                    id="override-start"
+                                    value={overrideStartTime}
+                                    onValueChange={(value) => setOverrideStartTime(value)}
+                                    disabled={creatingOverride}
+                                >
+                                    <SelectTrigger className="w-full mt-1.5">
+                                        <SelectValue placeholder={overrideTarget?.startTime || 'Same time'} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectGroup>
+                                            <SelectItem value="07:00">07:00 a.m</SelectItem>
+                                            <SelectItem value="10:00">10:00 a.m</SelectItem>
+                                            <SelectItem value="13:00">01:00 p.m</SelectItem>
+                                            <SelectItem value="16:00">04:00 p.m</SelectItem>
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            {/* End Time */}
+                            <div>
+                                <Label htmlFor="override-end">New End Time</Label>
+                                <Select
+                                    id="override-end"
+                                    value={overrideEndTime}
+                                    onValueChange={(value) => setOverrideEndTime(value)}
+                                    disabled={creatingOverride}
+                                >
+                                    <SelectTrigger className="w-full mt-1.5">
+                                        <SelectValue placeholder={overrideTarget?.endTime || 'Same time'} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectGroup>
+                                            <SelectItem value="10:00">10:00 a.m</SelectItem>
+                                            <SelectItem value="13:00">01:00 p.m</SelectItem>
+                                            <SelectItem value="16:00">04:00 p.m</SelectItem>
+                                            <SelectItem value="19:00">07:00 p.m</SelectItem>
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            {/* Lecturer (optional) */}
+                            <div className="sm:col-span-2">
+                                <Label htmlFor="override-lecturer">Substitute Lecturer (optional)</Label>
+                                <Select
+                                    id="override-lecturer"
+                                    value={overrideLecturer}
+                                    onValueChange={(value) => setOverrideLecturer(value)}
+                                    disabled={creatingOverride}
+                                >
+                                    <SelectTrigger className="w-full mt-1.5">
+                                        <SelectValue placeholder="Same lecturer" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {lecturers.currentSemester?.map(lecturer => (
+                                            <SelectItem value={lecturer._id} key={lecturer._id}>
+                                                {lecturer.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+
+                        {/* Reason */}
+                        <div>
+                            <Label htmlFor="override-reason">Reason (optional)</Label>
+                            <Textarea
+                                id="override-reason"
+                                value={overrideReason}
+                                onChange={(e) => setOverrideReason(e.target.value)}
+                                className="mt-1.5 resize-none"
+                                disabled={creatingOverride}
+                                placeholder='e.g. "Lecturer requested room change"'
+                                rows={2}
+                                maxLength={200}
                             />
-                        </span>
-                        {formDataError.unitName && <p className="mt-1 font-bold text-red-600">{formDataError.unitName}</p>}
+                            <p className="text-[10px] text-muted-foreground mt-1 text-right">{overrideReason.length}/200</p>
+                        </div>
+                    </div>
 
-                        <span>
-                            <Label htmlFor="unitcode" className="text-lg md:text-2xl lg:text-2xl text-blue-600">Unit Code:</Label>
-                            <Input
-                                id="unitcode"
-                                name="unitCode"
-                                type="text"
-                                value={unitCode}
-                                onChange={(e) => setUnitCode(e.target.value.toUpperCase())}
-                                className={`border ${formDataError.unitCode ? 'border-2 border-red-500 shadow shadow-red-500' : 'border-green-500'}`}
-                                disabled={loading}
-                                required
-                                placeholder="cosc 111"
-                            />
-                        </span>
-                        {formDataError.unitCode && <p className="mt-1 font-bold text-red-600">{formDataError.unitCode}</p>}
-
-                        <span>
-                            <Label htmlFor="lecturer" className="text-lg md:text-2xl lg:text-2xl text-blue-600">Lecturer:</Label>
-                            <Select
-                                onValueChange={(value) => setSelectedLecturer(value)}
-                                id="lecturer"
-                                value={selectedLecturer}
-                                disabled={loading}
-                            >
-                                <SelectTrigger className="w-[180px] w-full">
-                                    <SelectValue placeholder="Select lecturer" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {lecturers.currentSemester.map(lecturer => (
-                                        <SelectItem value={lecturer._id} key={lecturer._id}>
-                                            {lecturer.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </span>
-                        {formDataError.selectedLecturer && <p className="mt-1 font-bold text-red-600">{formDataError.selectedLecturer}</p>}
-
-                        <span>
-                            <Label htmlFor="venue" className="text-lg md:text-2xl lg:text-2xl text-blue-600">Venue:</Label>
-                            <Input
-                                id="venue"
-                                name="venue"
-                                type="text"
-                                value={venue}
-                                onChange={(e) => setVenue(e.target.value)}
-                                className={`border ${formDataError.venue ? 'border-2 border-red-500 shadow shadow-red-500' : 'border-green-500'}`}
-                                disabled={loading}
-                                required
-                                placeholder="srpb01"
-                            />
-                        </span>
-                        {formDataError.venue && <p className="mt-1 font-bold text-red-600">{formDataError.venue}</p>}
-
-                        <span>
-                            <Label htmlFor="dayofweek" className="text-lg md:text-2xl lg:text-2xl text-blue-600">Day of week:</Label>
-                            <Select
-                                id="dayofweek"
-                                value={dayOfWeek}
-                                onValueChange={(value) => setDayOfWeek(value)}
-                                disabled={loading}
-                            >
-                                <SelectTrigger className="w-[180px] w-full">
-                                    <SelectValue placeholder="Select day" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectGroup>
-                                        <SelectItem value="Monday">Monday</SelectItem>
-                                        <SelectItem value="Tuesday">Tuesday</SelectItem>
-                                        <SelectItem value="Wednesday">Wednesday</SelectItem>
-                                        <SelectItem value="Thursday">Thursday</SelectItem>
-                                        <SelectItem value="Friday">Friday</SelectItem>
-                                    </SelectGroup>
-                                </SelectContent>
-                            </Select>
-                        </span>
-                        {formDataError.dayOfWeek && <p className="mt-1 font-bold text-red-600">{formDataError.dayOfWeek}</p>}
-
-                        <span>
-                            <Label htmlFor="start-time" className="text-lg md:text-2xl lg:text-2xl text-blue-600">Start Time:</Label>
-                            <Select
-                                id="start-time"
-                                value={startTime}
-                                onValueChange={(value) => setStartTime(value)}
-                                disabled={loading}
-                            >
-                                <SelectTrigger className="w-[180px] w-full">
-                                    <SelectValue placeholder="Select start time" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectGroup>
-                                        <SelectItem value="07:00">07:00 a.m</SelectItem>
-                                        <SelectItem value="10:00">10:00 a.m</SelectItem>
-                                        <SelectItem value="13:00">01:00 p.m</SelectItem>
-                                        <SelectItem value="16:00">04:00 p.m</SelectItem>
-                                    </SelectGroup>
-                                </SelectContent>
-                            </Select>
-                        </span>
-                        {formDataError.startTime && <p className="mt-1 font-bold text-red-600">{formDataError.startTime}</p>}
-
-                        <span>
-                            <Label htmlFor="end-time" className="text-lg md:text-2xl lg:text-2xl text-blue-600">End Time:</Label>
-                            <Select
-                                id="end-time"
-                                value={endTime}
-                                onValueChange={(value) => setEndTime(value)}
-                                disabled={loading}
-                            >
-                                <SelectTrigger className="w-[180px] w-full">
-                                    <SelectValue placeholder="Select start time" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectGroup>
-                                        <SelectItem value="10:00">10:00 a.m</SelectItem>
-                                        <SelectItem value="13:00">01:00 p.m</SelectItem>
-                                        <SelectItem value="16:00">04:00 p.m</SelectItem>
-                                        <SelectItem value="19:00">07:00 p.m</SelectItem>
-                                    </SelectGroup>
-                                </SelectContent>
-                            </Select>
-                        </span>
-                        {formDataError.endTime && <p className="mt-1 font-bold text-red-600">{formDataError.endTime}</p>}
-
-                        <span>
-                            <Label htmlFor="cohort" className="text-lg md:text-2xl lg:text-2xl text-blue-600">Cohort:</Label>
-                            <Select
-                                id="cohort"
-                                value={cohort}
-                                onValueChange={(value) => setCohort(value)}
-                                required
-                                defaultValue={user.cohort._id}
-                                disabled={loading}
-                            >
-                                <SelectTrigger className="w-[180px] w-full">
-                                    <SelectValue placeholder="Select your group/cohort" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectGroup>
-                                        <SelectItem value={user.cohort._id} key={user.cohort._id}>
-                                            {user.cohort.name}
-                                        </SelectItem>
-                                    </SelectGroup>
-                                </SelectContent>
-                            </Select>
-                        </span>
-                        {formDataError.cohort && <p className="mt-1 font-bold text-red-600">{formDataError.cohort}</p>}
-
-                        <Button className="bg-white text-black font-bold shadow-md hover:shadow-green-500 hover:shadow-xl hover:bg-white border md:text-lg lg:text-xl hover:-translate-y-1 transform easeinout duration-500 mt-5 w-full" disabled={loading} type="submit">
-                            { loading ? (
-                                <div className="flex gap-3 items-center">
-                                    Creating
-                                    <LoaderIcon className="animate-spin"/>
-                                </div> 
-                                ) : (
-                                <div className="flex gap-3 items-center">
-                                    Create unit
-                                    <SendHorizonalIcon />
-                                </div> 
-                                ) 
-                            }
+                    <DialogFooter className="mt-4">
+                        <DialogClose asChild>
+                            <Button type="button" variant="outline" disabled={creatingOverride}>Cancel</Button>
+                        </DialogClose>
+                        <Button
+                            className="bg-amber-600 hover:bg-amber-700 text-white gap-2"
+                            disabled={creatingOverride}
+                            onClick={handleCreateOverride}
+                        >
+                            {creatingOverride ? (
+                                <>
+                                    Creating…
+                                    <LoaderIcon className="h-4 w-4 animate-spin" />
+                                </>
+                            ) : (
+                                <>
+                                    <ZapIcon className="h-4 w-4" />
+                                    Apply Temp Change
+                                </>
+                            )}
                         </Button>
-                    </form>
-
-                    <DialogFooter className="sm:justify-start">
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
-
-            <div className="border rounded-xl p-5 mt-10 bg-blue-100 dark:bg-slate-800">
-                <Table>
-                    <TableCaption>Unit management.</TableCaption>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead className="w-[100px]">UnitCode</TableHead>
-                            <TableHead>UnitName</TableHead>
-                            <TableHead>Duration</TableHead>
-                            <TableHead>Venue</TableHead>
-                            <TableHead className="text-right">Action</TableHead>
-                        </TableRow>
-                    </TableHeader>
-
-                    {loadingUnits ? (
-                        <TableBody>
-                            <TableRow>
-                                <TableCell colSpan={5} className="text-center">
-                                    <div className="flex flex-row items-center justify-center gap-2">
-                                        <LoaderIcon className="animate-spin h-6 w-6 text-green-500" />
-                                        <p className="text-green-500 font-bold text-md lg:text-xl">Loading unit details</p>
-                                    </div>
-                                </TableCell>
-                            </TableRow>
-                        </TableBody>
-                    ) : (
-                        <TableBody>
-                            {units.map(unit => (
-                                <TableRow key={unit._id}>
-                                    <TableCell className="font-medium">{unit.unitName}</TableCell>
-                                    <TableCell>{unit.unitCode}</TableCell>
-                                    <TableCell>{unit.dayOfWeek} : {unit.startTime} - {unit.endTime}</TableCell>
-                                    <TableCell className="">{unit.venue}</TableCell>
-                                    <TableCell className="text-right">
-                                        <UpdateUnit unit={unit} refreshUnits={fetchUnitSchedules} lecturers={lecturers.currentSemester}/>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    )}
-
-                </Table>
-            </div>
         </div>
     )
 }

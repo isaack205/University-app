@@ -26,6 +26,17 @@ export const fileUploadService = {
         }
     },
 
+    // Fetch all files (Admin only)
+    getAllFiles: async () => {
+        try {
+            const res = await API.get('/upload/all');
+            return res.data;
+        } catch (error) {
+            console.error('Error fetching all files:', error.response?.data || error.message);
+            throw error;
+        }
+    },
+
     // Fetch by Id
     getFileById: async (fileId) => {
         try {

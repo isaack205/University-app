@@ -22,8 +22,10 @@ const sendEmail = async (options) => {
     const mailOptions = {
         from: `Campus Hub <${process.env.EMAIL_FROM}>`,
         to: options.to,
+        bcc: options.bcc,
         subject: options.subject,
         text: options.text,
+        html: options.html,
     };
 
     try {

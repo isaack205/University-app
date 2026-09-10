@@ -24,5 +24,16 @@ export const feedbackService = {
             console.error('Error fetching all feedback:', error.response?.data || error.message);
             throw error;
         }
+    },
+
+    // Update feedback status
+    updateFeedbackStatus: async (id, updateData) => {
+        try {
+            const res = await API.put(`/feedback/${id}`, updateData);
+            return res.data;
+        } catch (error) {
+            console.error('Error updating feedback status:', error.response?.data || error.message);
+            throw error;
+        }
     }
 }

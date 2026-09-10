@@ -60,8 +60,8 @@ export default function ProfilePage() {
                 />
                 <div className="pb-2">
                   <h2 className="text-2xl font-bold text-slate-900 dark:text-white">{userData?.name}</h2>
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
-                    <BadgeCheck size={12} className="mr-1" /> Active Student
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 capitalize">
+                    <BadgeCheck size={12} className="mr-1" /> {userData?.role || 'Active Account'}
                   </span>
                 </div>
               </div>
@@ -72,21 +72,25 @@ export default function ProfilePage() {
                     <User size={16} /> PERSONAL DETAILS
                   </h3>
                   <div className="space-y-3">
-                    <InfoTile icon={IdCard} label="Student ID" value={userData?.studentId} />
+                    {userData?.role !== 'admin' && (
+                      <InfoTile icon={IdCard} label="Student ID" value={userData?.studentId} />
+                    )}
                     <InfoTile icon={Mail} label="Email Address" value={userData?.email} />
                     <InfoTile icon={Phone} label="Phone Number" value={userData?.phoneNumber} />
                   </div>
                 </section>
 
-                <section>
-                  <h3 className="text-sm font-bold text-slate-400 mb-4 flex items-center gap-2">
-                    <GraduationCap size={16} /> STUDY DETAILS
-                  </h3>
-                  <div className="space-y-3">
-                    <InfoTile icon={BookOpen} label="Course" value={`${courseCode} - ${courseName}`} />
-                    <InfoTile icon={Calendar} label="Cohort" value={`${cohortName} (${cohortYear})`} />
-                  </div>
-                </section>
+                {userData?.role !== 'admin' && (
+                  <section>
+                    <h3 className="text-sm font-bold text-slate-400 mb-4 flex items-center gap-2">
+                      <GraduationCap size={16} /> STUDY DETAILS
+                    </h3>
+                    <div className="space-y-3">
+                      <InfoTile icon={BookOpen} label="Course" value={`${courseCode} - ${courseName}`} />
+                      <InfoTile icon={Calendar} label="Cohort" value={`${cohortName} (${cohortYear})`} />
+                    </div>
+                  </section>
+                )}
               </div>
             </div>
           </div>

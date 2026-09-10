@@ -1,0 +1,60 @@
+name: MongoDB Backup Snapshot
+
+on:
+  schedule:
+    # Runs daily at 9:00 PM EAT (18:00 UTC) right after classes end
+    - cron: "0 18 * * *"
+  # Allows manual triggers from GitHub Actions tab anytime
+  workflow_dispatch:
+
+jobs:
+  backup:
+    name: Backup MongoDB
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install MongoDB Database Tools
+        run: |
+          wget -q https://fastdl.mongodb.org/tools/db/mongodb-database-tools-ubuntu2204-x86_64-100.9.4.tgz
+          tar -zxf mongodb-database-tools-ubuntu2204-x86_64-100.9.4.tgz
+          sudo cp mongodb-database-tools-ubuntu2204-x86_64-100.9.4/bin/* /usr/local/bin/
+          mongodump --version
+
+      - name: Create Database Dump
+        env:
+          MONGO_URI: ${{ secrets.MONGO_URI }}
+        run: |
+          if [ -z "$MONGO_URI" ]; then
+            echo "::error::MONGO_URI secret is missing! Please set it in Settings > Secrets and variables > Actions."
+            exit 1
+          fi
+          TIMESTAMP=$(date +'%Y-%m-%d_%H-%M-%S')
+          mkdir -p backups
+          mongodump --uri="$MONGO_URI" --gzip --archive=backups/mongodb-backup-$TIMESTAMP.gz
+          echo "BACKUP_NAME=mongodb-backup-$TIMESTAMP" >> $GITHUB_ENV
+
+      - name: Upload Backup to GitHub Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: "${{ env.BACKUP_NAME }}"
+          path: backups/*.gz
+          retention-days: 30
+
+      - name: Upload Backup to Cloudflare R2 (Permanent Storage)
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: us-east-1
+          ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
+        run: |
+          if [ -z "$ACCOUNT_ID" ]; then
+            echo "Skipping Cloudflare R2 upload (R2_ACCOUNT_ID secret is not set yet)."
+            exit 0
+          fi
+          BACKUP_FILE=$(ls backups/*.gz | head -n 1)
+          BUCKET="${BUCKET_NAME:-university-app-backups}"
+          aws s3 cp "$BACKUP_FILE" s3://$BUCKET/ --endpoint-url https://${ACCOUNT_ID}.r2.cloudflarestorage.com

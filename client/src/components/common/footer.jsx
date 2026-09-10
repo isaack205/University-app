@@ -1,14 +1,20 @@
 import React from "react";
 
-export default function Footer () {
-
+export default function Footer() {
     return (
-        <div className="rounded-t-xl bg-blue-400 dark:bg-slate-800 p-3 flex flex-col items-center justify-center">
-            <p>{new Date().getFullYear()} © All rights reserved</p>
-            <span className="flex gap-2">
-                <p>Designed by</p>
-                <a className="text-pink-700 font-bold hover:underline hover:text-pink-800" target="blank" href="https://my-portfolio-ivory-five-28.vercel.app/">Isaac kahura</a>
+        <footer className="hidden md:flex flex-col items-center justify-center p-4 border-t border-border/60 bg-card text-muted-foreground text-xs mt-auto">
+            <p>{new Date().getFullYear()} © CampusHub. All rights reserved.</p>
+            <span className="flex items-center gap-1 mt-0.5">
+                <span>Designed with ❤️ by</span>
+                <a 
+                    className="text-emerald-600 dark:text-emerald-400 font-bold hover:underline" 
+                    target="_blank" 
+                    rel="noreferrer"
+                    href="https://my-portfolio-ivory-five-28.vercel.app/"
+                >
+                    Isaac Kahura
+                </a>
             </span>
-        </div>
-    )
+        </footer>
+    );
 }

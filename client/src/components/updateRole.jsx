@@ -24,34 +24,47 @@ import { toast } from "sonner";
 import { LoaderIcon } from "lucide-react";
 import { useEffect } from "react";
 
-export default function UpdateRole({ user }) {
+export default function UpdateRole({ user, refreshUsers }) {
 
     const [open, setOpen] = useState(false);
-    const [loading, setLoading] = useState();
-    const [error, setError] = useState();
-    const [newRole, setNewRole] = useState();
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const [newRole, setNewRole] = useState(user?.role || 'student');
+
+    useEffect(() => {
+        if (user?.role) {
+            setNewRole(user.role);
+        }
+    }, [user]);
 
     const handleUpdateRole = async () => {
+        if (!newRole) {
+            toast.error('Please select a role');
+            return;
+        }
+
         setLoading(true);
+        setError(null);
 
         const payload = {
             _id: user?._id,
             newRole: newRole
-        }
+        };
 
         try {
-            await authService.updateUserRole(payload._id, payload)
-            toast.success('User role updated successfully');
+            await authService.updateUserRole(payload._id, payload);
+            toast.success(`User role updated to ${newRole} successfully`);
             setOpen(false);
+            if (refreshUsers) refreshUsers();
         } catch (error) {
-            const message = error.response?.data?.message || error.message || 'An unexpected error occured';
+            const message = error.response?.data?.message || error.message || 'An unexpected error occurred';
             toast.error(message);
             setError(message);
-            console.log(message)
+            console.error('Error updating role:', message);
         } finally {
-            setLoading(false)
+            setLoading(false);
         }
-    }
+    };
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>

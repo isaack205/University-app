@@ -1,6 +1,6 @@
 // Imports
 const Assignment = require('../models/assignement');
-const User = require('../models/user');
+const { User } = require('../models/user');
 const Notification = require('../models/notification')
 const { sendAppNotification } = require('../services/notificationService');
 const { sendSMS } = require('../services/smsService');
@@ -28,9 +28,9 @@ exports.createAssignment = async (req, res) => {
         assignment.dueDate
       );
 
-      if (student.preferences.smsNotifications && student.phoneNumber) {
-        await sendSMS(student._id, student.phoneNumber, `📚 New assignment posted: ${assignment.title}, due ${new Date(assignment.dueDate).toDateString()}`, 'assignment');
-      }
+      // if (student.preferences.smsNotifications && student.phoneNumber) {
+      //   await sendSMS(student._id, student.phoneNumber, `📚 New assignment posted: ${assignment.title}, due ${new Date(assignment.dueDate).toDateString()}`, 'assignment');
+      // }
 
     };
 
@@ -59,7 +59,7 @@ exports.getAssignmentById = async (req, res) => {
   try {
     const assignment = await Assignment.findById(req.params.id)
                                         .populate([
-                                          { path: 'unit', select: 'unitName unitCode lecturer'},
+                                          { path: 'unit', select: 'unitName unitCode lecturer', populate: { path: 'lecturer',select: 'name email'} },
                                           { path: 'cohort', select: 'name'}
                                         ]);
     if (!assignment) return res.status(404).json({ message: 'Assignment not found' });

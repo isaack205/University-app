@@ -82,7 +82,18 @@ export const authService = {
         }
     },
 
-    // Delete user profile
+    // Verify email
+    verifyEmail: async (token) => {
+        try {
+            const res = await API.post('/auth/verify-email', { token });
+            return res.data;
+        } catch (error) {
+            console.error('Error verifying email:', error.response?.data || error.message);
+            throw error;
+        }
+    },
+
+    // Delete profile
     deleteProfile: async () => {
         try {
             const res = await API.delete('/auth/me');
@@ -116,9 +127,9 @@ export const authService = {
     },
 
     // Fetch users by Cohort
-    getUsersByCohort: async (cohortId, usersData) => {
+    getUsersByCohort: async (cohortId) => {
         try {
-            const res = await API.get(`/auth/cohort/${cohortId}`, usersData);
+            const res = await API.get(`/auth/cohort/${cohortId}`);
             return res.data;
         } catch (error) {
             console.error('Error fetching users per cohort:', error.response?.data || error.message);
@@ -133,6 +144,28 @@ export const authService = {
             return res.data;
         } catch (error) {
             console.error('Error updating user role:', error.response?.data || error.message);
+            throw error;
+        }
+    },
+
+    // Google SSO Authentication
+    googleAuth: async (googleData) => {
+        try {
+            const res = await API.post('/auth/google', googleData);
+            return res.data;
+        } catch (error) {
+            console.error('Error in googleAuth:', error.response?.data || error.message);
+            throw error;
+        }
+    },
+
+    // Complete Academic Onboarding
+    completeAcademicOnboarding: async (onboardingData) => {
+        try {
+            const res = await API.put('/auth/complete-onboarding', onboardingData);
+            return res.data;
+        } catch (error) {
+            console.error('Error completing academic onboarding:', error.response?.data || error.message);
             throw error;
         }
     },

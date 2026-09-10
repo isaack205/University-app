@@ -180,16 +180,15 @@ export function CohortFiles() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-5">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-5">
         <div>
-          <h3 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
-            <BookOpenIcon className="text-emerald-500" />
-            {user?.cohort?.name} Resources
+          <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <BookOpenIcon className="text-emerald-500 h-5 w-5" />
+            {user?.cohort?.name || 'Cohort'} Resources
           </h3>
-          <p className="text-sm text-slate-500 font-medium">Shared documents for your specific cohort</p>
+          <p className="text-xs text-slate-500 font-medium">Shared learning materials uploaded for your specific cohort</p>
         </div>
       </div>
-
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {cohortFiles.length > 0 ? (
@@ -207,7 +206,7 @@ export function CohortFiles() {
         ) : (
           <div className="col-span-full py-12 flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-800/50 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-700">
             <FileIcon className="h-10 w-10 text-slate-300 mb-3" />
-            <p className="text-slate-500 font-bold">No cohort files found</p>
+            <p className="text-slate-500 font-bold text-sm">No cohort files found</p>
             <p className="text-xs text-slate-400">Resources uploaded for your cohort will appear here.</p>
           </div>
         )}
@@ -250,12 +249,12 @@ export function GeneralFiles() {
 
   return (
     <div className="space-y-6">
-      <div className="border-b pb-5">
-        <h3 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
-          <FileIcon className="text-blue-500" />
+      <div className="border-b border-slate-100 dark:border-slate-800 pb-5">
+        <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <FileIcon className="text-blue-500 h-5 w-5" />
           General Library
         </h3>
-        <p className="text-sm text-slate-500 font-medium">Public files accessible to all cohorts</p>
+        <p className="text-xs text-slate-500 font-medium">Public academic files accessible across all cohorts</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -274,7 +273,7 @@ export function GeneralFiles() {
         ) : (
           <div className="col-span-full py-12 flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-800/50 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-700">
             <FileIcon className="h-10 w-10 text-slate-300 mb-3" />
-            <p className="text-slate-500 font-bold">The library is empty</p>
+            <p className="text-slate-500 font-bold text-sm">The library is empty</p>
             <p className="text-xs text-slate-400">There are currently no general files available.</p>
           </div>
         )}
@@ -282,3 +281,66 @@ export function GeneralFiles() {
     </div>
   );
 }
+
+// --- UNIFIED TABBED FILES PAGE ---
+export function FilesPage() {
+  const [activeTab, setActiveTab] = useState("general"); // "general" | "cohort"
+  const { user } = useAuth();
+
+  return (
+    <div className="space-y-6 pb-10">
+
+      {/* Header & Tab Switcher */}
+      <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-[10px] font-extrabold uppercase tracking-widest text-indigo-600 bg-indigo-50 px-2.5 py-0.5 rounded-full ring-1 ring-indigo-200">
+              Resource Center
+            </span>
+          </div>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
+            Academic File Directory
+          </h1>
+          <p className="text-xs text-slate-500 mt-1">
+            Access general reference materials and cohort-specific learning resources.
+          </p>
+        </div>
+
+        {/* Tab Controls */}
+        <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 p-1.5 rounded-xl border border-slate-200 dark:border-slate-700 self-start sm:self-auto">
+          <button
+            onClick={() => setActiveTab("general")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all duration-200 ${
+              activeTab === "general"
+                ? "bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-sm"
+                : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
+            }`}
+          >
+            <FileIcon className="h-4 w-4 text-blue-500" />
+            General Files
+          </button>
+
+          <button
+            onClick={() => setActiveTab("cohort")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all duration-200 ${
+              activeTab === "cohort"
+                ? "bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-sm"
+                : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
+            }`}
+          >
+            <BookOpenIcon className="h-4 w-4 text-emerald-500" />
+            {user?.cohort?.name ? `${user.cohort.name} Files` : 'Cohort Files'}
+          </button>
+        </div>
+      </div>
+
+      {/* Tab Panel Content */}
+      <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        {activeTab === "general" ? <GeneralFiles /> : <CohortFiles />}
+      </div>
+
+    </div>
+  );
+}
+
+export default FilesPage;

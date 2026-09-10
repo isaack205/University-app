@@ -3,7 +3,7 @@ const { sendAppNotification } = require('../services/notificationService.js');
 const { sendSMS } = require('../services/smsService.js');
 const cloudinary = require('../config/cloudinaryConfig.js');
 const FileUpload = require('../models/fileUpload.js');
-const User = require('../models/user.js');
+const { User } = require('../models/user.js');
 const fs = require('fs');
 
 // Create a new file record
@@ -79,9 +79,9 @@ exports.createFile = async (req, res) => {
         fileUpload._id,
         );
 
-        if (student.preferences.smsNotifications && student.phoneNumber) {
-        await sendSMS(student._id, student.phoneNumber, `📚 New document file posted: ${fileUpload.fileName}`, 'document');
-        }
+        // if (student.preferences.smsNotifications && student.phoneNumber) {
+        // await sendSMS(student._id, student.phoneNumber, `📚 New document file posted: ${fileUpload.fileName}`, 'document');
+        // }
 
     };
     
@@ -111,6 +111,24 @@ exports.getFileById = async (req, res) => {
     return res.status(200).json(file);
   } catch (err) {
     return res.status(500).json({ message: 'Failed to fetch file', error: err.message});
+  }
+};
+
+// Get all files (Admin only)
+exports.getAllFiles = async (req, res) => {
+  try {
+    const files = await FileUpload.find({})
+      .sort({ uploadedAt: -1 })
+      .populate('course')
+      .populate('cohort')
+      .populate([ {
+        path: 'uploadedBy',
+        select: 'name email phoneNumber'
+      }]);
+
+    return res.status(200).json(files);
+  } catch (err) {
+    return res.status(500).json({ message: 'Failed to fetch all files', error: err.message});
   }
 };
 
