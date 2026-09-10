@@ -3,6 +3,8 @@ import React, { useState } from "react";
 import { useAuth } from "@/contexts/authContext";
 import { toast } from "sonner";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
+import { useGoogleLogin } from '@react-oauth/google';
+import axios from 'axios';
 import {
   Card,
   CardContent,
@@ -60,30 +62,46 @@ export default function RegisterPage() {
     }
   };
 
-  const handleGoogleSSO = async () => {
-    setGoogleLoading(true);
-    try {
-      const testEmail = prompt("Enter your Google Account Email:", "student.google@gmail.com");
-      if (!testEmail) {
+  const loginWithGoogle = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      setGoogleLoading(true);
+      try {
+        const res = await axios.get('https://www.googleapis.com/oauth2/v3/userinfo', {
+          headers: { Authorization: `Bearer ${tokenResponse.access_token}` }
+        });
+
+        const { email, name, sub: googleId } = res.data;
+
+        const result = await googleLogin({
+          email,
+          name,
+          googleId,
+          accessToken: tokenResponse.access_token
+        });
+
+        if (result && result.success) {
+          toast.success("Google Sign-In successful!");
+        }
+      } catch (err) {
+        toast.error(err.response?.data?.message || err.message || "Google Sign-In failed");
+      } finally {
         setGoogleLoading(false);
-        return;
       }
-      const testName = testEmail.split("@")[0].replace(".", " ");
-
-      const result = await googleLogin({
-        email: testEmail,
-        name: testName,
-        googleId: `goog_${Date.now()}`
-      });
-
-      if (result && result.success) {
-        toast.success("Google Sign-In successful!");
-      }
-    } catch (err) {
-      toast.error(err.response?.data?.message || err.message || "Google Sign-In failed");
-    } finally {
+    },
+    onError: (errorResponse) => {
+      console.error("Google Login Error:", errorResponse);
+      toast.error("Google Sign-In was cancelled or failed");
       setGoogleLoading(false);
     }
+  });
+
+  const handleGoogleSSO = () => {
+    if (!import.meta.env.VITE_GOOGLE_CLIENT_ID) {
+      toast.error("Google Client ID is missing. Please check VITE_GOOGLE_CLIENT_ID in your env file.");
+      return;
+    }
+    setGoogleLoading(true);
+    loginWithGoogle();
   };
 
   const handleSubmit = async (e) => {

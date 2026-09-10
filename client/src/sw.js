@@ -4,7 +4,19 @@ import { precacheAndRoute } from 'workbox-precaching';
 // Replace with the generated assets list
 precacheAndRoute(self.__WB_MANIFEST);
 
-self.__WB_MANIFEST
+// Allow web app to trigger immediate service worker update (skipWaiting)
+self.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'SKIP_WAITING') {
+        self.skipWaiting();
+    }
+});
+
+// Take control of all open pages immediately
+self.addEventListener('activate', (event) => {
+    event.waitUntil(self.clients.claim());
+});
+
+
 
 // 1. Listen for the 'push' event
 self.addEventListener('push', (event) => {

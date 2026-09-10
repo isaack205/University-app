@@ -12,6 +12,9 @@ const logActivity = require('../utils/auditLogger');
 // Load env variables
 const JWT_SECRET = process.env.JWT_SECRET;
 const FRONTEND_URL = process.env.FRONTEND_URL;
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+const { OAuth2Client } = require('google-auth-library');
+const googleOAuthClient = new OAuth2Client(GOOGLE_CLIENT_ID);
 
 exports.registerUser = async (req, res) => {
 
@@ -481,7 +484,40 @@ exports.updateUserRole = async (req, res) => {
 // Google SSO Authentication
 exports.googleAuth = async (req, res) => {
     try {
-        const { email, name, googleId } = req.body;
+        let { email, name, googleId, idToken, credential, accessToken } = req.body;
+        const tokenToVerify = idToken || credential;
+
+        if (tokenToVerify) {
+            try {
+                const ticket = await googleOAuthClient.verifyIdToken({
+                    idToken: tokenToVerify,
+                    audience: GOOGLE_CLIENT_ID,
+                });
+                const payload = ticket.getPayload();
+                if (payload) {
+                    email = payload.email;
+                    name = payload.name;
+                    googleId = payload.sub;
+                }
+            } catch (tokenErr) {
+                console.error("Failed to verify Google ID token:", tokenErr);
+                return res.status(401).json({ message: "Invalid or expired Google token" });
+            }
+        } else if (accessToken) {
+            try {
+                const axios = require('axios');
+                const googleRes = await axios.get('https://www.googleapis.com/oauth2/v3/userinfo', {
+                    headers: { Authorization: `Bearer ${accessToken}` }
+                });
+                if (googleRes.data) {
+                    email = googleRes.data.email;
+                    name = googleRes.data.name;
+                    googleId = googleRes.data.sub;
+                }
+            } catch (accErr) {
+                console.error("Failed to verify Google access token:", accErr.message);
+            }
+        }
 
         if (!email) {
             return res.status(400).json({ message: "Google authentication failed — email missing" });

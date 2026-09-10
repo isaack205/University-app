@@ -45,13 +45,15 @@ app.use(cors({
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], // Allowed HTTP methods
   credentials: true, // Allow cookies, authorization headers, etc.
-  allowedHeaders: ['Content-Type, Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 const auditLogRoutes = require('./routes/auditLogRoutes');
 const broadcastRoutes = require('./routes/broadcastRoutes');
 
-app.use(helmet()); // Security policy
+app.use(helmet({
+  crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" }
+})); // Security policy
 app.use(logger); // Logger
 
 app.use('/api/course', courseRoutes);
