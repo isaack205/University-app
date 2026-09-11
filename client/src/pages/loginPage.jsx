@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/authContext";
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useGoogleLogin } from '@react-oauth/google';
 import axios from 'axios';
 import {
@@ -20,6 +20,9 @@ import registerPhoto2 from "../assets/university 2.png"
 import logo from "../assets/image.png"
 
 export default function LoginPage() {
+    const [searchParams] = useSearchParams();
+    const courseParam = searchParams.get("course");
+    const cohortParam = searchParams.get("cohort");
 
     const [studentId, setStudentId] = useState('');
     const [studentIdError, setStudentIdError] = useState(null);
@@ -34,7 +37,9 @@ export default function LoginPage() {
 
     useEffect(() => {
         if (clearError) clearError();
-    }, []);
+        if (courseParam) sessionStorage.setItem("pendingInviteCourse", courseParam);
+        if (cohortParam) sessionStorage.setItem("pendingInviteCohort", cohortParam);
+    }, [courseParam, cohortParam]);
 
     const loginWithGoogle = useGoogleLogin({
         onSuccess: async (tokenResponse) => {

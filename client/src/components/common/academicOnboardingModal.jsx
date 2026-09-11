@@ -42,7 +42,15 @@ export default function AcademicOnboardingModal({ isOpen, onSuccess }) {
 
         const pendingCourse = sessionStorage.getItem("pendingInviteCourse");
         if (pendingCourse && data?.length) {
-          const matched = data.find(c => c._id === pendingCourse || c.code?.toLowerCase() === pendingCourse.toLowerCase() || c.name?.toLowerCase().includes(pendingCourse.toLowerCase()));
+          const cleanPending = pendingCourse.replace(/-/g, " ").toLowerCase().trim();
+          const matched = data.find(c => 
+            c._id === pendingCourse || 
+            c.code?.toLowerCase() === pendingCourse.toLowerCase() ||
+            c.code?.toLowerCase() === cleanPending ||
+            c.name?.toLowerCase() === cleanPending ||
+            c.name?.toLowerCase().includes(cleanPending) ||
+            cleanPending.includes(c.name?.toLowerCase())
+          );
           if (matched) {
             setSelectedCourse(matched._id);
           }
@@ -67,7 +75,14 @@ export default function AcademicOnboardingModal({ isOpen, onSuccess }) {
 
         const pendingCohort = sessionStorage.getItem("pendingInviteCohort");
         if (pendingCohort && data?.length) {
-          const matched = data.find(c => c._id === pendingCohort || c.name?.toLowerCase().includes(pendingCohort.toLowerCase()) || c.year?.toString() === pendingCohort);
+          const cleanPending = pendingCohort.replace(/-/g, " ").toLowerCase().trim();
+          const matched = data.find(c => 
+            c._id === pendingCohort || 
+            c.name?.toLowerCase() === cleanPending ||
+            c.name?.toLowerCase().includes(cleanPending) ||
+            cleanPending.includes(c.name?.toLowerCase()) ||
+            c.year?.toString() === pendingCohort
+          );
           if (matched) {
             setSelectedCohort(matched._id);
           }
