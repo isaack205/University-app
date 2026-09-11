@@ -256,8 +256,11 @@ exports.updateProfile = async (req, res) => {
 exports.forgotPassword = async (req, res) => {
     const { email } = req.body;
 
+    // Declared outside try so the catch block can access it for cleanup
+    let user;
+
     try {
-        const user = await User.findOne({ email });
+        user = await User.findOne({ email });
         if (!user) {
             return res.status(404).json({message: "User not found"})
         };
@@ -268,8 +271,7 @@ exports.forgotPassword = async (req, res) => {
         // Hash the token
         const hashedResetToken = crypto.createHash('sha256').update(resetToken).digest('hex');
 
-
-        // 3. Set the hashed token and its expiration on the user model.
+        // Set the hashed token and its expiration on the user model.
         user.resetPasswordToken = hashedResetToken;
         user.resetPasswordExpire = Date.now() + 10 * 60 * 1000; // Valid for 10 minutes
 
@@ -279,8 +281,6 @@ exports.forgotPassword = async (req, res) => {
         const resetURL = `${FRONTEND_URL}/reset-password?token=${resetToken}`;
         const message = `👋 Hello ${user.name},\n\nWe received a request to reset your password for your University App account.\n\n🔗 Please click the link below to securely reset your password:\n ${resetURL} \n\n⚠️ If you did not request this, please ignore this email and your password will remain unchanged.\n\nBest regards,\nCHUXEN App Team`;
 
-
-        // Send email with reset link (pseudo code)
         await sendEmail({
             to: user.email,
             subject: "Password Reset Request",
@@ -290,10 +290,12 @@ exports.forgotPassword = async (req, res) => {
         res.status(200).json({message: "Password reset email sent to your email"});
 
     } catch (error) {
-         // If an email sending error occurs, clear the token fields to prevent a security vulnerability.
-        user.resetPasswordToken = undefined;
-        user.resetPasswordExpire = undefined;
-        await user.save({ validateBeforeSave: false });
+        // Only clean up the token if the user was actually found before the error occurred
+        if (user) {
+            user.resetPasswordToken = undefined;
+            user.resetPasswordExpire = undefined;
+            await user.save({ validateBeforeSave: false });
+        }
 
         console.error('Error sending password reset email:', error);
         res.status(500).json({ message: "Error sending password reset email", error: error.message });

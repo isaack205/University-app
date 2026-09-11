@@ -19,6 +19,23 @@ const sendEmail = async (options) => {
         },
     });
 
+    // Verify SMTP connection and credentials before attempting to send.
+    // This surfaces the real error code (535 Auth Failed, ECONNREFUSED, etc.)
+    // immediately instead of burying it under a generic message.
+    try {
+        await transporter.verify();
+    } catch (verifyError) {
+        console.error(`[Email] SMTP connection/auth failed:`, {
+            code: verifyError.code,
+            command: verifyError.command,
+            message: verifyError.message,
+            host: process.env.EMAIL_HOST,
+            port: process.env.EMAIL_PORT,
+            user: process.env.EMAIL_USERNAME,
+        });
+        throw new Error(`SMTP verification failed: ${verifyError.message}`);
+    }
+
     const mailOptions = {
         from: `Campus Hub <${process.env.EMAIL_FROM}>`,
         to: options.to,
@@ -30,10 +47,15 @@ const sendEmail = async (options) => {
 
     try {
         await transporter.sendMail(mailOptions);
-        console.log(`Email sent to ${options.to}`);
+        console.log(`[Email] ✅ Sent to ${options.to}`);
     } catch (error) {
-        console.error(`Error sending email to ${options.to}:`, error);
-        throw new Error("Email could not be sent.");
+        console.error(`[Email] ❌ Failed to send to ${options.to}:`, {
+            code: error.code,
+            command: error.command,
+            message: error.message,
+        });
+        // Re-throw the real error so the caller gets the actual reason, not a generic string
+        throw error;
     }
 };
 
