@@ -279,12 +279,39 @@ exports.forgotPassword = async (req, res) => {
 
         // Send unhashed token to user's email
         const resetURL = `${FRONTEND_URL}/reset-password?token=${resetToken}`;
-        const message = `👋 Hello ${user.name},\n\nWe received a request to reset your password for your University App account.\n\n🔗 Please click the link below to securely reset your password:\n ${resetURL} \n\n⚠️ If you did not request this, please ignore this email and your password will remain unchanged.\n\nBest regards,\nCHUXEN App Team`;
+        const message = `Hello ${user.name},\n\nWe received a request to reset your password for your CampusHub account.\n\nPlease click the link below to securely reset your password. This link is valid for 10 minutes:\n${resetURL}\n\nIf you did not request a password reset, you can safely ignore this email. Your password will remain unchanged.\n\nBest regards,\nThe CampusHub Team\nsupport@campushubapp.co.ke`;
+
+        const htmlMessage = `
+            <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 30px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+                <div style="text-align: center; margin-bottom: 25px;">
+                    <h2 style="color: #0f172a; margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -0.5px;">CampusHub</h2>
+                    <p style="color: #64748b; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-top: 5px;">Account Security</p>
+                </div>
+                <div style="color: #334155; font-size: 16px; line-height: 1.6;">
+                    <p>Hello <strong style="color: #0f172a;">${user.name}</strong>,</p>
+                    <p>We received a request to reset your password for your CampusHub account.</p>
+                    <p>Please click the button below to securely reset your password. For your security, this link expires in <strong>10 minutes</strong>.</p>
+                    <div style="text-align: center; margin: 35px 0;">
+                        <a href="${resetURL}" style="background-color: #2563eb; color: #ffffff; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; display: inline-block; box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);">Reset Password</a>
+                    </div>
+                    <p style="font-size: 14px; color: #64748b; margin-top: 30px;">Or copy and paste this link into your browser:<br>
+                    <a href="${resetURL}" style="color: #3b82f6; word-break: break-all; text-decoration: underline;">${resetURL}</a></p>
+                    <div style="background-color: #f8fafc; border-left: 4px solid #cbd5e1; padding: 15px; margin-top: 30px; border-radius: 4px;">
+                        <p style="margin: 0; font-size: 14px; color: #475569;">If you did not request a password reset, you can safely ignore this email. Your password will remain unchanged.</p>
+                    </div>
+                </div>
+                <hr style="border: none; border-top: 1px solid #f1f5f9; margin: 30px 0;">
+                <div style="color: #94a3b8; font-size: 12px; text-align: center;">
+                    <p>Best regards,<br><strong style="color: #64748b;">The CampusHub Team</strong><br><a href="mailto:support@campushubapp.co.ke" style="color: #94a3b8; text-decoration: none;">support@campushubapp.co.ke</a></p>
+                </div>
+            </div>
+        `;
 
         await sendEmail({
             to: user.email,
-            subject: "Password Reset Request",
-            text: `${message}`
+            subject: "CampusHub - Password Reset Request",
+            text: message,
+            html: htmlMessage
         });
 
         res.status(200).json({message: "Password reset email sent to your email"});
@@ -332,10 +359,34 @@ exports.resetPassword = async (req, res) => {
 
 
 
+        const message = `Hello ${user.name},\n\nThis is a confirmation that the password for your CampusHub account has been successfully changed.\n\nIf you made this change, you can safely ignore this message.\n\nIf you did NOT request this change, please contact us immediately at support@campushubapp.co.ke to secure your account.\n\nBest regards,\nThe CampusHub Team\nsupport@campushubapp.co.ke`;
+
+        const htmlMessage = `
+            <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 30px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+                <div style="text-align: center; margin-bottom: 25px;">
+                    <h2 style="color: #0f172a; margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -0.5px;">CampusHub</h2>
+                    <p style="color: #64748b; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-top: 5px;">Account Security</p>
+                </div>
+                <div style="color: #334155; font-size: 16px; line-height: 1.6;">
+                    <p>Hello <strong style="color: #0f172a;">${user.name}</strong>,</p>
+                    <p>This is a confirmation that the password for your CampusHub account has been <strong>successfully changed</strong>.</p>
+                    <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-left: 4px solid #16a34a; padding: 15px; margin: 25px 0; border-radius: 6px;">
+                        <p style="margin: 0; color: #166534; font-size: 15px;"><strong>✅ Success:</strong> Your account is secure. If you made this change, you can safely ignore this message.</p>
+                    </div>
+                    <p style="margin-top: 25px; font-size: 15px;">If you did <strong>NOT</strong> request this change, please contact us immediately at <a href="mailto:support@campushubapp.co.ke" style="color: #ef4444; font-weight: bold; text-decoration: underline;">support@campushubapp.co.ke</a> to secure your account.</p>
+                </div>
+                <hr style="border: none; border-top: 1px solid #f1f5f9; margin: 30px 0;">
+                <div style="color: #94a3b8; font-size: 12px; text-align: center;">
+                    <p>Best regards,<br><strong style="color: #64748b;">The CampusHub Team</strong><br><a href="mailto:support@campushubapp.co.ke" style="color: #94a3b8; text-decoration: none;">support@campushubapp.co.ke</a></p>
+                </div>
+            </div>
+        `;
+
         await sendEmail({
             to: user.email,
-            subject: "🔒 Password Changed Successfully! 🎉",
-            text: `Hi ${user.name},\n\n✅ Your password for your University App account has been changed successfully!\n\nIf you made this change, you can safely ignore this message. If you did NOT request this change, please contact our support team immediately for assistance.\n\nFor your security, always keep your password confidential and avoid sharing it with anyone.\n\nIf you have any questions or need help, feel free to reach out to us.\n\nBest regards,\nCHUXEN Team\n\n🔔 Stay safe and secure!`
+            subject: "CampusHub - Password Changed Successfully",
+            text: message,
+            html: htmlMessage
         });
 
         res.status(200).json({message: "Password reset successfully"});
@@ -368,11 +419,35 @@ exports.changePassword = async (req, res) => {
     user.password = await bcrypt.hash(newPassword, 10);
     await user.save();
 
+    const message = `Hello ${user.name},\n\nThis is a confirmation that your account password was changed successfully via your profile settings.\n\nIf this wasn't you, please contact us immediately at support@campushubapp.co.ke to secure your account.\n\nBest regards,\nThe CampusHub Team\nsupport@campushubapp.co.ke`;
+
+    const htmlMessage = `
+        <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 30px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+            <div style="text-align: center; margin-bottom: 25px;">
+                <h2 style="color: #0f172a; margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -0.5px;">CampusHub</h2>
+                <p style="color: #64748b; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-top: 5px;">Account Security</p>
+            </div>
+            <div style="color: #334155; font-size: 16px; line-height: 1.6;">
+                <p>Hello <strong style="color: #0f172a;">${user.name}</strong>,</p>
+                <p>This is a confirmation that your account password was <strong>successfully changed</strong> via your profile settings.</p>
+                <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-left: 4px solid #16a34a; padding: 15px; margin: 25px 0; border-radius: 6px;">
+                    <p style="margin: 0; color: #166534; font-size: 15px;"><strong>✅ Success:</strong> Your account is secure. If you made this change, you can safely ignore this message.</p>
+                </div>
+                <p style="margin-top: 25px; font-size: 15px;">If you did <strong>NOT</strong> request this change, please contact us immediately at <a href="mailto:support@campushubapp.co.ke" style="color: #ef4444; font-weight: bold; text-decoration: underline;">support@campushubapp.co.ke</a> to secure your account.</p>
+            </div>
+            <hr style="border: none; border-top: 1px solid #f1f5f9; margin: 30px 0;">
+            <div style="color: #94a3b8; font-size: 12px; text-align: center;">
+                <p>Best regards,<br><strong style="color: #64748b;">The CampusHub Team</strong><br><a href="mailto:support@campushubapp.co.ke" style="color: #94a3b8; text-decoration: none;">support@campushubapp.co.ke</a></p>
+            </div>
+        </div>
+    `;
+
     // Notify user about password change
     await sendEmail({
       to: user.email,
-      subject: "Your password was changed",
-      text: `Hi ${user.name},\n\nYour account password was changed successfully.\nIf this wasn't you, contact support immediately.`
+      subject: "CampusHub - Password Changed Successfully",
+      text: message,
+      html: htmlMessage
     }).catch(() => { /* swallow email errors */ });
 
     res.status(200).json({ message: "Password changed successfully" });

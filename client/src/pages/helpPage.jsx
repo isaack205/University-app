@@ -328,8 +328,8 @@ export default function HelpPage() {
                     {
                       icon: Mail,
                       title: "Email Support",
-                      value: "kahuraisaac30@gmail.com",
-                      href: "mailto:kahuraisaac30@gmail.com",
+                      value: "support@campushubapp.co.ke",
+                      href: "mailto:support@campushubapp.co.ke",
                       description: "Average response: 24h",
                       color: "from-blue-500 to-blue-600",
                     },

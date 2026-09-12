@@ -324,6 +324,12 @@ export default function SettingsPage() {
             <HelpCircleIcon className="w-4 h-4" />
             <span>Need help? Visit our <a href="/help" className="text-blue-600 hover:underline font-medium">Help Center</a></span>
           </div>
+          <div className="px-6 py-3 bg-slate-50 dark:bg-slate-800/30 border-t border-slate-100 dark:border-slate-800 flex items-center gap-2 text-xs text-slate-500 dark:text-slate-500">
+            <span className="font-semibold">Legal:</span>
+            <a href="/terms" className="text-blue-600 dark:text-blue-400 hover:underline font-medium">Terms &amp; Conditions</a>
+            <span>·</span>
+            <a href="/privacy" className="text-blue-600 dark:text-blue-400 hover:underline font-medium">Privacy Policy</a>
+          </div>
         </Card>
 
       </div>

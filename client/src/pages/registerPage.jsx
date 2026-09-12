@@ -45,6 +45,7 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [isRegistered, setIsRegistered] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   const { register, googleLogin, clearError } = useAuth();
   const navigate = useNavigate();
@@ -216,6 +217,12 @@ export default function RegisterPage() {
                   )}
                   Continue with Google
                 </Button>
+                {/* Google SSO T&C note */}
+                <p className="text-center text-[11px] text-gray-500 font-medium -mt-1">
+                  By continuing with Google, you agree to our{" "}
+                  <Link to="/terms" className="text-blue-600 hover:underline font-bold">Terms</Link>{" "}&{" "}
+                  <Link to="/privacy" className="text-blue-600 hover:underline font-bold">Privacy Policy</Link>.
+                </p>
 
                 {/* Divider */}
                 <div className="relative flex items-center justify-center my-3">
@@ -285,11 +292,57 @@ export default function RegisterPage() {
                     {passwordError && <p className="mt-1 font-bold text-red-600 text-xs">{passwordError}</p>}
                   </div>
 
+                  {/* T&C Checkbox — Styled Consent Card */}
+                  <div
+                    onClick={() => setTermsAccepted(!termsAccepted)}
+                    className={`flex items-start gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all duration-200 select-none ${
+                      termsAccepted
+                        ? "border-blue-500 bg-blue-50 shadow-md shadow-blue-200"
+                        : "border-gray-300 bg-white hover:border-blue-300 hover:bg-blue-50/40"
+                    }`}
+                  >
+                    {/* Custom visible checkbox */}
+                    <div
+                      className={`mt-0.5 h-5 w-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all duration-200 ${
+                        termsAccepted
+                          ? "border-blue-500 bg-blue-500"
+                          : "border-gray-400 bg-white"
+                      }`}
+                    >
+                      {termsAccepted && (
+                        <svg className="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      )}
+                    </div>
+                    <p className={`text-xs leading-relaxed font-medium transition-colors ${termsAccepted ? "text-blue-800" : "text-gray-700"}`}>
+                      I have read and agree to CampusHub's{" "}
+                      <Link
+                        to="/terms"
+                        target="_blank"
+                        onClick={(e) => e.stopPropagation()}
+                        className="text-blue-600 font-bold hover:underline"
+                      >
+                        Terms & Conditions
+                      </Link>{" "}
+                      and{" "}
+                      <Link
+                        to="/privacy"
+                        target="_blank"
+                        onClick={(e) => e.stopPropagation()}
+                        className="text-blue-600 font-bold hover:underline"
+                      >
+                        Privacy Policy
+                      </Link>.
+                    </p>
+                  </div>
+
+
                   <div>
                     <Button
                       type="submit"
-                      disabled={loading}
-                      className="mt-3 md:mt-6 cursor-pointer w-full bg-blue-500 hover:bg-blue-600 text-lg font-bold border text-white border-blue-500 shadow-xl"
+                      disabled={loading || !termsAccepted}
+                      className="mt-3 md:mt-6 cursor-pointer w-full bg-blue-500 hover:bg-blue-600 text-lg font-bold border text-white border-blue-500 shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {loading ? (
                         <div className="flex items-center gap-3">

@@ -1,0 +1,31 @@
+# CampusHub — robots.txt
+# https://campushubapp.co.ke
+
+# Allow all search engines to crawl public pages
+User-agent: *
+
+# Public pages — allowed
+Allow: /$
+Allow: /login
+Allow: /register
+Allow: /forgot-password
+Allow: /help
+Allow: /terms
+Allow: /privacy
+
+# Authenticated & dashboard pages — block from indexing
+Disallow: /home
+Disallow: /profile
+Disallow: /notifications
+Disallow: /schedule
+Disallow: /assignment/
+Disallow: /CAT
+Disallow: /upload/
+Disallow: /lecturers
+Disallow: /dashboard/
+Disallow: /admin/
+Disallow: /reset-password
+Disallow: /verify-email
+
+# Sitemap location
+Sitemap: https://campushubapp.co.ke/sitemap.xml

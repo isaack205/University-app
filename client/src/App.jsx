@@ -39,6 +39,9 @@ import AdminBroadcastPage from "./components/dashboard/adminDashboard/adminBroad
 import NotFoundPage from "./pages/notFoundPage";
 import { UpdateProvider } from "./contexts/updateContext";
 import UpdateBanner from "./components/common/updateBanner";
+import TermsPage from "./pages/termsPage";
+import PrivacyPage from "./pages/privacyPage";
+import ConsentBanner from "./components/common/consentBanner";
 
 export default function App () {
   return (
@@ -46,6 +49,7 @@ export default function App () {
       <Toaster richColors position="top-right"/>
       <PathTracker />
       <UpdateBanner />
+      <ConsentBanner />
       
       <Routes>
         <Route path="/" element={<LandingPage />} />
@@ -57,6 +61,8 @@ export default function App () {
         <Route path="/verify-email" element={<VerifyEmailPage />} />
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/help" element={<HelpPage />} />
+        <Route path="/terms" element={<TermsPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
 
         <Route element={<Layout />}>
           <Route element={<ProtectedRoute allowedRoles={['student', 'classRep', 'admin']} />}>
